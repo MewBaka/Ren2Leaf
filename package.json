@@ -1,0 +1,10 @@
+{
+  "name": "ren2leaf",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node ren2leaf.js",
+    "test": "node --test"
+  }
+}

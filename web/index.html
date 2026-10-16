@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ren2Leaf</title>
+    <link rel="stylesheet" href="tokens.css">
+    <link rel="stylesheet" href="app.css">
+    <script type="module" src="app.js"></script>
+</head>
+<body>
+    <div class="shell">
+        <aside class="sidebar">
+            <div class="section-head">
+                <span class="section-title">游戏</span>
+                <span class="section-count" id="game-count"></span>
+                <button type="button" class="tool-btn tool-btn-xs section-action" id="add-game-head" data-tip="添加游戏" aria-label="添加游戏"></button>
+            </div>
+            <div class="game-list" id="game-list" role="listbox" aria-label="游戏"></div>
+        </aside>
+
+        <main class="workspace" id="workspace">
+            <header class="workspace-head" id="workspace-head" hidden>
+                <div class="workspace-title-row">
+                    <h1 class="workspace-title" id="game-title"></h1>
+                </div>
+                <nav class="tabstrip" id="steps" role="tablist" aria-label="步骤"></nav>
+            </header>
+            <section class="step-host" id="step-host"></section>
+        </main>
+
+        <footer class="statusbar" id="statusbar"></footer>
+    </div>
+</body>
+</html>
