@@ -1,0 +1,153 @@
+/* Step 1: diagnose. Tokens and component sizes follow tokens.css / app.css (NarraLeaf Studio). */
+
+.dg {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.dg-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 12px;
+    border-bottom: 1px solid var(--nl-edge);
+    flex-shrink: 0;
+}
+
+.dg-spacer { flex: 1; }
+
+.dg-value {
+    font-size: var(--nl-text-xs);
+    color: rgb(var(--nl-fg-subtle));
+    white-space: nowrap;
+}
+
+.dg-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 16px 16px 24px;
+}
+
+/* One row of values, no labels where the value reads on its own. */
+.dg-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1px;
+    margin-bottom: 24px;
+    border: 1px solid var(--nl-edge);
+    border-radius: var(--nl-radius-md);
+    background: var(--nl-edge);
+    overflow: hidden;
+}
+
+.dg-fact {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 12px;
+    background: rgb(var(--nl-surface));
+    min-width: 0;
+}
+
+.dg-fact-label { font-size: var(--nl-text-2xs); color: rgb(var(--nl-fg-subtle)); }
+.dg-fact-value { font-size: var(--nl-text-sm); color: rgb(var(--nl-fg)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dg-fact-value.is-warning { color: rgb(var(--nl-warning)); }
+.dg-fact-value.is-danger { color: rgb(var(--nl-danger)); }
+
+.dg-section { margin-bottom: 24px; }
+
+.dg-section-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 28px;
+    margin-bottom: 4px;
+    font-size: var(--nl-text-xs);
+    font-weight: var(--nl-weight-semibold);
+    color: rgb(var(--nl-fg));
+}
+
+.dg-count { font-size: var(--nl-text-2xs); font-weight: var(--nl-weight-normal); color: rgb(var(--nl-fg-subtle)); }
+
+.dg-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: var(--nl-text-xs);
+}
+
+.dg-table th {
+    height: 28px;
+    padding: 0 8px;
+    border-bottom: 1px solid var(--nl-edge);
+    color: rgb(var(--nl-fg-subtle));
+    font-weight: var(--nl-weight-normal);
+    text-align: left;
+    white-space: nowrap;
+}
+
+.dg-table td {
+    height: 28px;
+    padding: 0 8px;
+    border-bottom: 1px solid var(--nl-edge-subtle);
+    color: rgb(var(--nl-fg-muted));
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dg-table tbody tr.is-row { cursor: pointer; }
+.dg-table tbody tr.is-row:hover td { background: var(--nl-fill-subtle); color: rgb(var(--nl-fg)); }
+.dg-table tbody tr[aria-expanded="true"] td { background: rgb(var(--nl-primary) / 0.15); color: rgb(var(--nl-fg)); }
+
+.dg-chevron {
+    display: inline-block;
+    width: 12px;
+    color: rgb(var(--nl-fg-subtle));
+    transition: transform var(--nl-duration-fast);
+}
+
+tr[aria-expanded="true"] .dg-chevron { transform: rotate(90deg); }
+
+.dg-detail td {
+    height: auto;
+    padding: 8px 8px 12px 28px;
+    white-space: normal;
+    background: var(--nl-fill-subtle);
+}
+
+.dg-props {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 4px 16px;
+    font-size: var(--nl-text-xs);
+}
+
+.dg-props dt { color: rgb(var(--nl-fg-subtle)); }
+.dg-props dd { margin: 0; color: rgb(var(--nl-fg-muted)); overflow-wrap: anywhere; }
+
+.dg-lines { display: flex; flex-direction: column; gap: 2px; }
+
+.dg-list {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--nl-edge-subtle);
+}
+
+.dg-item {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 12px;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--nl-edge-subtle);
+    font-size: var(--nl-text-xs);
+    color: rgb(var(--nl-fg-muted));
+}
+
+.dg-item-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dg-snippet { color: rgb(var(--nl-fg-subtle)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
