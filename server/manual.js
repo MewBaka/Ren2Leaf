@@ -105,7 +105,7 @@ function manualRunClass() {
             let args = [runDir];
             if (this.sandbox) {
                 const profile = path.join(workDir, "manual-sandbox.sb");
-                fs.writeFileSync(profile, sandboxProfile(workDir));
+                fs.writeFileSync(profile, sandboxProfile(workDir, this.sdk.path));
                 args = ["-f", profile, this.sdk.launcher, runDir];
                 cmd = "/usr/bin/sandbox-exec";
             }

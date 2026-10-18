@@ -8,7 +8,7 @@ import zlib from "node:zlib";
 
 import { chooseSdk, compareVersions, describeSdk } from "../server/sdk.js";
 import { publicKeyLines, slotOf, stageSaves, zipEntries, zipRead, describeSave, readSaveDirectory } from "../server/saves.js";
-import { CAPTURE_SCRIPT, cloneGame, fingerprint } from "../server/capture.js";
+import { CAPTURE_SCRIPT, cloneGame, fingerprint, sandboxProfile } from "../server/capture.js";
 
 function tmpDir() {
     return fs.mkdtempSync(path.join(os.tmpdir(), "r2l-cap-"));
@@ -49,6 +49,28 @@ function makeZip(entries) {
     eocd.writeUInt32LE(offset, 16);
     return Buffer.concat([...locals, cd, eocd]);
 }
+
+test("the sandbox lets Ren'Py write steam_appid.txt, and nothing else in the SDK", () => {
+    const dir = tmpDir();
+    const work = path.join(dir, "work");
+    const sdk = path.join(dir, "sdk");
+    fs.mkdirSync(work, { recursive: true });
+    fs.mkdirSync(path.join(sdk, "lib", "py3-mac-universal"), { recursive: true });
+    fs.mkdirSync(path.join(sdk, "lib", "py3-windows-x86_64"), { recursive: true });
+    fs.writeFileSync(path.join(sdk, "lib", "notadir"), "");
+
+    const profile = sandboxProfile(work, sdk);
+    // A game that sets config.steam_appid writes this file next to the interpreter at init.
+    assert.ok(profile.includes(`(literal ${JSON.stringify(path.join(sdk, "lib", "py3-mac-universal", "steam_appid.txt"))})`));
+    assert.ok(profile.includes(JSON.stringify(path.join(sdk, "lib", "py3-windows-x86_64", "steam_appid.txt"))));
+    assert.ok(!profile.includes(JSON.stringify(path.join(sdk, "lib", "notadir"))));
+    // Everything else in the SDK stays denied; only the work directory is writable.
+    assert.ok(!profile.includes(`(subpath ${JSON.stringify(sdk)})`));
+    assert.ok(profile.includes(`(subpath ${JSON.stringify(fs.realpathSync(work))})`));
+    // Without an SDK the profile is the plain one.
+    assert.ok(!sandboxProfile(work).includes("steam_appid"));
+    fs.rmSync(dir, { recursive: true, force: true });
+});
 
 test("compareVersions orders dotted versions numerically", () => {
     assert.ok(compareVersions("8.10.0", "8.9.9") > 0);

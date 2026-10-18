@@ -82,15 +82,33 @@ export function cloneGame(root, runDir) {
     fs.copyFileSync(CAPTURE_SCRIPT, path.join(runDir, "game", "_ren2leaf_capture.rpy"));
 }
 
-export function sandboxProfile(workDir) {
+/**
+ * Where Ren'Py writes `steam_appid.txt`: next to its own interpreter, every time a game sets
+ * `config.steam_appid`. It happens at init, before anything else runs, so a sandbox that denies it
+ * kills the game on startup (PermissionError in `steam_preinit`). Only that one file is allowed.
+ */
+function steamAppidFiles(sdkDir) {
+    const lib = path.join(sdkDir, "lib");
+    try {
+        return fs.readdirSync(lib, { withFileTypes: true })
+            .filter((d) => d.isDirectory())
+            .map((d) => path.join(lib, d.name, "steam_appid.txt"));
+    } catch {
+        return [];
+    }
+}
+
+export function sandboxProfile(workDir, sdkDir = null) {
     const real = fs.realpathSync(workDir);
     const q = (s) => JSON.stringify(s);
+    const steam = sdkDir ? steamAppidFiles(sdkDir) : [];
     return [
         "(version 1)",
         "(allow default)",
         "(deny network-outbound (remote ip))",
         "(deny file-write*)",
         `(allow file-write* (subpath ${q(real)}) (subpath "/private/var/folders") (subpath "/private/tmp") (subpath "/dev"))`,
+        ...(steam.length ? [`(allow file-write* ${steam.map((f) => `(literal ${q(f)})`).join(" ")})`] : []),
         "",
     ].join("\n");
 }
