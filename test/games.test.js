@@ -1,4 +1,4 @@
-import { test, before, after } from "node:test";
+import { test, describe, before, after } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -167,4 +167,44 @@ test("HTTP server refuses foreign Host headers", async () => {
     } finally {
         server.close();
     }
+});
+
+describe("game list recovery", () => {
+    let home;
+    let store;
+
+    before(() => {
+        home = fs.mkdtempSync(path.join(os.tmpdir(), "ren2leaf-home-"));
+        store = new GameStore(home);
+    });
+    after(() => fs.rmSync(home, { recursive: true, force: true }));
+
+    test("a list that empties itself on its own comes back", () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ren2leaf-game-"));
+        fs.mkdirSync(path.join(dir, "game"), { recursive: true });
+        const { game } = store.add(dir);
+        assert.equal(store.list().length, 1);
+
+        // Whatever wiped it, it was not a removal: the backup still has the game.
+        fs.writeFileSync(path.join(home, "games.json"), JSON.stringify({ version: 1, games: [] }));
+        const back = store.list();
+        assert.equal(back.length, 1);
+        assert.equal(back[0].id, game.id);
+        assert.deepEqual(JSON.parse(fs.readFileSync(path.join(home, "games.json"), "utf8")).games.map((g) => g.id), [game.id]);
+
+        // A removal is meant to stick.
+        store.remove(game.id);
+        assert.deepEqual(store.list(), []);
+        assert.equal(fs.existsSync(path.join(home, "games.backup.json")), false);
+        fs.rmSync(dir, { recursive: true, force: true });
+    });
+
+    test("a corrupt list falls back to the backup instead of throwing", () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ren2leaf-game-"));
+        fs.mkdirSync(path.join(dir, "game"), { recursive: true });
+        store.add(dir);
+        fs.writeFileSync(path.join(home, "games.json"), "{ not json");
+        assert.equal(store.list().length, 1);
+        fs.rmSync(dir, { recursive: true, force: true });
+    });
 });

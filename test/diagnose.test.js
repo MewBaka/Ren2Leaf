@@ -22,6 +22,7 @@ function assertCamelCase(value, where = "inventory") {
     for (const [k, v] of Object.entries(value)) {
         assert.match(k, /^[a-z][a-zA-Z0-9]*$/, `${where}.${k} 不是 camelCase`);
         if (k === "actions" || k === "elements" || k === "actionKinds") continue;
+        if (k === "byCategory" || k === "byKind" || k === "byContext") continue;
         assertCamelCase(v, `${where}.${k}`);
     }
 }
@@ -62,10 +63,10 @@ describe("the_question", sdkOpts, () => {
 
     test("versioned, camelCase, relative paths", () => {
         assert.equal(inv.schemaVersion, SCHEMA_VERSION);
-        assert.equal(inv.schemaVersion, 1);
+        assert.equal(inv.schemaVersion, 2);
         assertCamelCase(inv);
         assertRelativePaths(inv);
-        assert.deepEqual(inv.extensions, {});
+        assert.deepEqual(Object.keys(inv.extensions), ["speakers", "python", "flow", "facts"]);
     });
 
     test("game info", () => {

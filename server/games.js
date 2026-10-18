@@ -99,24 +99,44 @@ export class GameStore {
     constructor(home = defaultHome()) {
         this.home = home;
         this.file = path.join(home, "games.json");
+        // One generation back. The list has been found empty with the work directories still in
+        // place and nobody having removed anything; until that is understood, a list that empties
+        // itself is restored from here instead of costing somebody their games.
+        this.backupFile = path.join(home, "games.backup.json");
     }
 
-    read() {
+    readFile(file) {
         let data;
         try {
-            data = JSON.parse(fs.readFileSync(this.file, "utf8"));
+            data = JSON.parse(fs.readFileSync(file, "utf8"));
         } catch (err) {
             if (err.code === "ENOENT") return [];
+            if (err instanceof SyntaxError) return [];
             throw err;
         }
         return Array.isArray(data?.games) ? data.games : [];
     }
 
-    write(games) {
+    read() {
+        const games = this.readFile(this.file);
+        if (games.length) return games;
+        // Removing the last game clears the backup, so a backup that still has entries here means
+        // the list was lost, not emptied on purpose.
+        const kept = this.readFile(this.backupFile).filter((g) => g && g.id && g.path);
+        if (!kept.length) return games;
+        console.warn(`games.json 是空的，从 ${path.basename(this.backupFile)} 恢复了 ${kept.length} 个游戏`);
+        this.write(kept);
+        return kept;
+    }
+
+    write(games, { forget = false } = {}) {
         fs.mkdirSync(this.home, { recursive: true });
-        const tmp = `${this.file}.${process.pid}.tmp`;
-        fs.writeFileSync(tmp, JSON.stringify({ version: 1, games }, null, 2) + "\n");
+        const body = JSON.stringify({ version: 1, games }, null, 2) + "\n";
+        const tmp = `${this.file}.${process.pid}.${Date.now()}.tmp`;
+        fs.writeFileSync(tmp, body);
         fs.renameSync(tmp, this.file);
+        if (games.length) fs.writeFileSync(this.backupFile, body);
+        else if (forget) fs.rmSync(this.backupFile, { force: true });
     }
 
     workDir(id) {
@@ -158,7 +178,8 @@ export class GameStore {
         const games = this.read();
         const next = games.filter((g) => g.id !== id);
         if (next.length === games.length) throw new HttpError(404, "游戏不存在", "game_not_found");
-        this.write(next);
+        // An explicit removal is the one way the list is allowed to end up empty.
+        this.write(next, { forget: true });
     }
 
     /** Merges values into a game's `meta` (SDK version, resolution, last run). For the step modules. */

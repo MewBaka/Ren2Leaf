@@ -2,6 +2,8 @@
 // the raw facts the inventory is built from. Nothing here evaluates code.
 
 import { lex, matchBracket, splitArgs } from "./lexer.js";
+import { flowCalls, isDialogueContext, isNoiseWord, menuChoice, recordHead, storyStatement, trySay } from "./story.js";
+import { classifyDefinition, classifyPython } from "./python.js";
 
 const SNIPPET_MAX = 160;
 
@@ -25,6 +27,49 @@ export class Collector {
         this.directives = [];
         this.review = [];
         this.lexErrors = [];
+        // Facts for the speaker, python and flow steps. `says` keeps the text in memory for
+        // samples only; nothing that holds every line of dialogue reaches the inventory.
+        this.says = [];
+        this.voiceLines = [];
+        this.labels = [];
+        this.edges = [];
+        this.menus = [];
+        this.returns = [];
+        this.beats = [];
+        this.audio = [];
+        this.pauses = [];
+        this.windowStatements = [];
+        this.transitions = [];   // `with X` and the with-clause of scene/show
+        this.atClauses = [];     // `show x at t(args)`: which transform, with which arguments
+        this.nvlStatements = [];
+        this.pyEntries = [];
+        this.pyModules = [];
+        this.customStatements = [];
+        this.unknownStatements = [];
+        this.statementHeads = new Map();
+        this.fileEnd = new Map();
+        // persistent.* is the only store that survives a playthrough, so it is kept apart from
+        // ordinary variables: it is what new-game-plus branches and gallery unlocks hang on.
+        this.persistent = new Map(); // name -> {name, declaredBy, file, line, value, writes}
+        this.displayables = new Map(); // define name -> constructor, so it is not read as a variable
+    }
+
+    notePersistent(name, declaredBy, file, line, value) {
+        const row = this.persistent.get(name) ?? { name, declaredBy: null, file: null, line: null, value: undefined, writes: 0 };
+        if (declaredBy === "default" || declaredBy === "define") {
+            row.declaredBy = declaredBy;
+            row.file = file;
+            row.line = line;
+            if (value !== undefined) row.value = value;
+        } else {
+            row.writes++;
+            if (!row.file) {
+                row.file = file;
+                row.line = line;
+                row.declaredBy = row.declaredBy ?? declaredBy;
+            }
+        }
+        this.persistent.set(name, row);
     }
 
     declare(name, declaredBy, file, line) {
@@ -72,16 +117,24 @@ export function parseCall(ln, open) {
 
 const PY_HEADER = /^(?:init(?:\s+[-+]?\d+)?\s+)?python\b[^:]*:$|^translate\s+\w+\s+python\b[^:]*:$/;
 const CHAR_CTORS = /(?<![\w.])(Character|DynamicCharacter|NVLCharacter|ADVCharacter)\s*\(/;
+const GUARD_WORDS = new Set(["if", "elif", "else", "while"]);
 
 export function scanFile(col, file, source, { pythonFile = false } = {}) {
     const { lines, errors } = lex(source);
     for (const e of errors) col.lexErrors.push({ file, line: e.line, message: e.message });
     const stack = []; // {indent, type, name}
     let lastGlobalLabel = null;
+    // What the stage shows and which voice line is pending, carried line by line through the file.
+    const stage = { shown: [], background: null, voice: null, voiceSustain: false, lastSay: null, nvl: false };
+    const inTl = file.startsWith("tl/");
+    let lastLine = 0;
 
     for (const ln of lines) {
+        lastLine = Math.max(lastLine, ln.endLine);
         while (stack.length && stack[stack.length - 1].indent >= ln.indent) stack.pop();
         const ctx = context(stack, file);
+        ctx.stage = stage;
+        ctx.inTl = inTl;
         const m = ln.masked.trim();
         const opens = m.endsWith(":");
 
@@ -108,19 +161,37 @@ export function scanFile(col, file, source, { pythonFile = false } = {}) {
 
         let hm;
         if (PY_HEADER.test(m)) {
-            stack.push({ indent: ln.indent, type: "python", inScreen: !!ctx.screenDef });
+            stack.push({ indent: ln.indent, type: "python", inScreen: !!ctx.screenDef, header: m });
             continue;
         }
         if ((hm = /^rpy\s+python\s+(\S+)/.exec(m))) {
             col.directives.push({ file, line: ln.line, value: hm[1] });
             continue;
         }
-        if ((hm = /^label\s+([\w.]+)/.exec(m))) {
+        if (!ctx.screenDef && (hm = /^label\s+([\w.]+)/.exec(m))) {
             let name = hm[1];
             // A local label belongs to the last global label, even when it is not nested in it.
             if (name.startsWith(".")) name = (ctx.globalLabel || lastGlobalLabel || "") + name;
             else lastGlobalLabel = name.split(".")[0];
+            const after = hm.index + hm[0].length + (ln.masked.length - ln.masked.trimStart().length);
+            const close = ln.masked[after] === "(" ? matchBracket(ln.masked, after) : -1;
+            if (!inTl) {
+                col.labels.push({
+                    name, file, line: ln.line, indent: ln.indent, global: name.split(".")[0],
+                    parameters: close > 0 ? ln.text.slice(after, close + 1) : null,
+                });
+                // A label can be entered from anywhere, so what the stage showed before it is no
+                // longer evidence for the lines inside it.
+                stage.shown = [];
+                stage.background = null;
+                stage.voice = null;
+                stage.lastSay = null;
+            }
             if (opens) stack.push({ indent: ln.indent, type: "label", name, global: name.split(".")[0] });
+            continue;
+        }
+        if (!ctx.screenDef && (hm = /^translate\s+(\w+)\s+([\w.]+)/.exec(m))) {
+            if (opens) stack.push({ indent: ln.indent, type: "translate", name: hm[2], language: hm[1] });
             continue;
         }
         if ((hm = /^screen\s+(\w+)\s*/.exec(m)) && !ctx.screenDef) {
@@ -128,15 +199,24 @@ export function scanFile(col, file, source, { pythonFile = false } = {}) {
             if (opens) stack.push({ indent: ln.indent, type: "screen", name: def?.name, def });
             continue;
         }
-        if ((hm = /^transform\s+([\w.]+)/.exec(m))) {
+        if (!ctx.screenDef && (hm = /^transform\s+([\w.]+)/.exec(m))) {
             col.transforms.add(hm[1]);
             if (opens) stack.push({ indent: ln.indent, type: "block" });
             continue;
         }
 
-        scanStatement(col, ctx, ln, m);
-        if (opens) stack.push({ indent: ln.indent, type: /^init\b/.test(m) ? "init" : "block" });
+        const extra = scanStatement(col, ctx, ln, m);
+        if (opens) {
+            const word = /^([A-Za-z_]\w*)/.exec(m)?.[1] ?? null;
+            const frame = { indent: ln.indent, type: /^init\b/.test(m) ? "init" : "block", word, ...(extra?.frame ?? {}) };
+            // What stands between the label and the lines inside this block. A jump under
+            // `if persistent.x` is a second-playthrough route, not where play starts.
+            if (word && GUARD_WORDS.has(word)) frame.condition = m.slice(word.length).replace(/:$/, "").trim() || null;
+            stack.push(frame);
+        }
     }
+    col.fileEnd.set(file, lastLine);
+    if (pythonFile) col.pyModules.push({ file, lines: lines.length });
 }
 
 function pythonBlock(ln, m, ctx) {
@@ -146,10 +226,26 @@ function pythonBlock(ln, m, ctx) {
 }
 
 function context(stack, file) {
-    const ctx = { file, label: null, globalLabel: null, screen: null, screenDef: null, inPython: false, func: null, pyTop: false, inScreen: false };
+    const ctx = {
+        file, label: null, globalLabel: null, screen: null, screenDef: null, inPython: false,
+        func: null, pyClass: null, pyTop: false, inScreen: false, blockWord: null, menu: null,
+        choice: null, inTranslate: false, pythonHeader: null, guards: [],
+    };
     let pyIdx = -1;
     for (let i = 0; i < stack.length; i++) {
         const s = stack[i];
+        if (s.type === "block" || s.type === "init") ctx.blockWord = s.word ?? null;
+        if (s.type === "menu") {
+            ctx.menu = s.menu ?? null;
+            ctx.choice = null;
+            ctx.blockWord = "menu";
+        } else if (s.type === "choice") {
+            // A menu option's body is ordinary story, so it does not restrict what can appear.
+            ctx.choice = s.choice ?? null;
+            ctx.blockWord = null;
+        } else if (s.type === "translate") {
+            ctx.inTranslate = true;
+        }
         if (s.type === "label") {
             ctx.label = s.name;
             ctx.globalLabel = s.global;
@@ -159,8 +255,11 @@ function context(stack, file) {
             ctx.inScreen = true;
         } else if (s.type === "python") {
             ctx.inPython = true;
+            ctx.pythonHeader = s.header ?? ctx.pythonHeader;
             if (pyIdx < 0) pyIdx = i;
         } else if (s.type === "def") ctx.func = s.name;
+        else if (s.type === "class") ctx.pyClass = s.name;
+        if (s.condition !== undefined) ctx.guards.push({ word: s.word ?? null, condition: s.condition ?? null });
     }
     if (ctx.inPython) ctx.pyTop = !stack.slice(pyIdx + 1).some((s) => s.type === "def" || s.type === "class");
     return ctx;
@@ -194,18 +293,25 @@ function scanStatement(col, ctx, ln, m) {
         const [, stmt, name] = hm;
         const off = ln.masked.indexOf(hm[0]) + hm[0].length;
         if (name.startsWith("persistent.")) {
-            // persistent.* is always store; nothing to declare.
+            // persistent.* is always store; nothing to declare, but it is listed on its own.
+            const lit = literalAt(ln, off, ln.masked.length);
+            if (!ctx.screenDef) col.notePersistent(name, stmt, ctx.file, ln.line, lit.ok ? lit.value : undefined);
         } else if (!name.includes(".")) {
             if (!ctx.screenDef) col.declare(name, stmt, ctx.file, ln.line);
         }
         configAssignment(col, ctx, ln, name, off, ln.masked.length);
         characterDef(col, ctx, ln, name, off);
+        if (!ctx.screenDef) classifyDefinition(col, ctx, ln, stmt, name, off);
         scanPythonExpr(col, ctx, ln, off);
         return;
     }
     if (ctx.screenDef) {
         scanCallSites(col, ctx, ln, { screenLanguage: true });
         return;
+    }
+    if (ctx.menu && !ctx.choice) {
+        const choice = menuChoice(col, ctx, ln, m, ctx.menu);
+        if (choice) return { frame: { type: "choice", choice } };
     }
     if ((hm = /^(show|call)\s+screen\s+/.exec(m))) {
         const base = ln.masked.indexOf(hm[0]) + hm[0].length;
@@ -222,6 +328,20 @@ function scanStatement(col, ctx, ln, m) {
             else col.addReview("dynamicScreenName", ctx, ln, "menu 的 screen 参数不是字面量");
         }
         col.callSites.push(site(ctx, ln, "menu", screen, null));
+    }
+
+    const story = storyStatement(col, ctx, ln, m);
+    if (story) {
+        recordHead(col, ctx, ln, m);
+        scanCallSites(col, ctx, ln, {});
+        return story;
+    }
+    if (trySay(col, ctx, ln, m)) return;
+    // Left over: a statement from renpy.register_statement, or a hole in the scanner. Either way
+    // the port needs to know about it, so it is counted rather than dropped.
+    const word = /^([A-Za-z_]\w*)/.exec(m)?.[1] ?? null;
+    if (word && !isNoiseWord(word) && isDialogueContext(ctx) && !/^[\w.]+\s*(\+|-|\*|\/|\|)?=(?!=)/.test(m)) {
+        col.unknownStatements.push({ word, file: ctx.file, line: ln.line, label: ctx.label ?? null, screen: ctx.screen ?? null, snippet: snippet(ln.text) });
     }
     scanCallSites(col, ctx, ln, {});
 }
@@ -336,6 +456,7 @@ function scanCallSites(col, ctx, ln, { screenLanguage = false }) {
         }
         if (!any) col.addReview("dynamicScreenName", ctx, ln, "config.overlay_screens 加入的不是字面量");
     }
+    flowCalls(col, ctx, ln);
     if (/(?<![\w])renpy\.define_screen\s*\(/.test(mk)) col.addReview("dynamicScreenDefinition", ctx, ln, "用 renpy.define_screen 动态定义界面");
     if (/(?<![\w])renpy\.input\s*\(/.test(mk) && !ctx.screenDef) col.callSites.push(site(ctx, ln, "renpy.input", "input", null));
 }
@@ -442,6 +563,11 @@ function scanPython(col, ctx, ln, masked, from, { oneLiner = false, moduleFile =
     const code = masked.slice(from);
     const stmt = code.trim();
     pyChecks(col, ctx, ln, code, from);
+    // Screen-local python belongs to the interface step, not to step ④.
+    if (!ctx.inScreen && (!moduleFile || /^(?:async\s+)?(?:def|class)\s/.test(stmt))) {
+        const where = moduleFile ? "pyFile" : oneLiner ? "dollar" : /^init\b/.test(ctx.pythonHeader ?? "") ? "initPython" : "python";
+        classifyPython(col, ctx, ln, { from, context: where, nested: !(ctx.pyTop || oneLiner || moduleFile) });
+    }
     if (moduleFile) return;
     scanCallSites(col, ctx, ln, {});
     storeHints(col, ctx, ln, from);

@@ -4,11 +4,11 @@
 // function. ctx: { game, api, confirm, openModal, openMenu, icon, setStatus, refreshGame }.
 
 const STEPS = [
-    { id: "diagnose", label: "诊断" },
-    { id: "capture", label: "截图" },
-    { id: "speakers", label: "说话人", disabled: true },
-    { id: "python", label: "Python 逻辑", disabled: true },
-    { id: "flow", label: "流程与章节", disabled: true },
+    { id: "diagnose", label: "诊断", icon: "pulse" },
+    { id: "capture", label: "截图", icon: "camera" },
+    { id: "speakers", label: "说话人", icon: "users" },
+    { id: "flow", label: "流程与章节", icon: "branch" },
+    { id: "export", label: "导出补充包", icon: "package" },
 ];
 
 const ICONS = {
@@ -17,6 +17,16 @@ const ICONS = {
     x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
     folder: '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
     trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
+    pulse: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+    camera: '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+    users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    code: '<path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/>',
+    branch: '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M6 9v6"/><path d="M18 9a9 9 0 0 1-9 9"/>',
+    chevrons: '<path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/>',
+    "panel-collapse": '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m14 9-3 3 3 3"/>',
+    "panel-expand": '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="m12 9 3 3-3 3"/>',
+    package: '<path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>',
     layers: '<path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
 };
 
@@ -213,7 +223,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 /**
- * Opens a Studio-style dialog. `body` is a Node or a string; `footer` is a list of
+ * Opens a dialog. `body` is a Node or a string; `footer` is a list of
  * { label, variant: "primary" | "secondary" | "danger", onClick(close) }. Resolves `closed`
  * with whatever `close(value)` was called with (undefined when dismissed).
  */
@@ -316,6 +326,7 @@ const state = {
     gameId: null,
     step: "diagnose",
     status: {},
+    collapsed: false,
     unmount: null,
     mountToken: 0,
 };
@@ -332,7 +343,7 @@ function readStored() {
 
 function store() {
     try {
-        localStorage.setItem("ren2leaf.shell", JSON.stringify({ gameId: state.gameId, step: state.step }));
+        localStorage.setItem("ren2leaf.shell", JSON.stringify({ gameId: state.gameId, step: state.step, collapsed: state.collapsed }));
     } catch {
         // Storage may be unavailable; the hash still carries the location.
     }
@@ -355,68 +366,45 @@ function currentGame() {
 // ------------------------------------------------------------------ sidebar
 
 function renderSidebar() {
-    const list = $("game-list");
-    list.replaceChildren();
-    $("game-count").textContent = state.games.length ? String(state.games.length) : "";
-    for (const game of state.games) {
-        const selected = game.id === state.gameId;
-        const menuBtn = h("button", {
-            type: "button",
-            class: "tool-btn tool-btn-xs row-menu-btn",
-            "aria-label": "更多",
-            "aria-haspopup": "menu",
-            "aria-expanded": "false",
-            html: icon("more"),
-            onclick: (e) => {
-                e.stopPropagation();
-                if (openMenuState?.anchor === e.currentTarget) {
-                    closeMenu();
-                    return;
-                }
-                openMenu(e.currentTarget, [
-                    { label: "在 Finder 中显示", icon: "folder", onSelect: () => reveal(game.id, "game") },
-                    "sep",
-                    { label: "移除", icon: "trash", danger: true, onSelect: () => removeGame(game) },
-                ]);
-            },
-        });
-        const row = h("div", {
-            class: "game-row",
-            role: "option",
-            tabindex: selected ? "0" : "-1",
-            "aria-selected": selected ? "true" : "false",
-            "data-id": game.id,
-            onclick: () => selectGame(game.id),
-            onkeydown: (e) => onRowKey(e, game.id),
-        },
-        h("span", { class: "game-row-name" }, game.name),
-        game.present ? null : h("span", { class: "game-row-missing", "data-tip": "目录不存在" }),
-        menuBtn);
-        list.append(row);
-    }
-    if (!state.gameId && list.firstChild) list.firstChild.tabIndex = 0;
-    list.append(h("button", {
+    const box = $("switcher");
+    box.replaceChildren();
+    const game = currentGame();
+    const trigger = h("button", {
         type: "button",
-        class: "add-row",
-        html: icon("plus") + "<span>添加游戏</span>",
-        onclick: () => addGameDialog(),
-    }));
+        class: "switcher-btn",
+        "aria-haspopup": "menu",
+        "data-tip": state.collapsed ? (game ? game.name : "添加游戏") : null,
+        onclick: (e) => openSwitcher(e.currentTarget),
+    },
+    h("span", { class: "switcher-avatar", "aria-hidden": "true" }, game ? game.name.slice(0, 1) : "+"),
+    h("span", { class: "switcher-text" },
+        h("span", { class: "switcher-name" }, game ? game.name : "添加游戏"),
+        h("span", { class: "switcher-sub" }, game ? (game.present ? `${state.games.length} 个游戏` : "目录不存在") : "选择游戏目录")),
+    h("span", { class: "switcher-chevron", html: icon("chevrons") }));
+    box.append(trigger);
 }
 
-function onRowKey(e, id) {
-    const rows = [...document.querySelectorAll(".game-row")];
-    const i = rows.findIndex((r) => r.dataset.id === id);
-    if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        selectGame(id);
-    } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-        e.preventDefault();
-        const next = rows[e.key === "ArrowDown" ? Math.min(i + 1, rows.length - 1) : Math.max(i - 1, 0)];
-        if (next) {
-            selectGame(next.dataset.id);
-            document.querySelector(`.game-row[data-id="${next.dataset.id}"]`)?.focus();
-        }
+function openSwitcher(anchor) {
+    if (!state.games.length) {
+        addGameDialog();
+        return;
     }
+    const game = currentGame();
+    const items = state.games.map((g) => ({
+        label: g.name,
+        icon: g.id === state.gameId ? "check" : "blank",
+        onSelect: () => selectGame(g.id),
+    }));
+    items.push("sep", { label: "添加游戏", icon: "plus", onSelect: () => addGameDialog() });
+    if (game) {
+        items.push(
+            { label: "在 Finder 中显示", icon: "folder", onSelect: () => reveal(game.id, "game") },
+            { label: "移除当前游戏", icon: "trash", danger: true, onSelect: () => removeGame(game) },
+        );
+    }
+    openMenu(anchor, items);
+    const menu = document.querySelector(".menu");
+    if (menu) menu.style.minWidth = `${anchor.getBoundingClientRect().width}px`;
 }
 
 async function reveal(id, target) {
@@ -519,29 +507,23 @@ function addGameDialog() {
 // ------------------------------------------------------------------ steps
 
 function renderSteps() {
-    const strip = $("steps");
-    strip.replaceChildren();
-    for (const step of STEPS) {
+    const nav = $("steps");
+    nav.replaceChildren();
+    STEPS.forEach((step, i) => {
         const selected = step.id === state.step;
-        strip.append(h("button", {
+        nav.append(h("button", {
             type: "button",
-            class: "tab",
-            role: "tab",
-            "aria-selected": selected ? "true" : "false",
+            class: "nav-item",
+            "data-tip": state.collapsed ? `${i + 1}　${step.label}` : null,
+            "aria-current": selected ? "page" : null,
             "aria-disabled": step.disabled ? "true" : null,
-            tabindex: selected ? "0" : "-1",
-            "data-tip": step.disabled ? "未开放" : null,
+            disabled: !currentGame() && !step.disabled ? true : null,
             onclick: () => !step.disabled && selectStep(step.id),
-            onkeydown: (e) => {
-                if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
-                const open = STEPS.filter((s) => !s.disabled);
-                const i = open.findIndex((s) => s.id === state.step);
-                const next = open[(i + (e.key === "ArrowRight" ? 1 : -1) + open.length) % open.length];
-                selectStep(next.id);
-                strip.querySelector('[aria-selected="true"]')?.focus();
-            },
-        }, step.label));
-    }
+        },
+        h("span", { class: "nav-icon", html: icon(step.icon) }),
+        h("span", { class: "nav-text" }, step.label),
+        step.disabled ? h("span", { class: "nav-badge" }, "即将推出") : h("span", { class: "nav-index" }, String(i + 1))));
+    });
 }
 
 function emptyState(title, action) {
@@ -549,6 +531,43 @@ function emptyState(title, action) {
         h("div", { class: "empty-state-icon", html: icon("layers") }),
         h("p", { class: "empty-state-title" }, title),
         action ? h("div", { class: "empty-state-action" }, action) : null);
+}
+
+const SKILLS_COMMAND = "npx skills add NarraLeaf/Skills -g";
+const AGENT_DOCS = "https://www.narraleaf.com/zh/docs/studio/agent";
+
+/** The first thing anyone sees: what this tool does, and what to do before handing work to an agent. */
+function welcome() {
+    const reasons = [
+        "对项目进行扫描，指出可被转换的代码，以及 Agent 需要决定的设计",
+        "对游戏 UI 元素截图、切图，让 Agent 理解元素位置，而不是从代码中推算",
+        "绑定角色别名，以防错误地将别名 / 非必要 NPC 角色作为角色添加",
+        "配置流程与章节，提升二次编辑可读性",
+    ];
+    // Said before the list, because it is the expectation to set: the scanner is the part that
+    // breaks on an unconventional game, not the port itself.
+    const caveat = h("div", { class: "welcome-tip" },
+        h("p", {}, "即使游戏没有按 Ren'Py 的开发规范写，Agent 一样能完成迁移；但此工具可能因此出现各种问题"),
+        h("p", {}, "可预见的不规范写法我们已经做了处理，剩下的情况要交给 Agent 抉择"));
+    const note = h("div", { class: "welcome-note" },
+        h("p", {}, "配置结束后，Ren2Leaf 将会生成一个交给 Agent 的迁移补充包，请将游戏源代码与补充包一起发送"),
+        h("p", {}, "在此之前，请先安装 NarraLeaf Skills："),
+        h("pre", { class: "welcome-code" }, SKILLS_COMMAND),
+        h("p", {}, "关于 NarraLeaf Studio Agent 接入相关事宜，请查看文档：",
+            h("a", { class: "welcome-link", href: AGENT_DOCS, target: "_blank", rel: "noreferrer" }, AGENT_DOCS)));
+    const inner = h("div", { class: "welcome-inner" },
+        h("h1", { class: "welcome-title" }, "开始迁移游戏到 NarraLeaf 吧！"),
+        h("p", { class: "welcome-lead" }, "此工具将协助开发者利用 Agent 将自己的 Ren'Py 游戏高质量地迁移到 NarraLeaf Studio 内"),
+        h("button", {
+            type: "button",
+            class: "btn btn-primary btn-lg welcome-cta",
+            onclick: () => addGameDialog(),
+        }, "添加游戏"),
+        caveat,
+        h("h2", { class: "welcome-heading" }, "相比于直接迁移，Ren2Leaf 做了什么？"),
+        h("ol", { class: "welcome-list" }, reasons.map((t) => h("li", {}, t))),
+        note);
+    return h("div", { class: "welcome" }, inner);
 }
 
 async function mountStep() {
@@ -565,11 +584,7 @@ async function mountStep() {
     host.replaceChildren();
     const game = currentGame();
     if (!game) {
-        host.append(emptyState("还没有游戏", h("button", {
-            type: "button",
-            class: "btn btn-primary",
-            onclick: () => addGameDialog(),
-        }, "添加游戏")));
+        host.append(welcome());
         return;
     }
     const url = `./steps/${state.step}.js`;
@@ -622,24 +637,39 @@ function formatTime(iso) {
 }
 
 function renderStatus() {
-    const bar = $("statusbar");
-    bar.replaceChildren();
+    const foot = $("statusbar");
+    const meta = $("topbar-meta");
+    foot.replaceChildren();
+    meta.replaceChildren();
     const game = currentGame();
     if (!game) return;
-    const meta = game.meta || {};
+    const m = game.meta || {};
     const values = [
-        meta.sdk ? `Ren'Py ${meta.sdk}` : null,
-        meta.resolution || null,
-        meta.lastRunAt ? formatTime(meta.lastRunAt) : null,
+        m.sdk ? `Ren'Py ${m.sdk}` : null,
+        m.resolution || null,
+        m.lastRunAt ? `更新于 ${formatTime(m.lastRunAt)}` : null,
         ...Object.values(state.status),
     ].filter(Boolean);
-    for (const v of values) bar.append(h("span", { class: "status-item" }, v));
-    bar.append(h("button", {
+    for (const v of values) meta.append(h("span", { class: "meta-pill" }, v));
+    const short = game.workDir.replace(/^\/Users\/[^/]+/, "~");
+    if (state.collapsed) {
+        foot.append(h("button", {
+            type: "button",
+            class: "foot-icon",
+            "aria-label": "在 Finder 中显示工作目录",
+            "data-tip": short,
+            html: icon("folder"),
+            onclick: () => reveal(game.id, "work"),
+        }));
+        return;
+    }
+    foot.append(h("div", { class: "foot-label" }, "工作目录"));
+    foot.append(h("button", {
         type: "button",
-        class: "status-item is-action mono",
+        class: "foot-path mono",
         "data-tip": "在 Finder 中显示",
         onclick: () => reveal(game.id, "work"),
-    }, game.workDir.replace(/^\/Users\/[^/]+/, "~")));
+    }, short));
 }
 
 // ------------------------------------------------------------------ navigation
@@ -648,11 +678,33 @@ function renderHead() {
     const game = currentGame();
     $("workspace-head").hidden = !game;
     $("game-title").textContent = game?.name || "";
+    $("step-title").textContent = STEPS.find((s) => s.id === state.step)?.label || "";
     document.title = game ? `${game.name} · Ren2Leaf` : "Ren2Leaf";
     renderSteps();
 }
 
+/** Sidebar collapsed to icons: the labels move into the tooltips the shell already has. */
+function renderShell() {
+    const shell = document.querySelector(".shell");
+    shell.classList.toggle("is-collapsed", state.collapsed);
+    const btn = $("sidebar-toggle");
+    btn.innerHTML = icon(state.collapsed ? "panel-expand" : "panel-collapse");
+    btn.setAttribute("aria-label", state.collapsed ? "展开侧边栏" : "折叠侧边栏");
+    btn.setAttribute("aria-expanded", state.collapsed ? "false" : "true");
+    btn.setAttribute("data-tip", state.collapsed ? "展开侧边栏" : "折叠侧边栏");
+}
+
+function toggleSidebar() {
+    state.collapsed = !state.collapsed;
+    store();
+    renderShell();
+    renderSidebar();
+    renderSteps();
+    renderStatus();
+}
+
 function renderAll() {
+    renderShell();
     renderSidebar();
     renderHead();
     renderStatus();
@@ -695,8 +747,6 @@ export async function refreshGame() {
 }
 
 async function boot() {
-    $("add-game-head").innerHTML = icon("plus");
-    $("add-game-head").addEventListener("click", () => addGameDialog());
     try {
         await loadGames();
     } catch (err) {
@@ -707,10 +757,13 @@ async function boot() {
     const stored = readStored();
     const want = fromHash.gameId || stored.gameId;
     state.gameId = state.games.some((g) => g.id === want) ? want : state.games[0]?.id || null;
+    state.collapsed = stored.collapsed === true;
     const step = fromHash.step || stored.step;
     if (STEPS.some((s) => s.id === step && !s.disabled)) state.step = step;
     renderAll();
 }
+
+$("sidebar-toggle").addEventListener("click", toggleSidebar);
 
 window.addEventListener("hashchange", () => {
     const { gameId, step } = parseHash();

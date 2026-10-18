@@ -76,15 +76,16 @@ export async function mount(host, ctx) {
             h("button", { type: "button", class: "btn btn-primary btn-sm", disabled: busy, onclick: run },
                 busy ? "正在诊断" : inventory ? "重新诊断" : "开始诊断"),
             h("span", { class: "dg-spacer" }));
-        if (error) bar.append(h("span", { class: "dg-value", style: { color: "rgb(var(--nl-danger))" } }, error));
+        if (error) bar.append(h("span", { class: "dg-value", style: { color: "rgb(var(--ui-danger))" } }, error));
         else if (inventory) bar.append(h("span", { class: "dg-value" }, formatTime(inventory.generatedAt)));
         return bar;
     }
 
-    function fact(label, value, tone) {
+    function fact(label, value, tone, sub) {
         return h("div", { class: "dg-fact" },
             h("span", { class: "dg-fact-label" }, label),
-            h("span", { class: `dg-fact-value${tone ? ` is-${tone}` : ""}` }, value ?? "未知"));
+            h("span", { class: `dg-fact-value${tone ? ` is-${tone}` : ""}` }, value ?? "未知"),
+            sub ? h("span", { class: "dg-fact-sub" }, sub) : null);
     }
 
     function facts(inv) {
@@ -96,7 +97,7 @@ export async function mount(host, ctx) {
             fact("分辨率", r?.width ? `${r.width}×${r.height}` : null, r && !r.is16x9 ? "warning" : null),
             fact("源码", SOURCE_STATUS[src.status] || src.status, src.status && src.status !== "source" ? "warning" : null),
             fact("推荐 SDK", rec ? (rec.exactVersion ? `Ren'Py ${rec.exactVersion}` : `Ren'Py ${rec.major}`) : null),
-            fact("界面", s.customScreens ? `${s.screens}，自定义 ${s.customScreens}` : s.screens),
+            fact("界面", s.screens, null, s.customScreens ? `其中自定义 ${s.customScreens}` : "全部为标准界面"),
             fact("角色", s.characters),
             fact("需人工确认", s.needsReview || 0, s.needsReview ? "warning" : null));
     }
@@ -159,10 +160,10 @@ export async function mount(host, ctx) {
         return h("table", { class: "dg-table" },
             h("colgroup", {},
                 h("col", { style: { width: "28%" } }),
-                h("col", { style: { width: "72px" } }),
-                h("col", { style: { width: "72px" } }),
+                h("col", { style: { width: "96px" } }),
+                h("col", { style: { width: "96px" } }),
                 h("col", {}),
-                h("col", { style: { width: "64px" } })),
+                h("col", { style: { width: "84px" } })),
             h("thead", {}, h("tr", {}, h("th", {}, "名称"), h("th", {}, "分类"), h("th", {}, "类型"), h("th", {}, "参数"), h("th", {}, "调用处"))),
             tbody);
     }
@@ -177,7 +178,7 @@ export async function mount(host, ctx) {
                 h("td", { class: "mono" }, at(c))));
         }
         return h("table", { class: "dg-table" },
-            h("colgroup", {}, h("col", { style: { width: "28%" } }), h("col", {}), h("col", { style: { width: "72px" } }), h("col", { style: { width: "30%" } })),
+            h("colgroup", {}, h("col", { style: { width: "28%" } }), h("col", {}), h("col", { style: { width: "88px" } }), h("col", { style: { width: "30%" } })),
             h("thead", {}, h("tr", {}, h("th", {}, "变量"), h("th", {}, "显示名"), h("th", {}, "模式"), h("th", {}, "位置"))),
             tbody);
     }

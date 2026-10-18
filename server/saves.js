@@ -119,8 +119,8 @@ export function userTokenFile() {
  * machine then pass Ren'Py's check as they would in the player's own copy, saves from elsewhere
  * still do not.
  */
-export function stageSaves({ sourceDir, files, savesRoot, saveDirectory }) {
-    fs.rmSync(savesRoot, { recursive: true, force: true });
+export function stageSaves({ sourceDir, files, savesRoot, saveDirectory, clean = true }) {
+    if (clean) fs.rmSync(savesRoot, { recursive: true, force: true });
     const target = path.join(savesRoot, saveDirectory);
     fs.mkdirSync(target, { recursive: true });
     for (const f of files) {

@@ -75,3 +75,36 @@ Pitfalls met on the way:
 - Screen-variable actions use `renpy.current_screen()`; run them inside
   `push_current_screen(focus.screen)` or they look up the capture's own timer screen.
 - A Ren'Py process under `sandbox-exec` does not stop on SIGTERM; cancel uses SIGKILL.
+
+## Manual capture (F9)
+
+The main way to capture: the migrator plays a clone of the game and presses F9 on every screen
+worth porting, then types what it is for. The automatic crawl stays as the check that nothing was
+missed (the manual page lists screens the crawl reached that no shot shows).
+
+- Same safety as the crawl: trust first, a clone, `sandbox-exec`, saves in the work directory, the
+  original folder fingerprinted before and after. The player's own saves (and persistent) are
+  copied into `<work>/manual-saves` so they can continue from their progress; only public keys of
+  the save tokens are written (see `stageSaves`).
+- Nothing is taken over: no splashscreen override, sound and transitions as normal. The capture
+  script only adds a `Keymap(K_F9=...)` to `config.underlay`, which every context draws, so F9 works
+  in the game, its menus and the title screen.
+- On F9 the frame on screen is saved and the element table read first; the annotation box opens
+  after, through `renpy.invoke_in_new_context`, so it never appears in the shot.
+- The box uses the SDK's `sdk-fonts/SourceHanSansLite.ttf`, copied into the clone as
+  `_r2l_font.ttf`; a game that ships only Latin fonts still shows Chinese there.
+- Each shot: `<work>/manual/<key>/{full.png, elements.json, meta.json}`. `meta.json` keeps the
+  purpose as typed, the statement being run, the last line said and the screens shown. The WebUI can
+  edit the purpose; the report quotes it as is.
+- `R2L_SELFTEST=<seconds>` in the environment presses F9 once after that many seconds, fills the
+  box with a fixed purpose and quits. It is how manual mode is tested without a person.
+- `pygame_sdl2.image.save` takes a file name only; the rounded backgrounds of the F9 dialogs are
+  written to `<out>/_ui/` and read back.
+- **Crops instead of a picker (2026-10-18).** The F9 dialog offers "全图" (the whole screen) or "切图":
+  every element smaller than the screen is cut automatically, listed largest first, and the player
+  ticks the ones to keep. Each becomes `crop-<n>.png` (n: the element's number); the whole screen is
+  always saved too. The WebUI can redo the choice later: it crops on a canvas from `full.png` and
+  sends PNG bytes (`server/crops.js` checks the signature). Automatic captures can be cropped the
+  same way; their crops live with the screen and go when that screen is captured again.
+- A game playing `play movie` draws the movie over every screen (fullscreen video mode). The F9
+  dialogs add an invisible `Movie(channel="movie")`, which turns that mode off while they are open.

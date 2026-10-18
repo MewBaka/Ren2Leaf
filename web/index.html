@@ -10,26 +10,28 @@
 </head>
 <body>
     <div class="shell">
-        <aside class="sidebar">
-            <div class="section-head">
-                <span class="section-title">游戏</span>
-                <span class="section-count" id="game-count"></span>
-                <button type="button" class="tool-btn tool-btn-xs section-action" id="add-game-head" data-tip="添加游戏" aria-label="添加游戏"></button>
+        <aside class="sidebar" data-tip-side="right">
+            <div class="brand">
+                <span class="brand-name">Ren2Leaf</span>
+                <button type="button" class="sidebar-toggle" id="sidebar-toggle"></button>
             </div>
-            <div class="game-list" id="game-list" role="listbox" aria-label="游戏"></div>
+            <div class="switcher" id="switcher"></div>
+            <div class="nav-label">迁移步骤</div>
+            <nav class="nav" id="steps" aria-label="步骤"></nav>
+            <div class="sidebar-foot" id="statusbar"></div>
         </aside>
 
         <main class="workspace" id="workspace">
-            <header class="workspace-head" id="workspace-head" hidden>
-                <div class="workspace-title-row">
-                    <h1 class="workspace-title" id="game-title"></h1>
+            <header class="topbar" id="workspace-head" hidden>
+                <div class="crumbs">
+                    <span class="crumb" id="game-title"></span>
+                    <span class="crumb-sep" aria-hidden="true">/</span>
+                    <span class="crumb is-current" id="step-title"></span>
                 </div>
-                <nav class="tabstrip" id="steps" role="tablist" aria-label="步骤"></nav>
+                <div class="topbar-meta" id="topbar-meta"></div>
             </header>
             <section class="step-host" id="step-host"></section>
         </main>
-
-        <footer class="statusbar" id="statusbar"></footer>
     </div>
 </body>
 </html>

@@ -9,9 +9,13 @@ import fsp from "node:fs/promises";
 import path from "node:path";
 import { Collector, scanFile } from "./scan.js";
 import { buildScreens, byLocation } from "./screens.js";
+import { buildSpeakers } from "./speakers.js";
+import { buildPython } from "./python.js";
+import { buildFlow } from "./flow.js";
+import { buildFacts } from "./facts.js";
 
-export const SCHEMA_VERSION = 1;
-export const SCANNER_VERSION = "0.1.0";
+export const SCHEMA_VERSION = 2;
+export const SCANNER_VERSION = "0.2.0";
 
 const SKIP_DIRS = new Set(["cache", "saves", "__pycache__", "node_modules"]);
 const HIT_LIMIT = 500;
@@ -342,8 +346,13 @@ export async function diagnose(gameDir) {
             needsReview: needsReview.length,
             actionKinds: Object.fromEntries(Object.entries(actionTotals).sort(([a], [b]) => a.localeCompare(b))),
         },
-        // Reserved for later scan steps (speakers, python, flow…); each adds its own key.
-        extensions: {},
+        // One key per later scan step. Each is built from the same pass over the sources.
+        extensions: {
+            speakers: buildSpeakers(col, characters),
+            python: buildPython(col),
+            flow: buildFlow(col),
+            facts: buildFacts(col),
+        },
     };
 }
 

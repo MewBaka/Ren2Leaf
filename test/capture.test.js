@@ -8,7 +8,7 @@ import zlib from "node:zlib";
 
 import { chooseSdk, compareVersions, describeSdk } from "../server/sdk.js";
 import { publicKeyLines, slotOf, stageSaves, zipEntries, zipRead, describeSave, readSaveDirectory } from "../server/saves.js";
-import { CAPTURE_SCRIPT, cloneGame, fingerprint, saveKey, scriptScreens, unreachedItems } from "../server/capture.js";
+import { CAPTURE_SCRIPT, cloneGame, fingerprint } from "../server/capture.js";
 
 function tmpDir() {
     return fs.mkdtempSync(path.join(os.tmpdir(), "r2l-cap-"));
@@ -82,7 +82,7 @@ test("chooseSdk prefers the request, then the wanted major, then the newest", ()
 test("slot names drop Ren'Py 8's location suffix", () => {
     assert.equal(slotOf("1-1-LT1.save"), "1-1");
     assert.equal(slotOf("auto-3.save"), "auto-3");
-    assert.equal(saveKey("quick-1-LT1.save"), "save--quick-1");
+    assert.equal(slotOf("quick-1-LT1.save"), "quick-1");
 });
 
 test("zip reader reads stored and deflated entries", () => {
@@ -191,33 +191,37 @@ test("fingerprint changes when a file in the folder changes", () => {
     assert.equal(b.files, 2);
 });
 
-test("unreachedItems lists defined screens nothing reached, minus parts included with use", () => {
-    const manifest = {
-        discover: { screens: ["main_menu", "gallery", "say", "help", "about", "navigation", "game_menu", "_r2l_boxes"].map((name) => ({ name })) },
-        items: [
-            { key: "main_menu", screen: "main_menu", status: "ok" },
-            { key: "gallery", screen: "gallery", status: "ok" },
-            { key: "gallery--2", screen: "gallery", via: "state", parent: "gallery", status: "ok" },
-            { key: "say--s", status: "ok" },
-        ],
-        reached: ["main_menu", "gallery"],
+
+
+test("listShots reads shot folders oldest first and ignores anything else", async () => {
+    const { listShots } = await import("../server/manual.js");
+    const work = tmpDir();
+    const write = (key, meta) => {
+        fs.mkdirSync(path.join(work, "manual", key), { recursive: true });
+        fs.writeFileSync(path.join(work, "manual", key, "meta.json"), JSON.stringify(meta));
     };
-    const inventory = { screens: [
-        { name: "help", uses: ["game_menu"] },
-        { name: "game_menu", uses: ["navigation"] },
-        { name: "gallery", uses: [] },
-    ] };
-    assert.deepEqual(unreachedItems(manifest, inventory).map((it) => it.key), ["about", "game_menu", "help", "navigation"]);
-    inventory.screens.push({ name: "main_menu", uses: ["navigation"] });
-    assert.deepEqual(unreachedItems(manifest, inventory).map((it) => it.key), ["about", "game_menu", "help"]);
+    write("shot-20261017-010000", { key: "shot-20261017-010000", purpose: "第二张", createdAt: 2 });
+    write("shot-20261017-000000", { key: "shot-20261017-000000", purpose: "第一张", createdAt: 1 });
+    write("not-a-shot", { key: "x", createdAt: 0 });
+    fs.writeFileSync(path.join(work, "manual", "progress.jsonl"), "");
+    assert.deepEqual(listShots(work).map((s) => s.purpose), ["第一张", "第二张"]);
+    assert.deepEqual(listShots(path.join(work, "missing")), []);
 });
 
-test("scriptScreens keeps screens shown or called from a label", () => {
-    const inventory = { screens: [
-        { name: "phone", defined: true, callSites: [{ kind: "call", label: "chapter1" }] },
-        { name: "choice", defined: true, callSites: [{ kind: "menu", label: "chapter1" }] },
-        { name: "gallery", defined: true, callSites: [{ kind: "show", label: null, caller: "main_menu" }] },
-        { name: "ghost", defined: false, callSites: [{ kind: "show", label: "x" }] },
-    ] };
-    assert.deepEqual(scriptScreens(inventory), ["phone"]);
+test("writeCrops writes new PNGs, keeps unchanged ones, removes dropped ones, sorts largest first", async () => {
+    const { writeCrops } = await import("../server/crops.js");
+    const dir = tmpDir();
+    const png = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.from("rest")]).toString("base64");
+    let out = writeCrops(dir, [
+        { n: 2, rect: [0, 0, 10, 10], type: "Text", png },
+        { n: 7, rect: [0, 0, 100, 50], type: "Window", png },
+    ]);
+    assert.deepEqual(out.map((c) => c.n), [7, 2]);
+    assert.deepEqual(fs.readdirSync(dir).sort(), ["crop-2.png", "crop-7.png"]);
+    out = writeCrops(dir, [{ n: 7, rect: [0, 0, 100, 50] }]);
+    assert.deepEqual(fs.readdirSync(dir), ["crop-7.png"]);
+    assert.equal(out[0].file, "crop-7.png");
+    assert.throws(() => writeCrops(dir, [{ n: 3, rect: [0, 0, 1, 1], png: Buffer.from("nope").toString("base64") }]), /PNG/);
+    assert.throws(() => writeCrops(dir, [{ n: 4, rect: [0, 0, 1, 1] }]), /缺少/);
+    assert.throws(() => writeCrops(dir, [{ n: -1, rect: [0, 0, 1, 1], png }]));
 });
