@@ -32,7 +32,16 @@ function formatTime(sec) {
 
 const rectText = (r) => (r ? r.map((v) => Math.round(v)).join(", ") : "");
 
+const CSS_ID = "step-capture-css";
+
+/** This step's own stylesheet, loaded the first time the step is opened. */
+function ensureCss() {
+    if (document.getElementById(CSS_ID)) return;
+    document.head.append(h("link", { id: CSS_ID, rel: "stylesheet", href: new URL("./capture.css", import.meta.url).href }));
+}
+
 export async function mount(host, ctx) {
+    ensureCss();
     const { game, api } = ctx;
     const gid = game.id;
     const state = {

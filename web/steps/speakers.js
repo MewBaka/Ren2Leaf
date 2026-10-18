@@ -415,7 +415,7 @@ export async function mount(host, ctx) {
             h("div", {}, bulkBar(entries), h("div", { class: "sp-grid" }, cards)),
             {
                 note: h("div", { class: "sp-note-row" },
-                    h("span", {}, "同名的变量已经合成一张卡片，选中即当成一个角色；合并到哪个变量，看左边的立绘决定"),
+                    h("span", {}, "同名的变量已经合成一张卡片，选中即当成一个角色；合并到哪个变量，看左边的立绘决定，分体式立绘可能无法正常显示预览"),
                     helpButton()),
                 actions: h("span", { class: "sp-actions" }, autoButton(entries), saveStatus()),
             }));

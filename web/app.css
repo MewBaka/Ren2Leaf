@@ -644,7 +644,6 @@ button:disabled {
     max-width: 600px;
     margin: 0 auto;
     flex-shrink: 0;
-    text-align: center;
 }
 
 .welcome-title {
@@ -677,9 +676,8 @@ button:disabled {
 .welcome-list {
     margin: 0 0 30px;
     text-wrap: pretty;
-    padding: 0;
-    /* Centred text needs the number on the line, not hanging off it. */
-    list-style-position: inside;
+    /* The number hangs in the margin, so a wrapped line lines up with the text above it. */
+    padding: 0 0 0 22px;
     display: flex;
     flex-direction: column;
     gap: 8px;
