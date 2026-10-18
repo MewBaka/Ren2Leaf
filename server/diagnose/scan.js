@@ -37,6 +37,11 @@ export class Collector {
         this.returns = [];
         this.beats = [];
         this.audio = [];
+        // What the script points at on disk: `image` definitions, the tags `show`/`scene` ask
+        // for, and the audio paths. Whether the files are there is settled in assets.js.
+        this.imageDefs = [];
+        this.imageUses = [];
+        this.audioRefs = [];
         this.pauses = [];
         this.windowStatements = [];
         this.transitions = [];   // `with X` and the with-clause of scene/show
@@ -229,7 +234,7 @@ function context(stack, file) {
     const ctx = {
         file, label: null, globalLabel: null, screen: null, screenDef: null, inPython: false,
         func: null, pyClass: null, pyTop: false, inScreen: false, blockWord: null, menu: null,
-        choice: null, inTranslate: false, pythonHeader: null, guards: [],
+        choice: null, inTranslate: false, pythonHeader: null, guards: [], imageDef: null,
     };
     let pyIdx = -1;
     for (let i = 0; i < stack.length; i++) {
@@ -245,6 +250,9 @@ function context(stack, file) {
             ctx.blockWord = null;
         } else if (s.type === "translate") {
             ctx.inTranslate = true;
+        } else if (s.type === "imagedef") {
+            ctx.imageDef = s.def ?? null;
+            ctx.blockWord = "image";
         }
         if (s.type === "label") {
             ctx.label = s.name;
@@ -289,6 +297,11 @@ function screenHeader(col, ctx, ln, hm) {
 /** Ren'Py statements outside python blocks. */
 function scanStatement(col, ctx, ln, m) {
     let hm;
+    // Inside `image x:` / `layeredimage x:`: every string is a file the image is built from.
+    if (ctx.imageDef) {
+        for (const s of ln.strings) addAssetPath(ctx.imageDef, s.value);
+        return {};
+    }
     if ((hm = /^(define|default)\s+(?:[-+]?\d+\s+)?([\w.]+)\s*(\+=|\|=|=)\s*/.exec(m))) {
         const [, stmt, name] = hm;
         const off = ln.masked.indexOf(hm[0]) + hm[0].length;
@@ -304,6 +317,10 @@ function scanStatement(col, ctx, ln, m) {
         if (!ctx.screenDef) classifyDefinition(col, ctx, ln, stmt, name, off);
         scanPythonExpr(col, ctx, ln, off);
         return;
+    }
+    if (!ctx.screenDef && (hm = IMAGE_HEAD.exec(m))) {
+        const def = imageDefinition(col, ctx, ln, hm);
+        return hm[3] === ":" ? { frame: { type: "imagedef", def } } : {};
     }
     if (ctx.screenDef) {
         scanCallSites(col, ctx, ln, { screenLanguage: true });
@@ -344,6 +361,54 @@ function scanStatement(col, ctx, ln, m) {
         col.unknownStatements.push({ word, file: ctx.file, line: ln.line, label: ctx.label ?? null, screen: ctx.screen ?? null, snippet: snippet(ln.text) });
     }
     scanCallSites(col, ctx, ln, {});
+}
+
+// `image BG_port 1 = "images/bg/BG_port_1.png"`, `image a = Movie(play=…, mask=…)`,
+// `image a:` with an ATL body, `layeredimage b:`. The name may be several words; the first is
+// the tag `show` asks for.
+const IMAGE_HEAD = /^(image|layeredimage)\s+([A-Za-z_][\w.]*(?:\s+[\w.@-]+)*?)\s*(=|:)\s*/;
+const ASSET_EXT = /\.([A-Za-z0-9]{2,5})$/;
+const PLAY_PREFIX = /^<[^>]*>/;
+
+/**
+ * The file a reference string points at. Ren'Py allows a `"<loop 5>bgm.ogg"` prefix on audio, and
+ * a string with no extension (a colour, a style name) is not a file at all.
+ * @returns {string|null} the path with "/" separators, or null when the string is not one
+ */
+export function assetPath(value) {
+    const s = String(value ?? "").replace(PLAY_PREFIX, "").trim().replace(/\\/g, "/");
+    if (!s || s.startsWith("#") || !ASSET_EXT.test(s)) return null;
+    return s;
+}
+
+function addAssetPath(def, value) {
+    const p = assetPath(value);
+    if (p && !def.paths.includes(p)) def.paths.push(p);
+}
+
+function imageDefinition(col, ctx, ln, hm) {
+    const name = hm[2].trim().replace(/\s+/g, " ");
+    const parts = name.split(" ");
+    const valueAt = ln.masked.indexOf(hm[0]) + hm[0].length;
+    const value = ln.masked.slice(valueAt).trim();
+    const def = {
+        statement: hm[1], name, tag: parts[0], attributes: parts.slice(1),
+        constructor: /^([A-Za-z_][\w.]*)\s*\(/.exec(value)?.[1] ?? null,
+        mask: null, paths: [],
+        expression: value ? snippet(ln.text.slice(valueAt)) : null,
+        file: ctx.file, line: ln.line, label: ctx.label ?? null,
+    };
+    if (def.constructor) {
+        const open = ln.masked.indexOf("(", valueAt);
+        const call = open > 0 ? parseCall(ln, open) : null;
+        if (call?.keywords.mask) {
+            const lit = literalAt(ln, ...call.keywords.mask);
+            def.mask = lit.ok && typeof lit.value === "string" ? lit.value : "（不是字面量）";
+        }
+    }
+    for (const s of ln.strings) if (s.start >= valueAt) addAssetPath(def, s.value);
+    col.imageDefs.push(def);
+    return def;
 }
 
 function exprEndSimple(ln, a) {
@@ -457,6 +522,19 @@ function scanCallSites(col, ctx, ln, { screenLanguage = false }) {
         if (!any) col.addReview("dynamicScreenName", ctx, ln, "config.overlay_screens 加入的不是字面量");
     }
     flowCalls(col, ctx, ln);
+    const rim = /(?<![\w.])renpy\.image\s*\(/.exec(mk);
+    if (rim) {
+        const first = ln.strings.find((s) => s.start > rim.index);
+        if (first && /^[A-Za-z_]/.test(first.value)) {
+            const parts = first.value.trim().split(/\s+/);
+            col.imageDefs.push({
+                statement: "renpy.image", name: parts.join(" "), tag: parts[0], attributes: parts.slice(1),
+                constructor: null, mask: null,
+                paths: ln.strings.filter((s) => s.start > first.start).map((s) => assetPath(s.value)).filter(Boolean),
+                expression: snippet(ln.text), file: ctx.file, line: ln.line, label: ctx.label ?? null,
+            });
+        }
+    }
     if (/(?<![\w])renpy\.define_screen\s*\(/.test(mk)) col.addReview("dynamicScreenDefinition", ctx, ln, "用 renpy.define_screen 动态定义界面");
     if (/(?<![\w])renpy\.input\s*\(/.test(mk) && !ctx.screenDef) col.callSites.push(site(ctx, ln, "renpy.input", "input", null));
 }
@@ -513,6 +591,10 @@ function characterDef(col, ctx, ln, variable, off) {
         }
     }
     if (entry.screen) col.callSites.push(site(ctx, ln, "Character(screen=)", entry.screen, null));
+    if (typeof entry.image === "string" && entry.image.trim()) {
+        const tag = entry.image.trim().split(/\s+/);
+        col.imageUses.push({ statement: "Character(image=)", tag: tag[0], attributes: tag.slice(1), file: ctx.file, line: ln.line, label: ctx.label ?? null });
+    }
     col.characters.push(entry);
 }
 

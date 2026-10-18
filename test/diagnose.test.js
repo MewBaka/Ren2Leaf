@@ -66,7 +66,7 @@ describe("the_question", sdkOpts, () => {
         assert.equal(inv.schemaVersion, 2);
         assertCamelCase(inv);
         assertRelativePaths(inv);
-        assert.deepEqual(Object.keys(inv.extensions), ["speakers", "python", "flow", "facts"]);
+        assert.deepEqual(Object.keys(inv.extensions), ["speakers", "python", "flow", "facts", "assets"]);
     });
 
     test("game info", () => {

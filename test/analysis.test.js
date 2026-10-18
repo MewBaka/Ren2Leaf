@@ -286,6 +286,148 @@ describe("fixture game", () => {
     });
 });
 
+
+// A second small game, for the asset check only: a handful of real files on disk and a script that
+// points at them, at a few that are not there, and at one whose extension lies.
+function writeAssetFixture() {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ren2leaf-assets-"));
+    const game = path.join(dir, "game");
+    for (const d of ["images", "videos", "audio/bgm", "se"]) fs.mkdirSync(path.join(game, d), { recursive: true });
+    const put = (rel, buf) => fs.writeFileSync(path.join(game, rel), buf);
+    const png = (payload) => Buffer.concat([Buffer.from("89504e470d0a1a0a", "hex"), Buffer.from(payload)]);
+    const webm = (payload) => Buffer.concat([Buffer.from("1a45dfa3", "hex"), Buffer.from("webm"), Buffer.from(payload)]);
+
+    put("images/eileen_happy.png", png("same bytes"));
+    // Byte for byte the file above, under another name.
+    put("images/eileen_sad.png", png("same bytes"));
+    put("images/bg_room.png", png("a room"));
+    put("images/auto_tag.png", png("defined by its own file name"));
+    put("videos/clip.webm", webm("picture"));
+    put("videos/clip_mask.webm", webm("alpha"));
+    put("videos/old.ogv", Buffer.concat([Buffer.from("OggS"), Buffer.alloc(24), Buffer.from("theora")]));
+    put("audio/bgm/theme.ogg", Buffer.concat([Buffer.from("OggS"), Buffer.alloc(24), Buffer.from("vorbis")]));
+    // A WAV that somebody renamed to .ogg.
+    put("se/wrong.ogg", Buffer.concat([Buffer.from("RIFF"), Buffer.alloc(4), Buffer.from("WAVEfmt ")]));
+
+    fs.writeFileSync(path.join(game, "images.rpy"), [
+        'image eileen happy = "images/eileen_happy.png"',
+        'image eileen sad = "images/eileen_sad.png"',
+        'image eileen gone = "images/eileen_gone.png"',
+        'image bg room = "images/BG_ROOM.png"',
+        'image clip = Movie(play="videos/clip.webm", mask="videos/clip_mask.webm")',
+        'image eileen night = im.MatrixColor("images/eileen_happy.png", im.matrix.tint(0.75, 0.75, 0.9))',
+        'image old = "videos/old.ogv"',
+        'image bg dark = "images/bg_dark_old.png"',
+        'image bg dark = "images/bg_room.png"',
+        "image stack:",
+        '    "images/stack_frame.png"',
+        "    pause 1.0",
+        "",
+    ].join("\n"));
+
+    fs.writeFileSync(path.join(game, "script.rpy"), [
+        'define e = Character("Eileen")',
+        'define nobody = Character("Nobody", image="noimg")',
+        "label start:",
+        "    scene bg room",
+        "    show eileen happy",
+        "    show auto_tag",
+        "    show ghosttag",
+        '    play music "bgm/theme.ogg"',
+        '    play sound "se/wrong.ogg"',
+        '    play sound "se/absent.ogg"',
+        '    voice "voice/v1.ogg"',
+        '    e "一句话。"',
+        "    return",
+        "",
+    ].join("\n"));
+    return dir;
+}
+
+describe("asset check", () => {
+    let dir;
+    let assets;
+
+    before(async () => {
+        dir = writeAssetFixture();
+        assets = (await diagnose(dir)).extensions.assets;
+    });
+    after(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+    test("every file an image definition is built from is counted, ATL bodies included", () => {
+        assert.equal(assets.summary.imageDefinitions, 10);
+        assert.equal(assets.summary.imageReferences, 11);
+        assert.equal(assets.summary.audioReferences, 4);
+        // Four tags are asked for by show/scene; the character's image= tag is not one of them.
+        assert.equal(assets.summary.shownTags, 4);
+        // The string inside `image stack:` belongs to that image, so it is checked like any path.
+        assert.deepEqual(assets.missing.find((r) => r.path === "images/stack_frame.png").statements, ["image stack"]);
+    });
+
+    test("a file the script points at and game/ does not have", () => {
+        const paths = assets.missing.map((r) => r.path);
+        assert.deepEqual(paths.sort(), [
+            "images/bg_dark_old.png", "images/eileen_gone.png", "images/stack_frame.png",
+            "se/absent.ogg", "voice/v1.ogg",
+        ]);
+        const gone = assets.missing.find((r) => r.path === "images/eileen_gone.png");
+        assert.equal(gone.kind, "image");
+        assert.equal(gone.statements[0], "image eileen gone");
+        // Nothing shows the "eileen gone" definition's tag… except that "eileen happy" shares it.
+        assert.equal(gone.tagShown, true);
+        assert.equal(assets.missing.find((r) => r.path === "voice/v1.ogg").kind, "audio");
+    });
+
+    test("the last definition of a name wins, so the one before it is dead", () => {
+        assert.deepEqual(assets.redefined.map((r) => r.name), ["bg dark"]);
+        assert.equal(assets.missing.find((r) => r.path === "images/bg_dark_old.png").superseded, true);
+        assert.equal(assets.summary.missingSuperseded, 1);
+    });
+
+    test("Ren'Py's own search rules are followed: the audio/ folder and letter case", () => {
+        // play music "bgm/theme.ogg" is game/audio/bgm/theme.ogg.
+        assert.equal(assets.summary.resolvedViaPrefix, 1);
+        assert.deepEqual(assets.caseMismatch.map((r) => [r.path, r.onDisk]), [["images/BG_ROOM.png", "images/bg_room.png"]]);
+    });
+
+    test("a tag show asks for that nothing defines", () => {
+        assert.deepEqual(assets.unknownTags.map((t) => t.tag), ["ghosttag"]);
+        // images/auto_tag.png defines "auto_tag" by itself, as Ren'Py does on startup.
+        assert.ok(!assets.unknownTags.some((t) => t.tag === "auto_tag"));
+        // A character's image= tag is weaker evidence, so it is listed apart.
+        assert.deepEqual(assets.unknownCharacterImages.map((t) => t.tag), ["noimg"]);
+    });
+
+    test("an extension that lies about the format", () => {
+        assert.deepEqual(assets.formatMismatch.map((f) => [f.path, f.extension, f.actual]),
+            [["se/wrong.ogg", ".ogg", "wav"]]);
+    });
+
+    test("two files with the same bytes, found without reading everything", () => {
+        assert.equal(assets.duplicates.length, 1);
+        assert.deepEqual(assets.duplicates[0].files, ["images/eileen_happy.png", "images/eileen_sad.png"]);
+        assert.equal(assets.summary.duplicateFiles, 2);
+        // Only the files that already share a byte size are read, never the whole game.
+        assert.ok(assets.notes.hashedBytes >= assets.duplicates[0].bytes * 2);
+        assert.ok(assets.notes.hashedBytes < assets.summary.mediaBytes);
+        assert.equal(assets.notes.hashTruncated, false);
+    });
+
+    test("what has to be dealt with outside the port", () => {
+        assert.deepEqual(assets.offline.maskedMovies.map((m) => [m.name, m.play, m.mask]),
+            [["clip", "videos/clip.webm", "videos/clip_mask.webm"]]);
+        assert.deepEqual(assets.offline.matrixColor.map((m) => [m.name, m.constructor, m.source]),
+            [["eileen night", "im.MatrixColor", "images/eileen_happy.png"]]);
+        assert.deepEqual(assets.offline.formats.map((f) => [f.extension, f.count, f.referenced]), [[".ogv", 1, 1]]);
+    });
+
+    test("a file nothing points at is not reported as a problem", () => {
+        assert.equal(assets.summary.missingPaths, 5);
+        // images/auto_tag.png is on disk and nothing references it by path; it defines a tag.
+        assert.ok(!assets.missing.some((r) => r.path.includes("auto_tag")));
+    });
+});
+
 describe("speaker decisions", () => {
     const empty = { version: 1, updatedAt: null, speakers: {} };
 
@@ -396,7 +538,8 @@ describe("export package", () => {
         const parts = collect(game);
         const doc = buildDocument(game, parts, planFiles(game, parts));
         const sections = doc.split("\n").filter((l) => l.startsWith("## ")).map((l) => l.slice(3).trim());
-        assert.deepEqual(sections.map((s) => s.split("　")[0]), ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
+        assert.deepEqual(sections.map((s) => s.split("　")[0]), ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]);
+        assert.ok(sections.includes("8　资产"));
         assert.ok(doc.indexOf("npx skills add NarraLeaf/Skills -g") < doc.indexOf("## 2"));
         assert.ok(doc.includes("# 测试 Game → NarraLeaf 迁移补充包"));
     });

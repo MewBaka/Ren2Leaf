@@ -4,7 +4,7 @@
 
 import { depthMap } from "./lexer.js";
 import { isPropertyName } from "./vocab.js";
-import { literalAt, parseCall, snippet } from "./scan.js";
+import { assetPath, literalAt, parseCall, snippet } from "./scan.js";
 
 /** Ren'Py statement keywords. A line starting with one of these is never a say statement. */
 const STATEMENTS = new Set([
@@ -32,6 +32,21 @@ const NOT_DIALOGUE_BLOCKS = new Set([
 const WARPER = /^(?:linear|ease|easein|easeout|ease_\w+|easein_\w+|easeout_\w+|warp\.\w+)$/;
 
 const MOVIE_NAME = /(?:^|[\/_\-])(op|ed|opening|ending|title|logo|prologue|epilogue)(?:\d*)(?:[\/_\-.]|$)/i;
+
+/** `scene bg room` / `show eileen happy`: which image tag the line asks for. */
+function noteImageUse(col, ctx, ln, statement, tags) {
+    const tag = tags[0];
+    if (!tag || !/^[A-Za-z_]/.test(tag) || tag === "expression") return;
+    col.imageUses.push({ statement, tag, attributes: tags.slice(1), file: ctx.file, line: ln.line, label: ctx.label ?? null });
+}
+
+/** Every file an audio statement names. `play music ["a.ogg", "b.ogg"]` names two. */
+function noteAudioRefs(col, ctx, ln, statement, channel) {
+    for (const s of ln.strings) {
+        const p = assetPath(s.value);
+        if (p) col.audioRefs.push({ statement, channel, path: p, file: ctx.file, line: ln.line, label: ctx.label ?? null });
+    }
+}
 
 /** A voice file's folder, which is the strongest evidence of who an aliased variable is. */
 export function voiceDir(file) {
@@ -207,6 +222,7 @@ export function storyStatement(col, ctx, ln, m) {
         if (/\bwith\s+(fade|Fade\s*\()/.test(m)) beat(col, ctx, ln, "blackout", "with fade");
         if (attrs.includes("with")) noteTransition(col, ctx, ln, WITH_CLAUSE.exec(m)?.[1]);
         noteAt(col, ctx, ln, m, tags[0] ?? null);
+        noteImageUse(col, ctx, ln, "scene", tags);
         return {};
     }
     if (word === "show" || word === "hide") {
@@ -222,7 +238,10 @@ export function storyStatement(col, ctx, ln, m) {
         }
         if (word === "show" && /^movie\b/.test(rest)) beat(col, ctx, ln, "movie", rest);
         if (attrs.includes("with")) noteTransition(col, ctx, ln, WITH_CLAUSE.exec(m)?.[1]);
-        if (word === "show") noteAt(col, ctx, ln, m, tag ?? null);
+        if (word === "show") {
+            noteAt(col, ctx, ln, m, tag ?? null);
+            noteImageUse(col, ctx, ln, "show", tags);
+        }
         return {};
     }
     if (word === "with") {
@@ -253,6 +272,7 @@ export function storyStatement(col, ctx, ln, m) {
         if (file) {
             stage.voice = file;
             col.voiceLines.push({ file: ctx.file, line: ln.line, label: ctx.label ?? null, audio: file, dir: voiceDir(file) });
+            noteAudioRefs(col, ctx, ln, "voice", "voice");
         } else {
             col.addReview("dynamicVoice", ctx, ln, "voice 的文件名不是字面量，无法作为身份证据");
         }
@@ -262,6 +282,7 @@ export function storyStatement(col, ctx, ln, m) {
         const channel = /^\w+\s+(\w+)/.exec(m)?.[1] ?? null;
         const audio = firstLiteral(ln);
         col.audio.push({ statement: word, channel, audio, file: ctx.file, line: ln.line, label: ctx.label ?? null });
+        if (word !== "stop") noteAudioRefs(col, ctx, ln, word, channel);
         if (word === "stop" && channel === "music") beat(col, ctx, ln, "stopMusic", m.trim());
         if (word === "play" && channel === "music") beat(col, ctx, ln, "music", audio ?? m.trim());
         if (word === "play" && channel === "movie") beat(col, ctx, ln, MOVIE_NAME.test(audio ?? "") ? "opEd" : "movie", audio ?? m.trim());

@@ -13,6 +13,7 @@ import { buildSpeakers } from "./speakers.js";
 import { buildPython } from "./python.js";
 import { buildFlow } from "./flow.js";
 import { buildFacts } from "./facts.js";
+import { buildAssets } from "./assets.js";
 
 export const SCHEMA_VERSION = 2;
 export const SCANNER_VERSION = "0.2.0";
@@ -352,6 +353,7 @@ export async function diagnose(gameDir) {
             python: buildPython(col),
             flow: buildFlow(col),
             facts: buildFacts(col),
+            assets: await buildAssets(col, files, game),
         },
     };
 }

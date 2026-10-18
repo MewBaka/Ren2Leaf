@@ -24,6 +24,8 @@ const AGENT_DOCS = "https://www.narraleaf.com/zh/docs/studio/agent";
 const MAX_ROWS = 80;
 const MAX_SCREENS = 60;
 const MAX_ELEMENTS = 30;
+// Below this, two identical files are gui bits the Ren'Py template itself ships twice over.
+const SMALL_ASSET = 4096;
 
 function readJsonFile(file, fallback = null) {
     try {
@@ -148,8 +150,9 @@ function headerSection(game, inventory, fingerprint) {
             ["5", "流程与章节：迁移者定的章节分组，以及 label 图、菜单、结局"],
             ["6", "界面截图：游戏实际跑出来的画面和元素坐标"],
             ["7", "文本与演出：文字标签、插值、转场、transform、成就、persistent"],
-            ["8", "静态扫描确定不了的，以及本工具没有检查的"],
-            ["9", "这份包里的文件"],
+            ["8", "资产：引用不到的文件、格式不符、重复素材、要离线处理的素材"],
+            ["9", "静态扫描确定不了的，以及本工具没有检查的"],
+            ["10", "这份包里的文件"],
         ]),
         "",
         "本文件里所有 `文件:行号` 都相对游戏的 `game/` 目录。",
@@ -659,11 +662,118 @@ function factsSection(facts) {
     return `${out.join("\n")}\n`;
 }
 
+/** How big a pile of files is, in the unit a person reads. */
+function mb(bytes) {
+    const n = Number(bytes) || 0;
+    if (n >= 1024 * 1024 * 1024) return `${(n / 1024 / 1024 / 1024).toFixed(1)} GB`;
+    if (n >= 1024 * 1024) return `${Math.round(n / 1024 / 1024)} MB`;
+    return `${Math.max(1, Math.round(n / 1024))} KB`;
+}
+
+/** What the script points at, and what is in game/. Facts only: no file is edited or converted. */
+function assetsSection(assets) {
+    if (!assets) return "## 8　资产\n\n这份扫描结果里没有这部分数据，回 Ren2Leaf 重新诊断一次就有了。\n";
+    const a = assets.summary;
+    const h = numbering(8);
+    const out = ["## 8　资产", ""];
+    out.push("Ren'Py 找文件的办法是：先按脚本里写的路径找，找不到再在 `images/`（图像）或 `audio/`（音频）下找一次，并且不分大小写。下面的比对照这个规则来。", "");
+    out.push(`${a.imageDefinitions} 条 \`image\` 定义，引用了 ${a.referencedPaths} 个文件路径（图像 ${a.imageReferences} 处、音频 ${a.audioReferences} 处）`
+        + (a.resolvedViaPrefix ? `，其中 ${a.resolvedViaPrefix} 处是靠 \`images/\`、\`audio/\` 前缀才找到的` : "")
+        + `。\`show\`/\`scene\` 用到 ${a.shownTags} 个 tag。game/ 下媒体文件 ${a.mediaFiles} 个，共 ${mb(a.mediaBytes)}。`, "");
+    if (assets.notes?.archives) {
+        out.push(`另有 ${assets.notes.archives} 个 \`.rpa\` 归档，本工具不解包；下面说「没有」的文件有可能在归档里。`, "");
+    }
+
+    const beforeFindings = out.length;
+    if (assets.missing.length) {
+        out.push(h("引用了但 game/ 里没有的文件"), "");
+        if (a.missingSuperseded) {
+            out.push(`共 ${a.missingPaths} 个，其中 ${a.missingSuperseded} 个出自后来又被同名定义覆盖掉的那一条（游戏跑的是后一条，所以这几个文件缺着也不影响）。`, "");
+        } else {
+            out.push(`共 ${a.missingPaths} 个。`, "");
+        }
+        const { rows, note } = capped(assets.missing.map((r) => [
+            r.path, r.kind === "audio" ? "音频语句" : "image 定义", r.statements.join("、"), r.sites.slice(0, 3).join("，"),
+            r.superseded ? "被同名定义覆盖" : yesNo(r.tagShown),
+        ]), MAX_ROWS, "data/inventory.json");
+        out.push(mdTable(["路径", "引用来源", "引用它的语句", "位置", "tag 在剧情里出现过"], rows), note, "");
+        out.push("最后一列只说这个定义的 tag 在 `show`/`scene` 里出现过。一个 tag 通常有几十条只差属性的定义，哪一行落到哪一条取决于当时舞台上带着什么属性，本工具没有算。", "");
+    }
+
+    if (assets.caseMismatch.length) {
+        out.push(h("大小写和磁盘上不一致的引用"), "");
+        out.push("Ren'Py 查文件不分大小写，所以原作跑得起来。", "");
+        out.push(mdTable(["脚本里写的", "磁盘上的", "引用处数", "位置"],
+            assets.caseMismatch.map((r) => [r.path, r.onDisk || "—", r.references, r.sites.slice(0, 3).join("，")])), "");
+    }
+
+    if (assets.unknownTags.length) {
+        out.push(h("show / scene 用了但没有定义的 tag"), "");
+        out.push("既没有 `image` 定义，`game/images/` 下也没有同名文件。", "");
+        out.push(mdTable(["tag", "用了几处", "语句", "位置"],
+            assets.unknownTags.map((t) => [t.tag, t.uses, t.statements.join("、"), t.sites.slice(0, 3).join("，")])), "");
+    }
+
+    if (assets.unknownCharacterImages.length) {
+        out.push(h("角色 image= 指向的 tag 没有对应图像"), "");
+        out.push("原作写了 `Character(…, image=\"x\")`，但没有叫 `x` 的 image 定义，`game/images/` 下也没有同名文件。这个 tag 只在「只写属性的台词」（`x happy \"…\"`）里才会被用到。", "");
+        out.push(mdTable(["tag", "位置"],
+            assets.unknownCharacterImages.map((t) => [t.tag, t.sites.slice(0, 3).join("，")])), "");
+    }
+
+    if (assets.formatMismatch.length) {
+        out.push(h("扩展名和真实格式不符"), "");
+        out.push("按文件头几个字节判断的。", "");
+        out.push(mdTable(["文件", "扩展名", "文件头说它是", "大小"],
+            assets.formatMismatch.map((f) => [f.path, f.extension, f.actualName || f.actual, mb(f.bytes)])), "");
+    }
+
+    if (assets.duplicates.length) {
+        out.push(h("内容完全相同的文件"), "");
+        out.push(`${a.duplicateGroups} 组、${a.duplicateFiles} 个文件，重复的那几份占 ${mb(a.wastedBytes)}。先按字节数分桶，只有字节数相同的才算 sha256。`, "");
+        const big = assets.duplicates.filter((d) => d.bytes >= SMALL_ASSET);
+        const small = assets.duplicates.length - big.length;
+        const { rows, note } = capped(big.map((d) => [mb(d.bytes), d.files.join("、")]), MAX_ROWS, "data/inventory.json");
+        out.push(mdTable(["大小", "内容相同的文件"], rows), note, "");
+        if (small) out.push(`另有 ${small} 组每份都不到 ${Math.round(SMALL_ASSET / 1024)} KB，列在 \`data/inventory.json\` 里（Ren'Py 模板自带的 gui 图本来就有好几组是一样的）。`, "");
+    }
+
+    const off = assets.offline ?? {};
+    if (off.maskedMovies?.length || off.matrixColor?.length || off.formats?.length) {
+        out.push(h("要离线处理的素材"), "");
+        if (off.maskedMovies?.length) {
+            out.push(`带遮罩的 \`Movie\` ${a.maskedMovies} 处：画面和透明通道是两个视频文件。`, "");
+            const { rows, note } = capped(off.maskedMovies.map((m) => [m.name, m.play || "—", m.mask || "—", `${m.file}:${m.line}`]), MAX_ROWS, "data/inventory.json");
+            out.push(mdTable(["image 名", "画面", "遮罩", "位置"], rows), note, "");
+        }
+        if (off.matrixColor?.length) {
+            out.push(`\`im.*\` 调色图 ${a.matrixColor} 条：同一张图在运行时被改了颜色。`, "");
+            const { rows, note } = capped(off.matrixColor.map((x) => [x.name, x.constructor, x.source || "—", `${x.file}:${x.line}`]), MAX_ROWS, "data/inventory.json");
+            out.push(mdTable(["image 名", "构造器", "原图", "位置"], rows), note, "");
+        }
+        if (off.formats?.length) {
+            out.push("浏览器放不了的格式：", "");
+            out.push(mdTable(["扩展名", "类别", "文件数", "脚本里引用处数", "示例文件"],
+                off.formats.map((f) => [f.extension, f.kind, f.count, f.referenced, f.files.slice(0, 3).join("、")])), "");
+        }
+    }
+
+    if (assets.redefined.length) {
+        out.push(h("同一个 image 名定义了多次"), "");
+        out.push("Ren'Py 取最后一条。", "");
+        out.push(mdTable(["image 名", "定义了几次", "位置", "指向的文件"],
+            assets.redefined.map((r) => [r.name, r.count, r.sites.join("，"), r.paths.join("、")])), "");
+    }
+
+    if (out.length === beforeFindings) out.push("没有发现引用不到的文件、格式不符或重复的素材。", "");
+    return `${out.join("\n")}\n`;
+}
+
 /** What the scan could not settle, and what it never looked at. */
 function reviewSection(inventory) {
     const review = inventory?.needsReview ?? [];
-    const h = numbering(8);
-    const out = ["## 8　扫描确定不了的", ""];
+    const h = numbering(9);
+    const out = ["## 9　扫描确定不了的", ""];
     out.push(h("名字或目标是运行时拼出来的"), "");
     if (!review.length) out.push("没有这类条目。", "");
     else {
@@ -674,8 +784,8 @@ function reviewSection(inventory) {
     out.push(h("本工具没有检查的"), "");
     out.push("下面这些 Ren2Leaf 没有查过，这份文件里的任何一节都不代表它们没问题：", "");
     out.push(mdTable(["没查的", "要自己确认什么"], [
-        ["资产是否存在", "`image`/`show`/`play` 引用的文件是否真的在 `game/` 里，扩展名和真实格式是否一致，有没有内容完全相同的重复文件"],
-        ["要离线处理的素材", "带遮罩的 Movie、`im.MatrixColor` 之类的调色图、`.avi`/`.ogv` 这类格式"],
+        ["素材本身的内容", "第 8 节查了文件在不在、格式对不对、有没有重复；图片的尺寸和透明边、音频的时长和音量、视频的帧率，没有看"],
+        ["哪一行落到哪一张立绘", "第 8 节只按 tag 比对；一个 tag 下几十条只差属性的定义，哪一行用哪一条要运行时才知道"],
         ["ATL 动画本身", "transform 的内容只统计了用在哪里，没有读它做了什么；带 `repeat` 的循环只按参数数值猜"],
         ["翻译目录", "`tl/` 里是真译文还是只有引擎字符串"],
         ["字体", "界面和台词用了哪些字体文件"],
@@ -688,7 +798,7 @@ function reviewSection(inventory) {
 }
 
 function filesSection(files) {
-    const out = ["## 9　这份包里的文件", ""];
+    const out = ["## 10　这份包里的文件", ""];
     out.push(mdTable(["文件", "是什么"], files.map((f) => [f.path, f.what])), "");
     out.push("`data/inventory.json` 是完整的扫描结果，本文件里被截断的表都能在它里面找到全量。", "");
     return `${out.join("\n")}\n`;
@@ -781,6 +891,7 @@ export function buildDocument(game, parts, files) {
         chaptersSection(ext.flow, chapters),
         screenshotSection(shots, inventory?.screens ?? []),
         factsSection(ext.facts),
+        assetsSection(ext.assets),
         reviewSection(inventory),
         filesSection(files),
         `---\n\n由 Ren2Leaf 生成于 ${new Date().toISOString()}（补充包格式 v${PACKAGE_VERSION}）\n`,
