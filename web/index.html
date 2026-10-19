@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Ren2Leaf</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="tokens.css">
     <link rel="stylesheet" href="app.css">
     <script type="module" src="app.js"></script>
@@ -12,6 +13,21 @@
     <div class="shell">
         <aside class="sidebar" data-tip-side="right">
             <div class="brand">
+                <span class="brand-mark" aria-hidden="true">
+                    <svg viewBox="74 83 368 368">
+                        <mask id="brand-cut">
+                            <rect x="70" y="79" width="376" height="376" fill="#fff"/>
+                            <path d="M318 387 L416 320" stroke="#000" stroke-width="6" stroke-linecap="round" fill="none"/>
+                            <circle cx="288" cy="370" r="7" fill="#000"/>
+                        </mask>
+                        <g fill="currentColor" mask="url(#brand-cut)">
+                            <path d="M311 391 C336 336 386 314 428 312 C422 356 386 396 311 391 Z"/>
+                            <path d="M114 196 C114 116 318 106 318 201 C318 266 186 316 116 388 L266 388" fill="none" stroke="currentColor" stroke-width="52" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M88 196 Q92 232 102 246 Q124 232 140 196 Z"/>
+                            <path d="M284 388 L327.5 371.1 A48 40 0 1 0 327.5 404.9 Z"/>
+                        </g>
+                    </svg>
+                </span>
                 <span class="brand-name">Ren2Leaf</span>
                 <button type="button" class="sidebar-toggle" id="sidebar-toggle"></button>
             </div>

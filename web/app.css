@@ -104,6 +104,16 @@ button:disabled {
 .sidebar-toggle:hover { background: var(--ui-fill); color: rgb(var(--ui-fg)); }
 .sidebar-toggle svg { width: 16px; height: 16px; }
 
+.brand-mark {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    color: rgb(var(--ui-fg));
+}
+
+.brand-mark svg { width: 100%; height: 100%; }
+
 .brand-name {
     font-size: var(--ui-text-base);
     font-weight: var(--ui-weight-semibold);
@@ -226,6 +236,7 @@ button:disabled {
 .shell.is-collapsed { grid-template-columns: 60px minmax(0, 1fr); }
 .shell.is-collapsed .sidebar { padding: 14px 8px 12px; align-items: stretch; }
 .shell.is-collapsed .brand { padding: 2px 0 12px; justify-content: center; }
+.shell.is-collapsed .brand-mark,
 .shell.is-collapsed .brand-name,
 .shell.is-collapsed .switcher-text,
 .shell.is-collapsed .switcher-chevron,
