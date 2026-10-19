@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>ren2leaf (mono, on dark)</title>
+  <defs>
+    <mask id="cut">
+      <rect width="512" height="512" fill="#fff"/>
+      <path d="M352 391 L450 324" stroke="#000" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <circle cx="322" cy="374" r="7" fill="#000"/>
+    </mask>
+  </defs>
+  <g transform="translate(-34 -4)" fill="currentColor" mask="url(#cut)" color="#E7EFE9">
+    <path d="M345 395 C370 340 420 318 462 316 C456 360 420 400 345 395 Z"/>
+    <path d="M148 200 C148 120 352 110 352 205 C352 270 220 320 150 392 L300 392" fill="none" stroke="currentColor" stroke-width="52" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M122 200 Q126 236 136 250 Q158 236 174 200 Z"/>
+    <path d="M318 392 L361.5 375.1 A48 40 0 1 0 361.5 408.9 Z"/>
+  </g>
+</svg>
