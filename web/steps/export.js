@@ -125,7 +125,7 @@ export async function mount(host, ctx) {
         const scroll = h("div", { class: "an-scroll" });
         const screens = data.files.filter((f) => f.path.startsWith("screens/")).length;
         scroll.append(facts([
-            fact("文件", data.files.length, null, `含截图 ${screens} 张，共 ${KB(data.bytes)}`),
+            fact("文件", data.files.length, null, `含截图 ${screens} 张，压缩前共 ${KB(data.bytes)}`),
             fact("文档", KB(new Blob([data.document]).size), null, "README.md"),
             fact("准备情况", `${data.readiness.steps.filter((s) => s.done).length} / ${data.readiness.steps.length}`,
                 data.readiness.steps.every((s) => s.done) ? "success" : "warning"),
@@ -180,7 +180,9 @@ export async function mount(host, ctx) {
         }
         const fileTable = table(["46%", null], ["文件", "说明"], tbody);
         fileTable.classList.add("is-wrap");
-        scroll.append(section("补充包文件说明", data.files.length, fileTable));
+        scroll.append(section("补充包文件说明", data.files.length, fileTable, {
+            note: "截图在写出时会无损重压缩，像素不变；生成后的实际体积小于上方预估",
+        }));
         root.append(scroll);
     }
 
