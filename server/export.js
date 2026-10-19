@@ -16,6 +16,7 @@ import { readDecisions, decisionStats, readChapters, chapterStats, chapterIssues
 import { resolveGameDirs } from "./diagnose/index.js";
 import { resolvePortraits } from "./portraits.js";
 import { pickFolder } from "./capture.js";
+import { recompressPng } from "./png.js";
 
 export const PACKAGE_VERSION = 1;
 
@@ -931,6 +932,27 @@ export function planFiles(game, parts) {
     return files;
 }
 
+/**
+ * Copies one file the earlier steps left in the work directory. A PNG is rewritten with the same
+ * pixels in fewer bytes on the way out (see server/png.js): the engine's screenshots carry their
+ * scanlines unfiltered, so a package of ten screens is several times larger than it needs to be.
+ * Anything that is not a PNG, or that the rewrite leaves no smaller, is copied as it is.
+ */
+async function copyAsset(from, out) {
+    if (path.extname(from).toLowerCase() === ".png") {
+        try {
+            const small = recompressPng(await fsp.readFile(from), { level: 8 });
+            if (small) {
+                await fsp.writeFile(out, small);
+                return;
+            }
+        } catch {
+            // Fall through to the plain copy: a package is worth more than a saved megabyte.
+        }
+    }
+    await fsp.copyFile(from, out);
+}
+
 /** Writes the package into `<dir>/<slug>-ren2leaf`, replacing a package written there before. */
 export async function writePackage(game, dir, { overwrite = false } = {}) {
     const parts = collect(game);
@@ -955,9 +977,10 @@ export async function writePackage(game, dir, { overwrite = false } = {}) {
         if (f.content !== undefined) {
             await fsp.writeFile(out, f.content);
         } else {
-            await fsp.copyFile(f.from, out);
+            await copyAsset(f.from, out);
         }
-        bytes += (await fsp.stat(out)).size;
+        f.bytes = (await fsp.stat(out)).size;
+        bytes += f.bytes;
     }
     return { dir: target, files: files.map(({ from, content, ...f }) => f), bytes, screenshots: parts.shots.length };
 }
