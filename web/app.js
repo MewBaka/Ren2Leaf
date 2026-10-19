@@ -535,6 +535,7 @@ function emptyState(title, action) {
 
 const SKILLS_COMMAND = "npx skills add NarraLeaf/Skills -g";
 const AGENT_DOCS = "https://www.narraleaf.com/zh/docs/studio/agent";
+const PORT_SKILL_DIR = "skills/narraleaf-port-renpy/";
 
 /** The first thing anyone sees: what this tool does, and what to do before handing work to an agent. */
 function welcome() {
@@ -553,6 +554,8 @@ function welcome() {
         h("p", {}, "配置结束后，Ren2Leaf 将会生成一个交给 Agent 的迁移补充包，请将游戏源代码与补充包一起发送"),
         h("p", {}, "在此之前，请先安装 NarraLeaf Skills："),
         h("pre", { class: "welcome-code" }, SKILLS_COMMAND),
+        h("p", {}, "Ren'Py 移植 skill 随本工具一起发布，在 Ren2Leaf 仓库的 ",
+            h("code", {}, PORT_SKILL_DIR), " 下，一并复制给 Agent"),
         h("p", {}, "关于 NarraLeaf Studio Agent 接入相关事宜，请查看文档：",
             h("a", { class: "welcome-link", href: AGENT_DOCS, target: "_blank", rel: "noreferrer" }, AGENT_DOCS)));
     const inner = h("div", { class: "welcome-inner" },

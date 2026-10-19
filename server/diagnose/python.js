@@ -1,6 +1,6 @@
 // Step ④ Python logic: every `$` line, python block, init python and non-literal default/define,
 // classified before anything is handed to an agent. The mapping table follows the port skill's
-// statement table (resources/agent/skills/narraleaf-port-renpy/references/statement-mapping.md);
+// statement table (skills/narraleaf-port-renpy/references/statement-mapping.md in this repo);
 // `target` is the suggested `.story` row, `category` is how much human work is left:
 //   autoSet      mechanical: a /set, /inc, /dec or /toggle row
 //   mapped       a known API with a known row, still worth a glance

@@ -21,6 +21,8 @@ export const PACKAGE_VERSION = 1;
 
 const SKILLS_COMMAND = "npx skills add NarraLeaf/Skills -g";
 const AGENT_DOCS = "https://www.narraleaf.com/zh/docs/studio/agent";
+// The port skill ships with this tool rather than with NarraLeaf/Skills, which holds make-game only.
+const PORT_SKILL_DIR = "skills/narraleaf-port-renpy/";
 const MAX_ROWS = 80;
 const MAX_SCREENS = 60;
 const MAX_ELEMENTS = 30;
@@ -128,7 +130,8 @@ function headerSection(game, inventory, fingerprint) {
         SKILLS_COMMAND,
         "```",
         "",
-        `   以及本工具附带的 Ren'Py 移植 skill（\`narraleaf-port-renpy\`）。Agent 接入说明见 ${AGENT_DOCS}。`,
+        `   以及本工具附带的 Ren'Py 移植 skill \`narraleaf-port-renpy\`，它在 Ren2Leaf 仓库的`,
+        `   \`${PORT_SKILL_DIR}\` 下，复制到你的 agent 读取 skill 的目录即可。Agent 接入说明见 ${AGENT_DOCS}。`,
         "",
         "2. **这份文件是路牌，不是方案。** 它只说明原作的事实和迁移者的决定；具体怎么迁移由你判断，",
         "   不要被本文的措辞带着走。文中出现的任何 NarraLeaf 写法都只是参考，以 skill 和 Studio 的",
