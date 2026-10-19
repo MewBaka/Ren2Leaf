@@ -1,0 +1,920 @@
+{
+ "key": "shot-20261019-230846",
+ "item": {
+  "kind": "manual",
+  "purpose": "游戏界面"
+ },
+ "gameSize": [
+  1280,
+  720
+ ],
+ "elements": [
+  {
+   "type": "Image",
+   "class": null,
+   "rect": [
+    0,
+    0,
+    512.0,
+    512.0
+   ],
+   "depth": 2,
+   "screen": null,
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "info": "'_transparent_tile.png'",
+   "image": "_transparent_tile.png",
+   "n": 1,
+   "boxed": false,
+   "rect1920": [
+    0.0,
+    0.0,
+    768.0,
+    768.0
+   ]
+  },
+  {
+   "type": "ImageReference",
+   "class": null,
+   "rect": [
+    0,
+    0,
+    1280.0,
+    720.0
+   ],
+   "depth": 4,
+   "screen": null,
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "info": "('bg', 'lecturehall')",
+   "image": "bg lecturehall",
+   "n": 2,
+   "boxed": false,
+   "rect1920": [
+    0.0,
+    0.0,
+    1920.0,
+    1080.0
+   ]
+  },
+  {
+   "type": "Image",
+   "class": null,
+   "rect": [
+    0,
+    0,
+    1280.0,
+    720.0
+   ],
+   "depth": 5,
+   "screen": null,
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "info": "'images/bg lecturehall.jpg'",
+   "image": "images/bg lecturehall.jpg",
+   "n": 3,
+   "boxed": false,
+   "rect1920": [
+    0.0,
+    0.0,
+    1920.0,
+    1080.0
+   ]
+  },
+  {
+   "type": "Window",
+   "class": null,
+   "rect": [
+    0,
+    535,
+    1280.0,
+    185.0
+   ],
+   "depth": 5,
+   "screen": "say",
+   "id": "window",
+   "location": [
+    "game/screens.rpy",
+    100
+   ],
+   "inButton": false,
+   "style": {
+    "name": "say_window",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<renpy.display.im.Image object ('gui/textbox.png') at 0x102093590>",
+    "yminimum": 185,
+    "ymaximum": 185
+   },
+   "n": 4,
+   "boxed": false,
+   "rect1920": [
+    0.0,
+    802.5,
+    1920.0,
+    277.5
+   ]
+  },
+  {
+   "type": "Image",
+   "class": null,
+   "rect": [
+    0,
+    535,
+    1280.0,
+    185.0
+   ],
+   "depth": 6,
+   "screen": "say",
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "info": "'gui/textbox.png'",
+   "image": "gui/textbox.png",
+   "n": 5,
+   "boxed": false,
+   "rect1920": [
+    0.0,
+    802.5,
+    1920.0,
+    277.5
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    268,
+    585,
+    660.0,
+    28.0
+   ],
+   "depth": 6,
+   "screen": "say",
+   "id": "what",
+   "location": [
+    "game/screens.rpy",
+    109
+   ],
+   "inButton": false,
+   "text": "当我听到拖着步子和收起用品的声音时，我才意识到，讲座结束了。",
+   "style": {
+    "name": "say_thought",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "xminimum": 744,
+    "xmaximum": 744
+   },
+   "transformed": true,
+   "n": 6,
+   "boxed": true,
+   "rect1920": [
+    402.0,
+    877.5,
+    990.0,
+    42.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    448,
+    698,
+    48.0,
+    22.0
+   ],
+   "depth": 6,
+   "screen": "quick_menu",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    247
+   ],
+   "inButton": false,
+   "style": {
+    "name": "quick_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/quick_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994170> (10,4,10,0)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4
+   },
+   "image": "gui/button/quick_idle_background.png",
+   "label": "回退",
+   "n": 7,
+   "boxed": true,
+   "rect1920": [
+    672.0,
+    1047.0,
+    72.0,
+    33.0
+   ]
+  },
+  {
+   "type": "Frame",
+   "class": null,
+   "rect": [
+    448,
+    698,
+    48.0,
+    22.0
+   ],
+   "depth": 7,
+   "screen": "quick_menu",
+   "id": null,
+   "location": null,
+   "inButton": true,
+   "style": {
+    "name": "default",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ]
+   },
+   "image": "gui/button/quick_idle_background.png",
+   "n": 8,
+   "boxed": false,
+   "rect1920": [
+    672.0,
+    1047.0,
+    72.0,
+    33.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    458,
+    702,
+    28.0,
+    18.0
+   ],
+   "depth": 7,
+   "screen": "quick_menu",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    247
+   ],
+   "inButton": true,
+   "text": "回退",
+   "style": {
+    "name": "quick_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 14,
+    "color": [
+     85,
+     85,
+     85,
+     127
+    ]
+   },
+   "transformed": true,
+   "n": 9,
+   "boxed": false,
+   "rect1920": [
+    687.0,
+    1053.0,
+    42.0,
+    27.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    496.0,
+    698.0,
+    48.0,
+    22.0
+   ],
+   "depth": 6,
+   "screen": "quick_menu",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    248
+   ],
+   "inButton": false,
+   "style": {
+    "name": "quick_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/quick_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994890> (10,4,10,0)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4
+   },
+   "image": "gui/button/quick_idle_background.png",
+   "label": "历史",
+   "n": 10,
+   "boxed": true,
+   "rect1920": [
+    744.0,
+    1047.0,
+    72.0,
+    33.0
+   ]
+  },
+  {
+   "type": "Frame",
+   "class": null,
+   "rect": [
+    496,
+    698,
+    48.0,
+    22.0
+   ],
+   "depth": 7,
+   "screen": "quick_menu",
+   "id": null,
+   "location": null,
+   "inButton": true,
+   "style": {
+    "name": "default",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ]
+   },
+   "image": "gui/button/quick_idle_background.png",
+   "n": 11,
+   "boxed": false,
+   "rect1920": [
+    744.0,
+    1047.0,
+    72.0,
+    33.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    506,
+    702,
+    28.0,
+    18.0
+   ],
+   "depth": 7,
+   "screen": "quick_menu",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    248
+   ],
+   "inButton": true,
+   "text": "历史",
+   "style": {
+    "name": "quick_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 14,
+    "color": [
+     170,
+     170,
+     170,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 12,
+   "boxed": false,
+   "rect1920": [
+    759.0,
+    1053.0,
+    42.0,
+    27.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    544.0,
+    698.0,
+    48.0,
+    22.0
+   ],
+   "depth": 6,
+   "screen": "quick_menu",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    249
+   ],
+   "inButton": false,
+   "style": {
+    "name": "quick_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/quick_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994890> (10,4,10,0)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4
+   },
+   "image": "gui/button/quick_idle_background.png",
+   "label": "快进",
+   "n": 13,
+   "boxed": true,
+   "rect1920": [
+    816.0,
+    1047.0,
+    72.0,
+    33.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    554,
+    702,
+    28.0,
+    18.0
+   ],
+   "depth": 7,
+   "screen": "quick_menu",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    249
+   ],
+   "inButton": true,
+   "text": "快进",
+   "style": {
+    "name": "quick_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 14,
+    "color": [
+     170,
+     170,
+     170,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 14,
+   "boxed": false,
+   "rect1920": [
+    831.0,
+    1053.0,
+    42.0,
+    27.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    592.0,
+    698.0,
+    48.0,
+    22.0
+   ],
+   "depth": 6,
+   "screen": "quick_menu",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    250
+   ],
+   "inButton": false,
+   "style": {
+    "name": "quick_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/quick_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994890> (10,4,10,0)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4
+   },
+   "image": "gui/button/quick_idle_background.png",
+   "label": "自动",
+   "n": 15,
+   "boxed": true,
+   "rect1920": [
+    888.0,
+    1047.0,
+    72.0,
+    33.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    602,
+    702,
+    28.0,
+    18.0
+   ],
+   "depth": 7,
+   "screen": "quick_menu",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    250
+   ],
+   "inButton": true,
+   "text": "自动",
+   "style": {
+    "name": "quick_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 14,
+    "color": [
+     170,
+     170,
+     170,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 16,
+   "boxed": false,
+   "rect1920": [
+    903.0,
+    1053.0,
+    42.0,
+    27.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    640.0,
+    698.0,
+    48.0,
+    22.0
+   ],
+   "depth": 6,
+   "screen": "quick_menu",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    251
+   ],
+   "inButton": false,
+   "style": {
+    "name": "quick_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/quick_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994890> (10,4,10,0)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4
+   },
+   "image": "gui/button/quick_idle_background.png",
+   "label": "保存",
+   "n": 17,
+   "boxed": true,
+   "rect1920": [
+    960.0,
+    1047.0,
+    72.0,
+    33.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    650,
+    702,
+    28.0,
+    18.0
+   ],
+   "depth": 7,
+   "screen": "quick_menu",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    251
+   ],
+   "inButton": true,
+   "text": "保存",
+   "style": {
+    "name": "quick_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 14,
+    "color": [
+     170,
+     170,
+     170,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 18,
+   "boxed": false,
+   "rect1920": [
+    975.0,
+    1053.0,
+    42.0,
+    27.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    688.0,
+    698.0,
+    48.0,
+    22.0
+   ],
+   "depth": 6,
+   "screen": "quick_menu",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    252
+   ],
+   "inButton": false,
+   "style": {
+    "name": "quick_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/quick_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994890> (10,4,10,0)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4
+   },
+   "image": "gui/button/quick_idle_background.png",
+   "label": "快存",
+   "n": 19,
+   "boxed": true,
+   "rect1920": [
+    1032.0,
+    1047.0,
+    72.0,
+    33.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    698,
+    702,
+    28.0,
+    18.0
+   ],
+   "depth": 7,
+   "screen": "quick_menu",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    252
+   ],
+   "inButton": true,
+   "text": "快存",
+   "style": {
+    "name": "quick_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 14,
+    "color": [
+     170,
+     170,
+     170,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 20,
+   "boxed": false,
+   "rect1920": [
+    1047.0,
+    1053.0,
+    42.0,
+    27.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    736.0,
+    698.0,
+    48.0,
+    22.0
+   ],
+   "depth": 6,
+   "screen": "quick_menu",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    253
+   ],
+   "inButton": false,
+   "style": {
+    "name": "quick_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/quick_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994890> (10,4,10,0)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4
+   },
+   "image": "gui/button/quick_idle_background.png",
+   "label": "快读",
+   "n": 21,
+   "boxed": true,
+   "rect1920": [
+    1104.0,
+    1047.0,
+    72.0,
+    33.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    746,
+    702,
+    28.0,
+    18.0
+   ],
+   "depth": 7,
+   "screen": "quick_menu",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    253
+   ],
+   "inButton": true,
+   "text": "快读",
+   "style": {
+    "name": "quick_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 14,
+    "color": [
+     170,
+     170,
+     170,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 22,
+   "boxed": false,
+   "rect1920": [
+    1119.0,
+    1053.0,
+    42.0,
+    27.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    784.0,
+    698.0,
+    48.0,
+    22.0
+   ],
+   "depth": 6,
+   "screen": "quick_menu",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    254
+   ],
+   "inButton": false,
+   "style": {
+    "name": "quick_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/quick_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994890> (10,4,10,0)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4
+   },
+   "image": "gui/button/quick_idle_background.png",
+   "label": "设置",
+   "n": 23,
+   "boxed": true,
+   "rect1920": [
+    1176.0,
+    1047.0,
+    72.0,
+    33.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    794,
+    702,
+    28.0,
+    18.0
+   ],
+   "depth": 7,
+   "screen": "quick_menu",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    254
+   ],
+   "inButton": true,
+   "text": "设置",
+   "style": {
+    "name": "quick_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 14,
+    "color": [
+     170,
+     170,
+     170,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 24,
+   "boxed": false,
+   "rect1920": [
+    1191.0,
+    1053.0,
+    42.0,
+    27.0
+   ]
+  }
+ ]
+}

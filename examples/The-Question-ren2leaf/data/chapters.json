@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "updatedAt": "2026-10-19T15:00:25.220Z",
+  "mode": "choices",
+  "chapters": [
+    {
+      "id": "ch1",
+      "title": "第一章",
+      "files": [
+        "script.rpy"
+      ]
+    }
+  ],
+  "excluded": []
+}

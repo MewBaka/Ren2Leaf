@@ -1,0 +1,4401 @@
+{
+  "schemaVersion": 2,
+  "scanner": {
+    "name": "ren2leaf-diagnose",
+    "version": "0.2.0"
+  },
+  "generatedAt": "2026-10-19T14:59:10.041Z",
+  "game": {
+    "name": "The Question",
+    "nameAt": {
+      "file": "options.rpy",
+      "line": 15
+    },
+    "version": "7.0",
+    "versionAt": {
+      "file": "options.rpy",
+      "line": 26
+    },
+    "resolution": {
+      "width": 1280,
+      "height": 720,
+      "source": "gui.init",
+      "file": "gui.rpy",
+      "line": 12,
+      "aspectRatio": "16:9",
+      "is16x9": true
+    },
+    "saveDirectory": "the_question-7"
+  },
+  "source": {
+    "status": "source",
+    "files": {
+      "rpy": 52,
+      "rpym": 1,
+      "rpyc": 53,
+      "py": 0,
+      "rpa": 0
+    },
+    "compiledOnly": [],
+    "archives": [],
+    "engineVersion": null,
+    "versionClues": [
+      {
+        "source": "bytecodeCache",
+        "strength": "weak",
+        "file": "cache/bytecode-312.rpyb",
+        "value": "8.4+",
+        "suggestsMajor": 8,
+        "message": "字节码缓存，可能由后续使用其他 SDK 运行时生成"
+      }
+    ],
+    "python2": {
+      "syntaxHits": 0,
+      "apiHits": 0,
+      "hits": [],
+      "truncated": false
+    },
+    "python3Clues": [],
+    "sdkRecommendation": {
+      "major": 8,
+      "exactVersion": null,
+      "confidence": "medium",
+      "reasons": [
+        "未检测到 Python 2 特征，默认使用 Ren'Py 8",
+        "字节码缓存提示 8.4+（弱线索）"
+      ]
+    }
+  },
+  "screens": [
+    {
+      "name": "say",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 98,
+          "endLine": 115,
+          "signature": "(who, what)",
+          "params": [
+            {
+              "name": "who",
+              "default": null
+            },
+            {
+              "name": "what",
+              "default": null
+            }
+          ],
+          "variant": null,
+          "tag": null,
+          "zorder": null,
+          "modal": null
+        }
+      ],
+      "callSites": [],
+      "uses": [],
+      "usedBy": [],
+      "storeVariables": [],
+      "unresolvedNames": [],
+      "actions": {},
+      "elements": {
+        "add": 1,
+        "text": 2,
+        "window": 2
+      },
+      "persistentReads": [],
+      "classification": "dialogue_like",
+      "classificationReasons": [
+        "显示台词：text who、id \"who\"、text what、id \"what\""
+      ]
+    },
+    {
+      "name": "input",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 170,
+          "endLine": 182,
+          "signature": "(prompt)",
+          "params": [
+            {
+              "name": "prompt",
+              "default": null
+            }
+          ],
+          "variant": null,
+          "tag": null,
+          "zorder": null,
+          "modal": null
+        }
+      ],
+      "callSites": [],
+      "uses": [],
+      "usedBy": [],
+      "storeVariables": [],
+      "unresolvedNames": [],
+      "actions": {},
+      "elements": {
+        "input": 1,
+        "text": 1,
+        "vbox": 1,
+        "window": 1
+      },
+      "persistentReads": [],
+      "classification": "interactive",
+      "classificationReasons": [
+        "含可点击控件：input×1"
+      ]
+    },
+    {
+      "name": "choice",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 203,
+          "endLine": 208,
+          "signature": "(items)",
+          "params": [
+            {
+              "name": "items",
+              "default": null
+            }
+          ],
+          "variant": null,
+          "tag": null,
+          "zorder": null,
+          "modal": null
+        }
+      ],
+      "callSites": [
+        {
+          "kind": "menu",
+          "file": "script.rpy",
+          "line": 40,
+          "label": "start",
+          "caller": null,
+          "func": null,
+          "args": null,
+          "via": null
+        },
+        {
+          "kind": "menu",
+          "file": "script.rpy",
+          "line": 97,
+          "label": "rightaway",
+          "caller": null,
+          "func": null,
+          "args": null,
+          "via": null
+        }
+      ],
+      "uses": [],
+      "usedBy": [],
+      "storeVariables": [],
+      "unresolvedNames": [],
+      "actions": {
+        "(expression)": 1
+      },
+      "elements": {
+        "textbutton": 1,
+        "vbox": 1
+      },
+      "persistentReads": [],
+      "classification": "interactive",
+      "classificationReasons": [
+        "含可点击控件：textbutton×1"
+      ]
+    },
+    {
+      "name": "quick_menu",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 234,
+          "endLine": 254,
+          "signature": "()",
+          "params": [],
+          "variant": null,
+          "tag": null,
+          "zorder": 100,
+          "modal": null
+        },
+        {
+          "file": "screens.rpy",
+          "line": 1478,
+          "endLine": 1492,
+          "signature": "()",
+          "params": [],
+          "variant": "touch",
+          "tag": null,
+          "zorder": 100,
+          "modal": null
+        }
+      ],
+      "callSites": [
+        {
+          "kind": "config.overlay_screens",
+          "file": "screens.rpy",
+          "line": 260,
+          "label": null,
+          "caller": null,
+          "func": null,
+          "args": null,
+          "via": null
+        }
+      ],
+      "uses": [],
+      "usedBy": [],
+      "storeVariables": [
+        {
+          "name": "quick_menu",
+          "declaredBy": "default"
+        }
+      ],
+      "unresolvedNames": [],
+      "actions": {
+        "Preference": 2,
+        "QuickLoad": 1,
+        "QuickSave": 1,
+        "Rollback": 2,
+        "ShowMenu": 4,
+        "Skip": 4
+      },
+      "elements": {
+        "hbox": 2,
+        "textbutton": 12
+      },
+      "persistentReads": [],
+      "classification": "interactive",
+      "classificationReasons": [
+        "含可点击控件：textbutton×12"
+      ]
+    },
+    {
+      "name": "navigation",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 283,
+          "endLine": 325,
+          "signature": "()",
+          "params": [],
+          "variant": null,
+          "tag": null,
+          "zorder": null,
+          "modal": null
+        }
+      ],
+      "callSites": [
+        {
+          "kind": "use",
+          "file": "screens.rpy",
+          "line": 360,
+          "label": null,
+          "caller": "main_menu",
+          "func": null,
+          "args": null,
+          "via": null
+        },
+        {
+          "kind": "use",
+          "file": "screens.rpy",
+          "line": 463,
+          "label": null,
+          "caller": "game_menu",
+          "func": null,
+          "args": null,
+          "via": null
+        }
+      ],
+      "uses": [],
+      "usedBy": [
+        "game_menu",
+        "main_menu"
+      ],
+      "storeVariables": [
+        {
+          "name": "_in_replay",
+          "declaredBy": "engine"
+        },
+        {
+          "name": "main_menu",
+          "declaredBy": "engine"
+        }
+      ],
+      "unresolvedNames": [],
+      "actions": {
+        "EndReplay": 1,
+        "MainMenu": 1,
+        "Quit": 1,
+        "ShowMenu": 6,
+        "Start": 1
+      },
+      "elements": {
+        "textbutton": 10,
+        "vbox": 1
+      },
+      "persistentReads": [],
+      "classification": "interactive",
+      "classificationReasons": [
+        "含可点击控件：textbutton×10"
+      ]
+    },
+    {
+      "name": "main_menu",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 345,
+          "endLine": 369,
+          "signature": "()",
+          "params": [],
+          "variant": null,
+          "tag": "menu",
+          "zorder": null,
+          "modal": null
+        }
+      ],
+      "callSites": [
+        {
+          "kind": "ShowMenu",
+          "file": "screens.rpy",
+          "line": 473,
+          "label": null,
+          "caller": "game_menu",
+          "func": null,
+          "args": "(\"main_menu\")",
+          "via": null
+        }
+      ],
+      "uses": [
+        "navigation"
+      ],
+      "usedBy": [],
+      "storeVariables": [],
+      "unresolvedNames": [],
+      "actions": {},
+      "elements": {
+        "add": 1,
+        "frame": 1,
+        "text": 2,
+        "use": 1,
+        "vbox": 1
+      },
+      "persistentReads": [],
+      "classification": "interactive",
+      "classificationReasons": [
+        "引用了可交互界面 navigation"
+      ]
+    },
+    {
+      "name": "game_menu",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 410,
+          "endLine": 473,
+          "signature": "(title, scroll=None)",
+          "params": [
+            {
+              "name": "title",
+              "default": null
+            },
+            {
+              "name": "scroll",
+              "default": "None"
+            }
+          ],
+          "variant": null,
+          "tag": null,
+          "zorder": null,
+          "modal": null
+        }
+      ],
+      "callSites": [
+        {
+          "kind": "use",
+          "file": "screens.rpy",
+          "line": 542,
+          "label": null,
+          "caller": "about",
+          "func": null,
+          "args": "(_(\"About\"), scroll=\"viewport\")",
+          "via": null
+        },
+        {
+          "kind": "use",
+          "file": "screens.rpy",
+          "line": 639,
+          "label": null,
+          "caller": "file_slots",
+          "func": null,
+          "args": "(title)",
+          "via": null
+        },
+        {
+          "kind": "use",
+          "file": "screens.rpy",
+          "line": 761,
+          "label": null,
+          "caller": "preferences",
+          "func": null,
+          "args": "(_(\"Preferences\"), scroll=\"viewport\")",
+          "via": null
+        },
+        {
+          "kind": "use",
+          "file": "screens.rpy",
+          "line": 951,
+          "label": null,
+          "caller": "history",
+          "func": null,
+          "args": "(_(\"History\"), scroll=(\"vpgrid\" if gui.history_height else \"viewport\"))",
+          "via": null
+        },
+        {
+          "kind": "use",
+          "file": "screens.rpy",
+          "line": 1036,
+          "label": null,
+          "caller": "help",
+          "func": null,
+          "args": "(_(\"Help\"), scroll=\"viewport\")",
+          "via": null
+        }
+      ],
+      "uses": [
+        "navigation"
+      ],
+      "usedBy": [
+        "about",
+        "file_slots",
+        "help",
+        "history",
+        "preferences"
+      ],
+      "storeVariables": [
+        {
+          "name": "main_menu",
+          "declaredBy": "engine"
+        }
+      ],
+      "unresolvedNames": [],
+      "actions": {
+        "Return": 1,
+        "ShowMenu": 1
+      },
+      "elements": {
+        "add": 2,
+        "frame": 3,
+        "hbox": 1,
+        "key": 1,
+        "label": 1,
+        "textbutton": 1,
+        "transclude": 3,
+        "use": 1,
+        "vbox": 1,
+        "viewport": 1,
+        "vpgrid": 1
+      },
+      "persistentReads": [],
+      "classification": "interactive",
+      "classificationReasons": [
+        "含可点击控件：textbutton×1"
+      ]
+    },
+    {
+      "name": "about",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 535,
+          "endLine": 595,
+          "signature": "()",
+          "params": [],
+          "variant": null,
+          "tag": "menu",
+          "zorder": null,
+          "modal": null
+        }
+      ],
+      "callSites": [
+        {
+          "kind": "ShowMenu",
+          "file": "screens.rpy",
+          "line": 315,
+          "label": null,
+          "caller": "navigation",
+          "func": null,
+          "args": "(\"about\")",
+          "via": null
+        }
+      ],
+      "uses": [
+        "game_menu"
+      ],
+      "usedBy": [],
+      "storeVariables": [],
+      "unresolvedNames": [],
+      "actions": {},
+      "elements": {
+        "hbox": 7,
+        "label": 1,
+        "null": 4,
+        "text": 17,
+        "use": 1,
+        "vbox": 1
+      },
+      "persistentReads": [],
+      "classification": "interactive",
+      "classificationReasons": [
+        "引用了可交互界面 game_menu"
+      ]
+    },
+    {
+      "name": "save",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 621,
+          "endLine": 625,
+          "signature": "()",
+          "params": [],
+          "variant": null,
+          "tag": "menu",
+          "zorder": null,
+          "modal": null
+        }
+      ],
+      "callSites": [
+        {
+          "kind": "ShowMenu",
+          "file": "screens.rpy",
+          "line": 251,
+          "label": null,
+          "caller": "quick_menu",
+          "func": null,
+          "args": "('save')",
+          "via": null
+        },
+        {
+          "kind": "ShowMenu",
+          "file": "screens.rpy",
+          "line": 301,
+          "label": null,
+          "caller": "navigation",
+          "func": null,
+          "args": "(\"save\")",
+          "via": null
+        },
+        {
+          "kind": "ShowMenu",
+          "file": "screens.rpy",
+          "line": 1492,
+          "label": null,
+          "caller": "quick_menu",
+          "func": null,
+          "args": "()",
+          "via": "_game_menu_screen 默认值"
+        }
+      ],
+      "uses": [
+        "file_slots"
+      ],
+      "usedBy": [],
+      "storeVariables": [],
+      "unresolvedNames": [],
+      "actions": {},
+      "elements": {
+        "use": 1
+      },
+      "persistentReads": [],
+      "classification": "interactive",
+      "classificationReasons": [
+        "引用了可交互界面 file_slots"
+      ]
+    },
+    {
+      "name": "load",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 628,
+          "endLine": 632,
+          "signature": "()",
+          "params": [],
+          "variant": null,
+          "tag": "menu",
+          "zorder": null,
+          "modal": null
+        }
+      ],
+      "callSites": [
+        {
+          "kind": "ShowMenu",
+          "file": "screens.rpy",
+          "line": 303,
+          "label": null,
+          "caller": "navigation",
+          "func": null,
+          "args": "(\"load\")",
+          "via": null
+        }
+      ],
+      "uses": [
+        "file_slots"
+      ],
+      "usedBy": [],
+      "storeVariables": [],
+      "unresolvedNames": [],
+      "actions": {},
+      "elements": {
+        "use": 1
+      },
+      "persistentReads": [],
+      "classification": "interactive",
+      "classificationReasons": [
+        "引用了可交互界面 file_slots"
+      ]
+    },
+    {
+      "name": "file_slots",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 635,
+          "endLine": 710,
+          "signature": "(title)",
+          "params": [
+            {
+              "name": "title",
+              "default": null
+            }
+          ],
+          "variant": null,
+          "tag": null,
+          "zorder": null,
+          "modal": null
+        }
+      ],
+      "callSites": [
+        {
+          "kind": "use",
+          "file": "screens.rpy",
+          "line": 625,
+          "label": null,
+          "caller": "save",
+          "func": null,
+          "args": "(_(\"Save\"))",
+          "via": null
+        },
+        {
+          "kind": "use",
+          "file": "screens.rpy",
+          "line": 632,
+          "label": null,
+          "caller": "load",
+          "func": null,
+          "args": "(_(\"Load\"))",
+          "via": null
+        }
+      ],
+      "uses": [
+        "game_menu"
+      ],
+      "usedBy": [
+        "load",
+        "save"
+      ],
+      "storeVariables": [],
+      "unresolvedNames": [],
+      "actions": {
+        "FileAction": 1,
+        "FileDelete": 1,
+        "FilePage": 3,
+        "FilePageNext": 2,
+        "FilePagePrevious": 2,
+        "page_name_value.Toggle": 1
+      },
+      "elements": {
+        "add": 1,
+        "button": 2,
+        "fixed": 1,
+        "grid": 1,
+        "hbox": 1,
+        "input": 1,
+        "key": 3,
+        "text": 2,
+        "textbutton": 5,
+        "use": 1,
+        "vbox": 1
+      },
+      "persistentReads": [],
+      "classification": "interactive",
+      "classificationReasons": [
+        "含可点击控件：button×2、input×1、textbutton×5"
+      ]
+    },
+    {
+      "name": "preferences",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 752,
+          "endLine": 862,
+          "signature": "()",
+          "params": [],
+          "variant": null,
+          "tag": "menu",
+          "zorder": null,
+          "modal": null
+        }
+      ],
+      "callSites": [
+        {
+          "kind": "ShowMenu",
+          "file": "screens.rpy",
+          "line": 254,
+          "label": null,
+          "caller": "quick_menu",
+          "func": null,
+          "args": "('preferences')",
+          "via": null
+        },
+        {
+          "kind": "ShowMenu",
+          "file": "screens.rpy",
+          "line": 305,
+          "label": null,
+          "caller": "navigation",
+          "func": null,
+          "args": "(\"preferences\")",
+          "via": null
+        }
+      ],
+      "uses": [
+        "game_menu"
+      ],
+      "usedBy": [],
+      "storeVariables": [],
+      "unresolvedNames": [],
+      "actions": {
+        "InvertSelected": 1,
+        "Language": 13,
+        "Play": 2,
+        "Preference": 5
+      },
+      "elements": {
+        "bar": 5,
+        "hbox": 5,
+        "label": 9,
+        "null": 2,
+        "textbutton": 21,
+        "use": 1,
+        "vbox": 7
+      },
+      "persistentReads": [],
+      "classification": "interactive",
+      "classificationReasons": [
+        "含可点击控件：textbutton×21、bar×5"
+      ]
+    },
+    {
+      "name": "history",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 944,
+          "endLine": 979,
+          "signature": "()",
+          "params": [],
+          "variant": null,
+          "tag": "menu",
+          "zorder": null,
+          "modal": null
+        }
+      ],
+      "callSites": [
+        {
+          "kind": "ShowMenu",
+          "file": "screens.rpy",
+          "line": 248,
+          "label": null,
+          "caller": "quick_menu",
+          "func": null,
+          "args": "('history')",
+          "via": null
+        },
+        {
+          "kind": "ShowMenu",
+          "file": "screens.rpy",
+          "line": 299,
+          "label": null,
+          "caller": "navigation",
+          "func": null,
+          "args": "(\"history\")",
+          "via": null
+        }
+      ],
+      "uses": [
+        "game_menu"
+      ],
+      "usedBy": [],
+      "storeVariables": [
+        {
+          "name": "_history_list",
+          "declaredBy": "engine"
+        }
+      ],
+      "unresolvedNames": [],
+      "actions": {},
+      "elements": {
+        "fixed": 1,
+        "label": 2,
+        "text": 1,
+        "use": 1,
+        "window": 1
+      },
+      "persistentReads": [],
+      "classification": "interactive",
+      "classificationReasons": [
+        "引用了可交互界面 game_menu",
+        "显示台词：text what"
+      ]
+    },
+    {
+      "name": "help",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 1030,
+          "endLine": 1056,
+          "signature": "()",
+          "params": [],
+          "variant": null,
+          "tag": "menu",
+          "zorder": null,
+          "modal": null
+        }
+      ],
+      "callSites": [
+        {
+          "kind": "ShowMenu",
+          "file": "screens.rpy",
+          "line": 320,
+          "label": null,
+          "caller": "navigation",
+          "func": null,
+          "args": "(\"help\")",
+          "via": null
+        }
+      ],
+      "uses": [
+        "game_menu",
+        "gamepad_help",
+        "keyboard_help",
+        "mouse_help"
+      ],
+      "usedBy": [],
+      "storeVariables": [],
+      "unresolvedNames": [],
+      "actions": {
+        "SetScreenVariable": 3
+      },
+      "elements": {
+        "hbox": 1,
+        "textbutton": 3,
+        "use": 4,
+        "vbox": 1
+      },
+      "persistentReads": [],
+      "classification": "interactive",
+      "classificationReasons": [
+        "含可点击控件：textbutton×3"
+      ]
+    },
+    {
+      "name": "keyboard_help",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 1059,
+          "endLine": 1107,
+          "signature": "()",
+          "params": [],
+          "variant": null,
+          "tag": null,
+          "zorder": null,
+          "modal": null
+        }
+      ],
+      "callSites": [
+        {
+          "kind": "use",
+          "file": "screens.rpy",
+          "line": 1052,
+          "label": null,
+          "caller": "help",
+          "func": null,
+          "args": null,
+          "via": null
+        }
+      ],
+      "uses": [],
+      "usedBy": [
+        "help"
+      ],
+      "storeVariables": [],
+      "unresolvedNames": [],
+      "actions": {},
+      "elements": {
+        "hbox": 12,
+        "label": 12,
+        "text": 12
+      },
+      "persistentReads": [],
+      "classification": "dialogue_like",
+      "classificationReasons": [
+        "无可点击控件，仅用于显示"
+      ]
+    },
+    {
+      "name": "mouse_help",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 1110,
+          "endLine": 1130,
+          "signature": "()",
+          "params": [],
+          "variant": null,
+          "tag": null,
+          "zorder": null,
+          "modal": null
+        }
+      ],
+      "callSites": [
+        {
+          "kind": "use",
+          "file": "screens.rpy",
+          "line": 1054,
+          "label": null,
+          "caller": "help",
+          "func": null,
+          "args": null,
+          "via": null
+        }
+      ],
+      "uses": [],
+      "usedBy": [
+        "help"
+      ],
+      "storeVariables": [],
+      "unresolvedNames": [],
+      "actions": {},
+      "elements": {
+        "hbox": 5,
+        "label": 5,
+        "text": 5
+      },
+      "persistentReads": [],
+      "classification": "dialogue_like",
+      "classificationReasons": [
+        "无可点击控件，仅用于显示"
+      ]
+    },
+    {
+      "name": "gamepad_help",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 1133,
+          "endLine": 1159,
+          "signature": "()",
+          "params": [],
+          "variant": null,
+          "tag": null,
+          "zorder": null,
+          "modal": null
+        }
+      ],
+      "callSites": [
+        {
+          "kind": "use",
+          "file": "screens.rpy",
+          "line": 1056,
+          "label": null,
+          "caller": "help",
+          "func": null,
+          "args": null,
+          "via": null
+        }
+      ],
+      "uses": [],
+      "usedBy": [
+        "help"
+      ],
+      "storeVariables": [],
+      "unresolvedNames": [],
+      "actions": {
+        "GamepadCalibrate": 1
+      },
+      "elements": {
+        "hbox": 6,
+        "label": 6,
+        "text": 6,
+        "textbutton": 1
+      },
+      "persistentReads": [],
+      "classification": "interactive",
+      "classificationReasons": [
+        "含可点击控件：textbutton×1"
+      ]
+    },
+    {
+      "name": "confirm",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 1198,
+          "endLine": 1228,
+          "signature": "(message, yes_action, no_action)",
+          "params": [
+            {
+              "name": "message",
+              "default": null
+            },
+            {
+              "name": "yes_action",
+              "default": null
+            },
+            {
+              "name": "no_action",
+              "default": null
+            }
+          ],
+          "variant": null,
+          "tag": null,
+          "zorder": 200,
+          "modal": true
+        }
+      ],
+      "callSites": [],
+      "uses": [],
+      "usedBy": [],
+      "storeVariables": [],
+      "unresolvedNames": [],
+      "actions": {
+        "(variable)": 3
+      },
+      "elements": {
+        "add": 1,
+        "frame": 1,
+        "hbox": 1,
+        "key": 1,
+        "label": 1,
+        "textbutton": 2,
+        "vbox": 1
+      },
+      "persistentReads": [],
+      "classification": "interactive",
+      "classificationReasons": [
+        "含可点击控件：textbutton×2",
+        "modal True"
+      ]
+    },
+    {
+      "name": "skip_indicator",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 1261,
+          "endLine": 1275,
+          "signature": "()",
+          "params": [],
+          "variant": null,
+          "tag": null,
+          "zorder": 100,
+          "modal": null
+        }
+      ],
+      "callSites": [],
+      "uses": [],
+      "usedBy": [],
+      "storeVariables": [],
+      "unresolvedNames": [],
+      "actions": {},
+      "elements": {
+        "frame": 1,
+        "hbox": 1,
+        "text": 4
+      },
+      "persistentReads": [],
+      "classification": "dialogue_like",
+      "classificationReasons": [
+        "无可点击控件，仅用于显示"
+      ]
+    },
+    {
+      "name": "notify",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 1317,
+          "endLine": 1325,
+          "signature": "(message)",
+          "params": [
+            {
+              "name": "message",
+              "default": null
+            }
+          ],
+          "variant": null,
+          "tag": null,
+          "zorder": 100,
+          "modal": null
+        }
+      ],
+      "callSites": [],
+      "uses": [],
+      "usedBy": [],
+      "storeVariables": [],
+      "unresolvedNames": [],
+      "actions": {
+        "Hide": 1
+      },
+      "elements": {
+        "frame": 1,
+        "text": 1,
+        "timer": 1
+      },
+      "persistentReads": [],
+      "classification": "dialogue_like",
+      "classificationReasons": [
+        "无可点击控件，仅用于显示"
+      ]
+    },
+    {
+      "name": "nvl",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 1356,
+          "endLine": 1385,
+          "signature": "(dialogue, items=None)",
+          "params": [
+            {
+              "name": "dialogue",
+              "default": null
+            },
+            {
+              "name": "items",
+              "default": "None"
+            }
+          ],
+          "variant": null,
+          "tag": null,
+          "zorder": null,
+          "modal": null
+        }
+      ],
+      "callSites": [],
+      "uses": [
+        "nvl_dialogue"
+      ],
+      "usedBy": [],
+      "storeVariables": [],
+      "unresolvedNames": [],
+      "actions": {
+        "(expression)": 1
+      },
+      "elements": {
+        "add": 1,
+        "textbutton": 1,
+        "use": 2,
+        "vbox": 1,
+        "vpgrid": 1,
+        "window": 1
+      },
+      "persistentReads": [],
+      "classification": "interactive",
+      "classificationReasons": [
+        "含可点击控件：textbutton×1"
+      ]
+    },
+    {
+      "name": "nvl_dialogue",
+      "category": "standard",
+      "defined": true,
+      "definitions": [
+        {
+          "file": "screens.rpy",
+          "line": 1388,
+          "endLine": 1404,
+          "signature": "(dialogue)",
+          "params": [
+            {
+              "name": "dialogue",
+              "default": null
+            }
+          ],
+          "variant": null,
+          "tag": null,
+          "zorder": null,
+          "modal": null
+        }
+      ],
+      "callSites": [
+        {
+          "kind": "use",
+          "file": "screens.rpy",
+          "line": 1371,
+          "label": null,
+          "caller": "nvl",
+          "func": null,
+          "args": "(dialogue)",
+          "via": null
+        },
+        {
+          "kind": "use",
+          "file": "screens.rpy",
+          "line": 1375,
+          "label": null,
+          "caller": "nvl",
+          "func": null,
+          "args": "(dialogue)",
+          "via": null
+        }
+      ],
+      "uses": [],
+      "usedBy": [
+        "nvl"
+      ],
+      "storeVariables": [],
+      "unresolvedNames": [],
+      "actions": {},
+      "elements": {
+        "fixed": 1,
+        "text": 2,
+        "window": 1
+      },
+      "persistentReads": [],
+      "classification": "dialogue_like",
+      "classificationReasons": [
+        "无可点击控件，仅用于显示"
+      ]
+    }
+  ],
+  "characters": [
+    {
+      "variable": "s",
+      "constructor": "Character",
+      "displayName": "Sylvie",
+      "nameExpression": null,
+      "kind": "adv",
+      "kindSource": null,
+      "image": null,
+      "screen": null,
+      "file": "script.rpy",
+      "line": 2,
+      "label": null
+    },
+    {
+      "variable": "m",
+      "constructor": "Character",
+      "displayName": "Me",
+      "nameExpression": null,
+      "kind": "adv",
+      "kindSource": null,
+      "image": null,
+      "screen": null,
+      "file": "script.rpy",
+      "line": 3,
+      "label": null
+    }
+  ],
+  "needsReview": [],
+  "summary": {
+    "screens": 22,
+    "standardScreens": 22,
+    "customScreens": 0,
+    "undefinedScreens": 0,
+    "interactiveScreens": 16,
+    "dialogueLikeScreens": 6,
+    "callSites": 28,
+    "characters": 2,
+    "needsReview": 0,
+    "actionKinds": {
+      "(expression)": 2,
+      "(variable)": 3,
+      "EndReplay": 1,
+      "FileAction": 1,
+      "FileDelete": 1,
+      "FilePage": 3,
+      "FilePageNext": 2,
+      "FilePagePrevious": 2,
+      "GamepadCalibrate": 1,
+      "Hide": 1,
+      "InvertSelected": 1,
+      "Language": 13,
+      "MainMenu": 1,
+      "page_name_value.Toggle": 1,
+      "Play": 2,
+      "Preference": 7,
+      "QuickLoad": 1,
+      "QuickSave": 1,
+      "Quit": 1,
+      "Return": 1,
+      "Rollback": 2,
+      "SetScreenVariable": 3,
+      "ShowMenu": 11,
+      "Skip": 4,
+      "Start": 1
+    }
+  },
+  "extensions": {
+    "speakers": {
+      "version": 1,
+      "summary": {
+        "speakers": 2,
+        "withLines": 2,
+        "unused": 0,
+        "placeholderNames": 0,
+        "narratorStyle": 0,
+        "mixedVoiceDirs": 0,
+        "mergeCandidates": 0,
+        "undeclared": 0,
+        "inlineSpeakers": 0,
+        "needsDecision": 2,
+        "sayLines": 71,
+        "spokenLines": 40,
+        "narratorLines": 31,
+        "extendLines": 0,
+        "voicedLines": 0,
+        "voiceDirs": 0,
+        "nvlLines": 0
+      },
+      "speakers": [
+        {
+          "variable": "m",
+          "declared": true,
+          "constructor": "Character",
+          "displayName": "Me",
+          "nameExpression": null,
+          "kind": "adv",
+          "image": null,
+          "screen": null,
+          "file": "script.rpy",
+          "line": 3,
+          "lines": 22,
+          "voiced": 0,
+          "files": [
+            {
+              "file": "script.rpy",
+              "lines": 22
+            }
+          ],
+          "voiceDirs": [],
+          "spriteTags": [
+            {
+              "tag": "sylvie",
+              "lines": 14
+            }
+          ],
+          "attributes": [],
+          "samples": [
+            {
+              "file": "script.rpy",
+              "line": 59,
+              "text": "Good...",
+              "voice": null
+            },
+            {
+              "file": "script.rpy",
+              "line": 63,
+              "text": "Are you going home now? Wanna walk back with me?",
+              "voice": null
+            },
+            {
+              "file": "script.rpy",
+              "line": 76,
+              "text": "Hey... Umm...",
+              "voice": null
+            }
+          ],
+          "ranges": [
+            {
+              "file": "script.rpy",
+              "startLine": 59,
+              "endLine": 218,
+              "lines": 22,
+              "voiceDir": null,
+              "voiced": 0,
+              "voiceDirs": [],
+              "spriteTags": [
+                "sylvie"
+              ]
+            }
+          ],
+          "dominantVoice": null,
+          "flags": [
+            {
+              "kind": "noVoice",
+              "message": "无 voice 语句，角色身份仅可通过立绘与台词推断"
+            },
+            {
+              "kind": "major",
+              "message": "占全部台词的 55%"
+            }
+          ],
+          "sameName": []
+        },
+        {
+          "variable": "s",
+          "declared": true,
+          "constructor": "Character",
+          "displayName": "Sylvie",
+          "nameExpression": null,
+          "kind": "adv",
+          "image": null,
+          "screen": null,
+          "file": "script.rpy",
+          "line": 2,
+          "lines": 18,
+          "voiced": 0,
+          "files": [
+            {
+              "file": "script.rpy",
+              "lines": 18
+            }
+          ],
+          "voiceDirs": [],
+          "spriteTags": [
+            {
+              "tag": "sylvie",
+              "lines": 17
+            }
+          ],
+          "attributes": [],
+          "samples": [
+            {
+              "file": "script.rpy",
+              "line": 57,
+              "text": "Hi there! How was class?",
+              "voice": null
+            },
+            {
+              "file": "script.rpy",
+              "line": 65,
+              "text": "Sure!",
+              "voice": null
+            },
+            {
+              "file": "script.rpy",
+              "line": 99,
+              "text": "Sure, but what's a \"visual novel?\"",
+              "voice": null
+            }
+          ],
+          "ranges": [
+            {
+              "file": "script.rpy",
+              "startLine": 57,
+              "endLine": 222,
+              "lines": 18,
+              "voiceDir": null,
+              "voiced": 0,
+              "voiceDirs": [],
+              "spriteTags": [
+                "sylvie"
+              ]
+            }
+          ],
+          "dominantVoice": null,
+          "flags": [
+            {
+              "kind": "noVoice",
+              "message": "无 voice 语句，角色身份仅可通过立绘与台词推断"
+            },
+            {
+              "kind": "major",
+              "message": "占全部台词的 45%"
+            }
+          ],
+          "sameName": []
+        }
+      ],
+      "groups": [],
+      "voiceDirs": [],
+      "inlineSpeakers": [],
+      "narrator": {
+        "lines": 31,
+        "files": [
+          {
+            "file": "script.rpy",
+            "lines": 31
+          }
+        ],
+        "samples": [
+          {
+            "file": "script.rpy",
+            "line": 18,
+            "text": "It's only when I hear the sounds of shuffling feet and supplies being put away that I real"
+          },
+          {
+            "file": "script.rpy",
+            "line": 20,
+            "text": "Professor Eileen's lectures are usually interesting, but today I just couldn't concentrate"
+          },
+          {
+            "file": "script.rpy",
+            "line": 22,
+            "text": "I've had a lot of other thoughts on my mind...thoughts that culminate in a question."
+          }
+        ]
+      }
+    },
+    "python": {
+      "version": 1,
+      "summary": {
+        "total": 90,
+        "byCategory": {
+          "drop": 85,
+          "needsAgent": 4,
+          "autoSet": 1
+        },
+        "byKind": {
+          "config": 81,
+          "assign": 3,
+          "decorator": 2,
+          "def": 2,
+          "defineValue": 2
+        },
+        "byContext": {
+          "initPython": 45,
+          "define": 37,
+          "python": 5,
+          "dollar": 3
+        },
+        "autoConvertible": 1,
+        "configuration": 81,
+        "needsAgent": 4,
+        "unresolvable": 0,
+        "functions": 2,
+        "customStatements": 0,
+        "unknownStatements": 0,
+        "variables": 2,
+        "interfaceVariables": 0,
+        "persistent": 0,
+        "localAssigns": 0,
+        "hooks": 0,
+        "galleryButtons": 0,
+        "galleryImages": 0,
+        "truncated": false
+      },
+      "entries": [
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 12,
+          "endLine": 12,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "gui.init(1280, 720)",
+          "kind": "config",
+          "callee": "gui.init",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 124,
+          "endLine": 124,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.namebox_borders = Borders(5, 5, 5, 5)",
+          "kind": "config",
+          "target": "gui.namebox_borders",
+          "namespace": "gui",
+          "expression": "Borders(5, 5, 5, 5)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 155,
+          "endLine": 155,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.button_borders = Borders(4, 4, 4, 4)",
+          "kind": "config",
+          "target": "gui.button_borders",
+          "namespace": "gui",
+          "expression": "Borders(4, 4, 4, 4)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 162,
+          "endLine": 162,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.button_text_font = gui.interface_text_font",
+          "kind": "config",
+          "target": "gui.button_text_font",
+          "namespace": "gui",
+          "expression": "gui.interface_text_font",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 165,
+          "endLine": 165,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.button_text_size = gui.interface_text_size",
+          "kind": "config",
+          "target": "gui.button_text_size",
+          "namespace": "gui",
+          "expression": "gui.interface_text_size",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 168,
+          "endLine": 168,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.button_text_idle_color = gui.idle_color",
+          "kind": "config",
+          "target": "gui.button_text_idle_color",
+          "namespace": "gui",
+          "expression": "gui.idle_color",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 169,
+          "endLine": 169,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.button_text_hover_color = gui.hover_color",
+          "kind": "config",
+          "target": "gui.button_text_hover_color",
+          "namespace": "gui",
+          "expression": "gui.hover_color",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 170,
+          "endLine": 170,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.button_text_selected_color = gui.selected_color",
+          "kind": "config",
+          "target": "gui.button_text_selected_color",
+          "namespace": "gui",
+          "expression": "gui.selected_color",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 171,
+          "endLine": 171,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.button_text_insensitive_color = gui.insensitive_color",
+          "kind": "config",
+          "target": "gui.button_text_insensitive_color",
+          "namespace": "gui",
+          "expression": "gui.insensitive_color",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 184,
+          "endLine": 184,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.radio_button_borders = Borders(25, 4, 4, 4)",
+          "kind": "config",
+          "target": "gui.radio_button_borders",
+          "namespace": "gui",
+          "expression": "Borders(25, 4, 4, 4)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 186,
+          "endLine": 186,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.check_button_borders = Borders(25, 4, 4, 4)",
+          "kind": "config",
+          "target": "gui.check_button_borders",
+          "namespace": "gui",
+          "expression": "Borders(25, 4, 4, 4)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 190,
+          "endLine": 190,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.page_button_borders = Borders(10, 4, 10, 4)",
+          "kind": "config",
+          "target": "gui.page_button_borders",
+          "namespace": "gui",
+          "expression": "Borders(10, 4, 10, 4)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 192,
+          "endLine": 192,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.quick_button_borders = Borders(10, 4, 10, 0)",
+          "kind": "config",
+          "target": "gui.quick_button_borders",
+          "namespace": "gui",
+          "expression": "Borders(10, 4, 10, 0)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 194,
+          "endLine": 194,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.quick_button_text_idle_color = gui.idle_small_color",
+          "kind": "config",
+          "target": "gui.quick_button_text_idle_color",
+          "namespace": "gui",
+          "expression": "gui.idle_small_color",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 195,
+          "endLine": 195,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.quick_button_text_selected_color = gui.accent_color",
+          "kind": "config",
+          "target": "gui.quick_button_text_selected_color",
+          "namespace": "gui",
+          "expression": "gui.accent_color",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 211,
+          "endLine": 211,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.choice_button_borders = Borders(100, 5, 100, 5)",
+          "kind": "config",
+          "target": "gui.choice_button_borders",
+          "namespace": "gui",
+          "expression": "Borders(100, 5, 100, 5)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 212,
+          "endLine": 212,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.choice_button_text_font = gui.text_font",
+          "kind": "config",
+          "target": "gui.choice_button_text_font",
+          "namespace": "gui",
+          "expression": "gui.text_font",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 213,
+          "endLine": 213,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.choice_button_text_size = gui.text_size",
+          "kind": "config",
+          "target": "gui.choice_button_text_size",
+          "namespace": "gui",
+          "expression": "gui.text_size",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 228,
+          "endLine": 228,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.slot_button_borders = Borders(10, 10, 10, 10)",
+          "kind": "config",
+          "target": "gui.slot_button_borders",
+          "namespace": "gui",
+          "expression": "Borders(10, 10, 10, 10)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 231,
+          "endLine": 231,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.slot_button_text_idle_color = gui.idle_small_color",
+          "kind": "config",
+          "target": "gui.slot_button_text_idle_color",
+          "namespace": "gui",
+          "expression": "gui.idle_small_color",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 285,
+          "endLine": 285,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.frame_borders = Borders(4, 4, 4, 4)",
+          "kind": "config",
+          "target": "gui.frame_borders",
+          "namespace": "gui",
+          "expression": "Borders(4, 4, 4, 4)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 288,
+          "endLine": 288,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.confirm_frame_borders = Borders(40, 40, 40, 40)",
+          "kind": "config",
+          "target": "gui.confirm_frame_borders",
+          "namespace": "gui",
+          "expression": "Borders(40, 40, 40, 40)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 291,
+          "endLine": 291,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.skip_frame_borders = Borders(16, 5, 50, 5)",
+          "kind": "config",
+          "target": "gui.skip_frame_borders",
+          "namespace": "gui",
+          "expression": "Borders(16, 5, 50, 5)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 294,
+          "endLine": 294,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.notify_frame_borders = Borders(16, 5, 40, 5)",
+          "kind": "config",
+          "target": "gui.notify_frame_borders",
+          "namespace": "gui",
+          "expression": "Borders(16, 5, 40, 5)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 319,
+          "endLine": 319,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.bar_borders = Borders(4, 4, 4, 4)",
+          "kind": "config",
+          "target": "gui.bar_borders",
+          "namespace": "gui",
+          "expression": "Borders(4, 4, 4, 4)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 320,
+          "endLine": 320,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.scrollbar_borders = Borders(4, 4, 4, 4)",
+          "kind": "config",
+          "target": "gui.scrollbar_borders",
+          "namespace": "gui",
+          "expression": "Borders(4, 4, 4, 4)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 321,
+          "endLine": 321,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.slider_borders = Borders(4, 4, 4, 4)",
+          "kind": "config",
+          "target": "gui.slider_borders",
+          "namespace": "gui",
+          "expression": "Borders(4, 4, 4, 4)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 324,
+          "endLine": 324,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.vbar_borders = Borders(4, 4, 4, 4)",
+          "kind": "config",
+          "target": "gui.vbar_borders",
+          "namespace": "gui",
+          "expression": "Borders(4, 4, 4, 4)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 325,
+          "endLine": 325,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.vscrollbar_borders = Borders(4, 4, 4, 4)",
+          "kind": "config",
+          "target": "gui.vscrollbar_borders",
+          "namespace": "gui",
+          "expression": "Borders(4, 4, 4, 4)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 326,
+          "endLine": 326,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.vslider_borders = Borders(4, 4, 4, 4)",
+          "kind": "config",
+          "target": "gui.vslider_borders",
+          "namespace": "gui",
+          "expression": "Borders(4, 4, 4, 4)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "gui.rpy",
+          "line": 363,
+          "endLine": 363,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.nvl_borders = Borders(0, 10, 0, 20)",
+          "kind": "config",
+          "target": "gui.nvl_borders",
+          "namespace": "gui",
+          "expression": "Borders(0, 10, 0, 20)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 414,
+          "endLine": 414,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "@gui.variant",
+          "kind": "decorator",
+          "name": "gui.variant",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 415,
+          "endLine": 415,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "def touch():",
+          "kind": "def",
+          "name": "touch",
+          "category": "needsAgent",
+          "suggestion": "/blueprint",
+          "reason": "自定义函数"
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 417,
+          "endLine": 417,
+          "label": null,
+          "screen": null,
+          "func": "touch",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.quick_button_borders = Borders(40, 14, 40, 0)",
+          "kind": "config",
+          "target": "gui.quick_button_borders",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": null
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 421,
+          "endLine": 421,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "@gui.variant",
+          "kind": "decorator",
+          "name": "gui.variant",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 422,
+          "endLine": 422,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "def small():",
+          "kind": "def",
+          "name": "small",
+          "category": "needsAgent",
+          "suggestion": "/blueprint",
+          "reason": "自定义函数"
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 425,
+          "endLine": 425,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.text_size = 30",
+          "kind": "config",
+          "target": "gui.text_size",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 30
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 426,
+          "endLine": 426,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.name_text_size = 36",
+          "kind": "config",
+          "target": "gui.name_text_size",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 36
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 427,
+          "endLine": 427,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.notify_text_size = 25",
+          "kind": "config",
+          "target": "gui.notify_text_size",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 25
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 428,
+          "endLine": 428,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.interface_text_size = 36",
+          "kind": "config",
+          "target": "gui.interface_text_size",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 36
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 429,
+          "endLine": 429,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.button_text_size = 34",
+          "kind": "config",
+          "target": "gui.button_text_size",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 34
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 430,
+          "endLine": 430,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.label_text_size = 36",
+          "kind": "config",
+          "target": "gui.label_text_size",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 36
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 433,
+          "endLine": 433,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.textbox_height = 240",
+          "kind": "config",
+          "target": "gui.textbox_height",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 240
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 434,
+          "endLine": 434,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.name_xpos = 80",
+          "kind": "config",
+          "target": "gui.name_xpos",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 80
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 435,
+          "endLine": 435,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.dialogue_xpos = 90",
+          "kind": "config",
+          "target": "gui.dialogue_xpos",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 90
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 436,
+          "endLine": 436,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.dialogue_width = 1100",
+          "kind": "config",
+          "target": "gui.dialogue_width",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 1100
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 439,
+          "endLine": 439,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.choice_button_width = 1240",
+          "kind": "config",
+          "target": "gui.choice_button_width",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 1240
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 441,
+          "endLine": 441,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.navigation_spacing = 20",
+          "kind": "config",
+          "target": "gui.navigation_spacing",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 20
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 442,
+          "endLine": 442,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.pref_button_spacing = 10",
+          "kind": "config",
+          "target": "gui.pref_button_spacing",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 10
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 444,
+          "endLine": 444,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.history_height = 190",
+          "kind": "config",
+          "target": "gui.history_height",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 190
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 445,
+          "endLine": 445,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.history_text_width = 690",
+          "kind": "config",
+          "target": "gui.history_text_width",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 690
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 448,
+          "endLine": 448,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.file_slot_cols = 2",
+          "kind": "config",
+          "target": "gui.file_slot_cols",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 2
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 449,
+          "endLine": 449,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.file_slot_rows = 2",
+          "kind": "config",
+          "target": "gui.file_slot_rows",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 2
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 452,
+          "endLine": 452,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.nvl_height = 170",
+          "kind": "config",
+          "target": "gui.nvl_height",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 170
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 454,
+          "endLine": 454,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.nvl_name_width = 305",
+          "kind": "config",
+          "target": "gui.nvl_name_width",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 305
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 455,
+          "endLine": 455,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.nvl_name_xpos = 325",
+          "kind": "config",
+          "target": "gui.nvl_name_xpos",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 325
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 457,
+          "endLine": 457,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.nvl_text_width = 915",
+          "kind": "config",
+          "target": "gui.nvl_text_width",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 915
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 458,
+          "endLine": 458,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.nvl_text_xpos = 345",
+          "kind": "config",
+          "target": "gui.nvl_text_xpos",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 345
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 459,
+          "endLine": 459,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.nvl_text_ypos = 5",
+          "kind": "config",
+          "target": "gui.nvl_text_ypos",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 5
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 461,
+          "endLine": 461,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.nvl_thought_width = 1240",
+          "kind": "config",
+          "target": "gui.nvl_thought_width",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 1240
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 462,
+          "endLine": 462,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.nvl_thought_xpos = 20",
+          "kind": "config",
+          "target": "gui.nvl_thought_xpos",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 20
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 464,
+          "endLine": 464,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.nvl_button_width = 1240",
+          "kind": "config",
+          "target": "gui.nvl_button_width",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 1240
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 465,
+          "endLine": 465,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.nvl_button_xpos = 20",
+          "kind": "config",
+          "target": "gui.nvl_button_xpos",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 20
+        },
+        {
+          "context": "initPython",
+          "file": "gui.rpy",
+          "line": 468,
+          "endLine": 468,
+          "label": null,
+          "screen": null,
+          "func": "small",
+          "inClass": null,
+          "indent": 8,
+          "nested": true,
+          "guards": [],
+          "snippet": "gui.quick_button_text_size = 20",
+          "kind": "config",
+          "target": "gui.quick_button_text_size",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": 20
+        },
+        {
+          "context": "define",
+          "file": "options.rpy",
+          "line": 84,
+          "endLine": 84,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define config.enter_transition = dissolve",
+          "kind": "config",
+          "target": "config.enter_transition",
+          "namespace": "config",
+          "expression": "dissolve",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "options.rpy",
+          "line": 85,
+          "endLine": 85,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define config.exit_transition = dissolve",
+          "kind": "config",
+          "target": "config.exit_transition",
+          "namespace": "config",
+          "expression": "dissolve",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "options.rpy",
+          "line": 117,
+          "endLine": 117,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define config.window_show_transition = Dissolve(.2)",
+          "kind": "config",
+          "target": "config.window_show_transition",
+          "namespace": "config",
+          "expression": "Dissolve(.2)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "options.rpy",
+          "line": 118,
+          "endLine": 118,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define config.window_hide_transition = Dissolve(.2)",
+          "kind": "config",
+          "target": "config.window_hide_transition",
+          "namespace": "config",
+          "expression": "Dissolve(.2)",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "initPython",
+          "file": "options.rpy",
+          "line": 166,
+          "endLine": 166,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "config.searchpath.append(config.renpy_base + \"/sdk-fonts\")",
+          "kind": "config",
+          "callee": "config.searchpath.append",
+          "namespace": "config",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "initPython",
+          "file": "options.rpy",
+          "line": 167,
+          "endLine": 167,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "build.classify_renpy(\"sdk-fonts/**\", \"all\")",
+          "kind": "config",
+          "callee": "build.classify_renpy",
+          "namespace": "build",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "initPython",
+          "file": "options.rpy",
+          "line": 168,
+          "endLine": 168,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "build._sdk_fonts = True",
+          "kind": "config",
+          "target": "build._sdk_fonts",
+          "namespace": "build",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": true
+        },
+        {
+          "context": "initPython",
+          "file": "options.rpy",
+          "line": 189,
+          "endLine": 189,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "build.classify('**~', None)",
+          "kind": "config",
+          "callee": "build.classify",
+          "namespace": "build",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "initPython",
+          "file": "options.rpy",
+          "line": 190,
+          "endLine": 190,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "build.classify('**.bak', None)",
+          "kind": "config",
+          "callee": "build.classify",
+          "namespace": "build",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "initPython",
+          "file": "options.rpy",
+          "line": 191,
+          "endLine": 191,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "build.classify('**/.**', None)",
+          "kind": "config",
+          "callee": "build.classify",
+          "namespace": "build",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "initPython",
+          "file": "options.rpy",
+          "line": 192,
+          "endLine": 192,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "build.classify('**/#**', None)",
+          "kind": "config",
+          "callee": "build.classify",
+          "namespace": "build",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "initPython",
+          "file": "options.rpy",
+          "line": 193,
+          "endLine": 193,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "build.classify('**/thumbs.db', None)",
+          "kind": "config",
+          "callee": "build.classify",
+          "namespace": "build",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "initPython",
+          "file": "options.rpy",
+          "line": 203,
+          "endLine": 203,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "build.documentation('*.html')",
+          "kind": "config",
+          "callee": "build.documentation",
+          "namespace": "build",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "initPython",
+          "file": "options.rpy",
+          "line": 204,
+          "endLine": 204,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "build.documentation('*.txt')",
+          "kind": "config",
+          "callee": "build.documentation",
+          "namespace": "build",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "initPython",
+          "file": "screens.rpy",
+          "line": 260,
+          "endLine": 260,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "config.overlay_screens.append(\"quick_menu\")",
+          "kind": "config",
+          "callee": "config.overlay_screens.append",
+          "namespace": "config",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "screens.rpy",
+          "line": 981,
+          "endLine": 981,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define gui.history_allow_tags = { \"alt\", \"noalt\", \"rt\", \"rb\", \"art\" }",
+          "kind": "config",
+          "target": "gui.history_allow_tags",
+          "namespace": "gui",
+          "expression": "{ \"alt\", \"noalt\", \"rt\", \"rb\", \"art\" }",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置"
+        },
+        {
+          "context": "define",
+          "file": "script.rpy",
+          "line": 2,
+          "endLine": 2,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define s = Character(_(\"Sylvie\"), color=\"#c8ffc8\")",
+          "kind": "defineValue",
+          "target": "s",
+          "namespace": null,
+          "expression": "Character(_(\"Sylvie\"), color=\"#c8ffc8\")",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "值是 Character(…)，属于角色、图像或转场"
+        },
+        {
+          "context": "define",
+          "file": "script.rpy",
+          "line": 3,
+          "endLine": 3,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "nested": false,
+          "snippet": "define m = Character(_(\"Me\"), color=\"#c8c8ff\")",
+          "kind": "defineValue",
+          "target": "m",
+          "namespace": null,
+          "expression": "Character(_(\"Me\"), color=\"#c8c8ff\")",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "值是 Character(…)，属于角色、图像或转场"
+        },
+        {
+          "context": "dollar",
+          "file": "script.rpy",
+          "line": 135,
+          "endLine": 135,
+          "label": "book",
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "book = True",
+          "kind": "assign",
+          "target": "book",
+          "scope": "store",
+          "variable": "book",
+          "operator": "=",
+          "value": true,
+          "expression": null,
+          "category": "autoSet",
+          "suggestion": "/set book true",
+          "reason": "字面量赋值"
+        },
+        {
+          "context": "dollar",
+          "file": "testcases.rpy",
+          "line": 3,
+          "endLine": 3,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 8,
+          "nested": false,
+          "guards": [],
+          "snippet": "_test.transition_timeout = 0.05",
+          "kind": "assign",
+          "target": "_test.transition_timeout",
+          "scope": "complex",
+          "variable": null,
+          "operator": "=",
+          "value": 0.05,
+          "expression": null,
+          "category": "needsAgent",
+          "suggestion": null,
+          "reason": "赋值目标是属性或下标"
+        },
+        {
+          "context": "dollar",
+          "file": "testcases.rpy",
+          "line": 4,
+          "endLine": 4,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 8,
+          "nested": false,
+          "guards": [],
+          "snippet": "_test.timeout = 2.0",
+          "kind": "assign",
+          "target": "_test.timeout",
+          "scope": "complex",
+          "variable": null,
+          "operator": "=",
+          "value": 2,
+          "expression": null,
+          "category": "needsAgent",
+          "suggestion": null,
+          "reason": "赋值目标是属性或下标"
+        },
+        {
+          "context": "python",
+          "file": "tl/japanese/options.rpy",
+          "line": 2,
+          "endLine": 2,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "gui.system_font = gui.main_font = gui.text_font = gui.name_text_font = gui.interface_text_font = gui.button_text_font = gui.choice_button_text_font = \"SourceHa…",
+          "kind": "config",
+          "target": "gui.system_font",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": null
+        },
+        {
+          "context": "python",
+          "file": "tl/korean/options.rpy",
+          "line": 2,
+          "endLine": 2,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "gui.system_font = gui.main_font = gui.text_font = gui.name_text_font = gui.interface_text_font = gui.button_text_font = gui.choice_button_text_font = \"SourceHa…",
+          "kind": "config",
+          "target": "gui.system_font",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": null
+        },
+        {
+          "context": "python",
+          "file": "tl/korean/options.rpy",
+          "line": 3,
+          "endLine": 3,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "config.window_title = u\"물음 (The Question)\"",
+          "kind": "config",
+          "target": "config.window_title",
+          "namespace": "config",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": "물음 (The Question)"
+        },
+        {
+          "context": "python",
+          "file": "tl/schinese/options.rpy",
+          "line": 2,
+          "endLine": 2,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "gui.system_font = gui.main_font = gui.text_font = gui.name_text_font = gui.interface_text_font = gui.button_text_font = gui.choice_button_text_font = \"SourceHa…",
+          "kind": "config",
+          "target": "gui.system_font",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": null
+        },
+        {
+          "context": "python",
+          "file": "tl/tchinese/options.rpy",
+          "line": 2,
+          "endLine": 2,
+          "label": null,
+          "screen": null,
+          "func": null,
+          "inClass": null,
+          "indent": 4,
+          "nested": false,
+          "guards": [],
+          "snippet": "gui.system_font = gui.main_font = gui.text_font = gui.name_text_font = gui.interface_text_font = gui.button_text_font = gui.choice_button_text_font = \"SourceHa…",
+          "kind": "config",
+          "target": "gui.system_font",
+          "namespace": "gui",
+          "category": "drop",
+          "suggestion": null,
+          "reason": "界面与选项配置",
+          "value": null
+        }
+      ],
+      "hooks": [],
+      "galleries": [],
+      "apiUsage": [],
+      "functions": [
+        {
+          "name": "touch",
+          "file": "gui.rpy",
+          "line": 415,
+          "inLabel": null,
+          "calls": 0,
+          "callSites": [],
+          "bodyLines": 1,
+          "apis": [],
+          "callees": [],
+          "wraps": null
+        },
+        {
+          "name": "small",
+          "file": "gui.rpy",
+          "line": 422,
+          "inLabel": null,
+          "calls": 0,
+          "callSites": [],
+          "bodyLines": 28,
+          "apis": [],
+          "callees": [],
+          "wraps": null
+        }
+      ],
+      "customStatements": [],
+      "unknownStatements": [],
+      "variables": [
+        {
+          "name": "book",
+          "declaredBy": "default",
+          "file": "script.rpy",
+          "line": 7,
+          "writes": 1
+        },
+        {
+          "name": "quick_menu",
+          "declaredBy": "default",
+          "file": "screens.rpy",
+          "line": 262,
+          "writes": 0
+        }
+      ],
+      "interfaceVariables": [],
+      "notVariables": [
+        {
+          "name": "m",
+          "constructor": "Character"
+        },
+        {
+          "name": "s",
+          "constructor": "Character"
+        }
+      ],
+      "persistent": [],
+      "modules": [],
+      "mappingTable": [
+        {
+          "api": "renpy.pause",
+          "target": "/wait",
+          "category": "mapped",
+          "note": "参数是秒数"
+        },
+        {
+          "api": "renpy.notify",
+          "target": "/blueprint",
+          "category": "mapped",
+          "note": "蓝图执行 Post Notification（blueprint.game.postNotification），文本连接 message 引脚"
+        },
+        {
+          "api": "renpy.movie_cutscene",
+          "target": "/play",
+          "category": "mapped",
+          "note": "默认等待播放完毕后再继续"
+        },
+        {
+          "api": "renpy.movie_start_displayable",
+          "target": "/vfx",
+          "category": "mapped",
+          "note": "循环叠加的视频，可能带遮罩"
+        },
+        {
+          "api": "renpy.movie_stop",
+          "target": "/hide",
+          "category": "mapped"
+        },
+        {
+          "api": "achievement.grant",
+          "target": "/blueprint",
+          "category": "mapped",
+          "note": "成就插件的解锁节点"
+        },
+        {
+          "api": "achievement.register",
+          "target": "成就清单",
+          "category": "mapped",
+          "note": "成就声明，不是剧情行"
+        },
+        {
+          "api": "achievement.*",
+          "target": "/blueprint",
+          "category": "mapped",
+          "note": "成就插件节点"
+        },
+        {
+          "api": "renpy.jump",
+          "target": "/jump",
+          "category": "mapped",
+          "note": "目标是字面量时才解析得出"
+        },
+        {
+          "api": "renpy.call",
+          "target": "/jump 'Scene' return",
+          "category": "mapped",
+          "note": "原项目中该 label 执行完毕后将返回至本行之后"
+        },
+        {
+          "api": "renpy.jump_out_of_context",
+          "target": "/jump",
+          "category": "needsAgent",
+          "note": "跨上下文跳转"
+        },
+        {
+          "api": "renpy.music.play",
+          "target": "/bgm",
+          "category": "mapped"
+        },
+        {
+          "api": "renpy.music.stop",
+          "target": "/stop bgm",
+          "category": "mapped"
+        },
+        {
+          "api": "renpy.music.set_volume",
+          "target": null,
+          "category": "needsAgent",
+          "note": "混音器音量"
+        },
+        {
+          "api": "renpy.play",
+          "target": "/sound",
+          "category": "mapped"
+        },
+        {
+          "api": "renpy.sound.stop",
+          "target": "/stop",
+          "category": "mapped"
+        },
+        {
+          "api": "renpy.show",
+          "target": "/show",
+          "category": "mapped",
+          "note": "图像名是变量时静态无法解析"
+        },
+        {
+          "api": "renpy.hide",
+          "target": "/hide",
+          "category": "mapped"
+        },
+        {
+          "api": "renpy.scene",
+          "target": "/bg",
+          "category": "mapped",
+          "note": "Ren'Py 的 scene 会清空图层"
+        },
+        {
+          "api": "renpy.transition",
+          "target": null,
+          "category": "needsAgent",
+          "note": "转场"
+        },
+        {
+          "api": "renpy.say",
+          "target": "台词行",
+          "category": "mapped"
+        },
+        {
+          "api": "renpy.input",
+          "target": "/blueprint",
+          "category": "needsAgent",
+          "note": "输入框"
+        },
+        {
+          "api": "renpy.show_screen",
+          "target": "页面 + /blueprint",
+          "category": "needsAgent",
+          "note": "界面"
+        },
+        {
+          "api": "renpy.full_restart",
+          "target": "/ending",
+          "category": "mapped",
+          "note": "返回标题画面"
+        },
+        {
+          "api": "renpy.quit",
+          "target": null,
+          "category": "needsAgent"
+        },
+        {
+          "api": "renpy 内部状态",
+          "target": null,
+          "category": "drop",
+          "note": "引擎内部簿记"
+        },
+        {
+          "api": "renpy 查询",
+          "target": null,
+          "category": "drop"
+        },
+        {
+          "api": "renpy 文件",
+          "target": null,
+          "category": "needsAgent",
+          "note": "读写文件"
+        },
+        {
+          "api": "renpy 运行时",
+          "target": null,
+          "category": "drop"
+        },
+        {
+          "api": "nvl_clear",
+          "target": "/nvl",
+          "category": "mapped",
+          "note": "NVL 段落边界"
+        },
+        {
+          "api": "动态求值",
+          "target": null,
+          "category": "unresolvable",
+          "note": "运行时才能确定执行内容"
+        }
+      ]
+    },
+    "flow": {
+      "version": 1,
+      "summary": {
+        "labels": 6,
+        "globalLabels": 6,
+        "reachable": 6,
+        "unreachable": 0,
+        "edges": 6,
+        "jumps": 6,
+        "calls": 0,
+        "menus": 2,
+        "choices": 4,
+        "returns": 2,
+        "endings": 2,
+        "subroutines": 0,
+        "newGamePlusLabels": 0,
+        "files": 1,
+        "breaks": 0,
+        "sayLines": 71,
+        "dynamicTargets": 0,
+        "undefinedTargets": 0,
+        "truncated": false
+      },
+      "entries": [
+        "start"
+      ],
+      "files": [
+        {
+          "file": "script.rpy",
+          "lines": 252,
+          "says": 71,
+          "labels": [
+            {
+              "name": "start",
+              "line": 10,
+              "says": 9,
+              "reachable": true,
+              "playOrder": 0,
+              "newGamePlus": false
+            },
+            {
+              "name": "rightaway",
+              "line": 53,
+              "says": 16,
+              "reachable": true,
+              "playOrder": 1,
+              "newGamePlus": false
+            },
+            {
+              "name": "game",
+              "line": 108,
+              "says": 9,
+              "reachable": true,
+              "playOrder": 2,
+              "newGamePlus": false
+            },
+            {
+              "name": "book",
+              "line": 133,
+              "says": 8,
+              "reachable": true,
+              "playOrder": 4,
+              "newGamePlus": false
+            },
+            {
+              "name": "marry",
+              "line": 159,
+              "says": 24,
+              "reachable": true,
+              "playOrder": 3,
+              "newGamePlus": false
+            },
+            {
+              "name": "later",
+              "line": 237,
+              "says": 5,
+              "reachable": true,
+              "playOrder": 5,
+              "newGamePlus": false
+            }
+          ],
+          "menus": 2,
+          "choices": 4,
+          "endings": 2,
+          "breaks": [
+            {
+              "kind": "blackout",
+              "line": 13,
+              "score": 2,
+              "reasons": [
+                "换音乐",
+                "黑场"
+              ]
+            },
+            {
+              "kind": "blackout",
+              "line": 27,
+              "score": 2,
+              "reasons": [
+                "黑场"
+              ]
+            },
+            {
+              "kind": "blackout",
+              "line": 68,
+              "score": 2,
+              "reasons": [
+                "黑场"
+              ]
+            },
+            {
+              "kind": "blackout",
+              "line": 161,
+              "score": 2,
+              "reasons": [
+                "黑场"
+              ]
+            },
+            {
+              "kind": "blackout",
+              "line": 224,
+              "score": 2,
+              "reasons": [
+                "黑场"
+              ]
+            },
+            {
+              "kind": "blackout",
+              "line": 241,
+              "score": 2,
+              "reasons": [
+                "黑场"
+              ]
+            }
+          ],
+          "playOrder": 0,
+          "newGamePlus": false,
+          "enteredFrom": []
+        }
+      ],
+      "labels": [
+        {
+          "name": "start",
+          "file": "script.rpy",
+          "line": 10,
+          "endLine": 52,
+          "global": "start",
+          "local": false,
+          "parameters": null,
+          "says": 9,
+          "menus": 1,
+          "out": [
+            {
+              "kind": "jump",
+              "to": "rightaway",
+              "expr": null,
+              "file": "script.rpy",
+              "line": 46,
+              "indent": 12,
+              "screen": null,
+              "choiceText": null,
+              "persistentGuard": false,
+              "guards": null
+            },
+            {
+              "kind": "jump",
+              "to": "later",
+              "expr": null,
+              "file": "script.rpy",
+              "line": 50,
+              "indent": 12,
+              "screen": null,
+              "choiceText": null,
+              "persistentGuard": false,
+              "guards": null
+            }
+          ],
+          "in": [],
+          "terminal": "jump",
+          "fallsThroughTo": null,
+          "reachable": true,
+          "playOrder": 0,
+          "entryRoot": "start",
+          "newGamePlus": false,
+          "calledFrom": 0,
+          "terminalTarget": "later",
+          "terminalLine": 50,
+          "returns": 0
+        },
+        {
+          "name": "rightaway",
+          "file": "script.rpy",
+          "line": 53,
+          "endLine": 107,
+          "global": "rightaway",
+          "local": false,
+          "parameters": null,
+          "says": 16,
+          "menus": 1,
+          "out": [
+            {
+              "kind": "jump",
+              "to": "game",
+              "expr": null,
+              "file": "script.rpy",
+              "line": 102,
+              "indent": 12,
+              "screen": null,
+              "choiceText": null,
+              "persistentGuard": false,
+              "guards": null
+            },
+            {
+              "kind": "jump",
+              "to": "book",
+              "expr": null,
+              "file": "script.rpy",
+              "line": 105,
+              "indent": 12,
+              "screen": null,
+              "choiceText": null,
+              "persistentGuard": false,
+              "guards": null
+            }
+          ],
+          "in": [
+            {
+              "kind": "jump",
+              "from": "start",
+              "file": "script.rpy",
+              "line": 46,
+              "screen": null
+            }
+          ],
+          "terminal": "jump",
+          "fallsThroughTo": null,
+          "reachable": true,
+          "playOrder": 1,
+          "entryRoot": "start",
+          "newGamePlus": false,
+          "calledFrom": 0,
+          "terminalTarget": "book",
+          "terminalLine": 105,
+          "returns": 0
+        },
+        {
+          "name": "game",
+          "file": "script.rpy",
+          "line": 108,
+          "endLine": 132,
+          "global": "game",
+          "local": false,
+          "parameters": null,
+          "says": 9,
+          "menus": 0,
+          "out": [
+            {
+              "kind": "jump",
+              "to": "marry",
+              "expr": null,
+              "file": "script.rpy",
+              "line": 130,
+              "indent": 4,
+              "screen": null,
+              "choiceText": null,
+              "persistentGuard": false,
+              "guards": null
+            }
+          ],
+          "in": [
+            {
+              "kind": "jump",
+              "from": "rightaway",
+              "file": "script.rpy",
+              "line": 102,
+              "screen": null
+            }
+          ],
+          "terminal": "jump",
+          "fallsThroughTo": null,
+          "reachable": true,
+          "playOrder": 2,
+          "entryRoot": "start",
+          "newGamePlus": false,
+          "calledFrom": 0,
+          "terminalTarget": "marry",
+          "terminalLine": 130,
+          "returns": 0
+        },
+        {
+          "name": "marry",
+          "file": "script.rpy",
+          "line": 159,
+          "endLine": 236,
+          "global": "marry",
+          "local": false,
+          "parameters": null,
+          "says": 24,
+          "menus": 0,
+          "out": [],
+          "in": [
+            {
+              "kind": "jump",
+              "from": "game",
+              "file": "script.rpy",
+              "line": 130,
+              "screen": null
+            },
+            {
+              "kind": "jump",
+              "from": "book",
+              "file": "script.rpy",
+              "line": 157,
+              "screen": null
+            }
+          ],
+          "terminal": "return",
+          "fallsThroughTo": null,
+          "reachable": true,
+          "playOrder": 3,
+          "entryRoot": "start",
+          "newGamePlus": false,
+          "calledFrom": 0,
+          "terminalTarget": null,
+          "terminalLine": 235,
+          "returns": 1
+        },
+        {
+          "name": "book",
+          "file": "script.rpy",
+          "line": 133,
+          "endLine": 158,
+          "global": "book",
+          "local": false,
+          "parameters": null,
+          "says": 8,
+          "menus": 0,
+          "out": [
+            {
+              "kind": "jump",
+              "to": "marry",
+              "expr": null,
+              "file": "script.rpy",
+              "line": 157,
+              "indent": 4,
+              "screen": null,
+              "choiceText": null,
+              "persistentGuard": false,
+              "guards": null
+            }
+          ],
+          "in": [
+            {
+              "kind": "jump",
+              "from": "rightaway",
+              "file": "script.rpy",
+              "line": 105,
+              "screen": null
+            }
+          ],
+          "terminal": "jump",
+          "fallsThroughTo": null,
+          "reachable": true,
+          "playOrder": 4,
+          "entryRoot": "start",
+          "newGamePlus": false,
+          "calledFrom": 0,
+          "terminalTarget": "marry",
+          "terminalLine": 157,
+          "returns": 0
+        },
+        {
+          "name": "later",
+          "file": "script.rpy",
+          "line": 237,
+          "endLine": 252,
+          "global": "later",
+          "local": false,
+          "parameters": null,
+          "says": 5,
+          "menus": 0,
+          "out": [],
+          "in": [
+            {
+              "kind": "jump",
+              "from": "start",
+              "file": "script.rpy",
+              "line": 50,
+              "screen": null
+            }
+          ],
+          "terminal": "return",
+          "fallsThroughTo": null,
+          "reachable": true,
+          "playOrder": 5,
+          "entryRoot": "start",
+          "newGamePlus": false,
+          "calledFrom": 0,
+          "terminalTarget": null,
+          "terminalLine": 252,
+          "returns": 1
+        }
+      ],
+      "menus": [
+        {
+          "file": "script.rpy",
+          "line": 40,
+          "label": "start",
+          "screen": null,
+          "caption": "As soon as she catches my eye, I decide...",
+          "choices": [
+            {
+              "text": "To ask her right away.",
+              "condition": null,
+              "arguments": null,
+              "line": 44,
+              "target": "rightaway",
+              "sets": []
+            },
+            {
+              "text": "To ask her later.",
+              "condition": null,
+              "arguments": null,
+              "line": 48,
+              "target": "later",
+              "sets": []
+            }
+          ]
+        },
+        {
+          "file": "script.rpy",
+          "line": 97,
+          "label": "rightaway",
+          "screen": null,
+          "caption": null,
+          "choices": [
+            {
+              "text": "It's a videogame.",
+              "condition": null,
+              "arguments": null,
+              "line": 101,
+              "target": "game",
+              "sets": []
+            },
+            {
+              "text": "It's an interactive book.",
+              "condition": null,
+              "arguments": null,
+              "line": 104,
+              "target": "book",
+              "sets": []
+            }
+          ]
+        }
+      ],
+      "endings": [
+        {
+          "name": "marry",
+          "line": 236,
+          "file": "script.rpy",
+          "says": 24,
+          "newGamePlus": false,
+          "kind": "return",
+          "titleTarget": null
+        },
+        {
+          "name": "later",
+          "line": 252,
+          "file": "script.rpy",
+          "says": 5,
+          "newGamePlus": false,
+          "kind": "return",
+          "titleTarget": null
+        }
+      ],
+      "notEndings": [],
+      "subroutines": [],
+      "unreachable": [],
+      "dynamicTargets": [],
+      "undefinedTargets": [],
+      "breaks": [
+        {
+          "kind": "blackout",
+          "file": "script.rpy",
+          "line": 13,
+          "label": "start",
+          "evidence": "with fade",
+          "snippet": "with fade",
+          "score": 2,
+          "reasons": [
+            "换音乐",
+            "黑场"
+          ]
+        },
+        {
+          "kind": "blackout",
+          "file": "script.rpy",
+          "line": 27,
+          "label": "start",
+          "evidence": "with fade",
+          "snippet": "with fade",
+          "score": 2,
+          "reasons": [
+            "黑场"
+          ]
+        },
+        {
+          "kind": "blackout",
+          "file": "script.rpy",
+          "line": 68,
+          "label": "rightaway",
+          "evidence": "with fade",
+          "snippet": "with fade",
+          "score": 2,
+          "reasons": [
+            "黑场"
+          ]
+        },
+        {
+          "kind": "blackout",
+          "file": "script.rpy",
+          "line": 161,
+          "label": "marry",
+          "evidence": "scene black",
+          "snippet": "scene black",
+          "score": 2,
+          "reasons": [
+            "黑场"
+          ]
+        },
+        {
+          "kind": "blackout",
+          "file": "script.rpy",
+          "line": 224,
+          "label": "marry",
+          "evidence": "scene black",
+          "snippet": "scene black",
+          "score": 2,
+          "reasons": [
+            "黑场"
+          ]
+        },
+        {
+          "kind": "blackout",
+          "file": "script.rpy",
+          "line": 241,
+          "label": "later",
+          "evidence": "scene black",
+          "snippet": "scene black",
+          "score": 2,
+          "reasons": [
+            "黑场"
+          ]
+        }
+      ],
+      "warnings": [
+        {
+          "kind": "playOrderDiffersFromFileOrder",
+          "message": "文件顺序与执行顺序从第 4 个 label 起产生分歧（按文件为 book，按执行为 marry）"
+        },
+        {
+          "kind": "chapterIsYours",
+          "message": "章节划分由迁移者决定：扫描仅提供每个文件的台词数、label 及疑似分界信号（黑场、停止音乐、过场视频、成就点）"
+        }
+      ]
+    },
+    "facts": {
+      "version": 1,
+      "summary": {
+        "textTagLines": 2,
+        "textTagKinds": 1,
+        "interpolatedLines": 0,
+        "extendLines": 0,
+        "attributedSays": 0,
+        "windowStatements": 0,
+        "nvlStatements": 0,
+        "pauses": 5,
+        "transitions": 10,
+        "atClauses": 0,
+        "longLoops": 0,
+        "achievements": 0,
+        "achievementUnlocks": 0,
+        "achievementUnlockPoints": 0,
+        "audioStatements": 1,
+        "audioFiles": 1
+      },
+      "textTags": [
+        {
+          "name": "b",
+          "count": 2,
+          "sites": [
+            "script.rpy:233",
+            "script.rpy:250"
+          ]
+        }
+      ],
+      "interpolations": [],
+      "attributedSays": {
+        "lines": 0,
+        "speakers": [],
+        "attributes": [],
+        "samples": []
+      },
+      "transitions": [
+        {
+          "name": "dissolve",
+          "count": 7,
+          "sites": [
+            "script.rpy:32",
+            "script.rpy:79",
+            "script.rpy:162",
+            "script.rpy:167",
+            "script.rpy:180"
+          ]
+        },
+        {
+          "name": "fade",
+          "count": 3,
+          "sites": [
+            "script.rpy:16",
+            "script.rpy:27",
+            "script.rpy:68"
+          ]
+        }
+      ],
+      "transforms": {
+        "used": [],
+        "total": 0,
+        "longLoops": [],
+        "longLoopCount": 0
+      },
+      "window": [],
+      "nvl": [],
+      "audio": [
+        {
+          "name": "play music",
+          "count": 1,
+          "sites": [
+            "script.rpy:13"
+          ]
+        }
+      ],
+      "achievements": {
+        "wrappers": [],
+        "declared": [],
+        "unlockPoints": [],
+        "granted": []
+      },
+      "pauses": {
+        "total": 5,
+        "withoutSeconds": 2,
+        "longest": 0.5
+      }
+    },
+    "assets": {
+      "version": 1,
+      "summary": {
+        "imageDefinitions": 0,
+        "referencedPaths": 1,
+        "assetConstants": 0,
+        "imageReferences": 0,
+        "audioReferences": 1,
+        "missingPaths": 0,
+        "missingTagShown": 0,
+        "missingSuperseded": 0,
+        "missingAudio": 0,
+        "caseMismatches": 0,
+        "resolvedViaPrefix": 0,
+        "shownTags": 3,
+        "unknownTags": 0,
+        "unknownCharacterImages": 0,
+        "formatMismatches": 0,
+        "duplicateGroups": 5,
+        "duplicateFiles": 11,
+        "wastedBytes": 1817981,
+        "maskedMovies": 0,
+        "matrixColor": 0,
+        "offlineFormats": 0,
+        "redefinedNames": 0,
+        "placedImages": 0,
+        "mirroredImages": 0,
+        "layeredImages": 0,
+        "autoGroups": 0,
+        "mediaFiles": 61,
+        "mediaBytes": 8317114,
+        "fontFiles": 0,
+        "fontBytes": 0
+      },
+      "missing": [],
+      "missingTruncated": false,
+      "caseMismatch": [],
+      "unknownTags": [],
+      "unknownCharacterImages": [],
+      "formatMismatch": [],
+      "duplicates": [
+        {
+          "bytes": 1817069,
+          "files": [
+            "gui/game_menu.png",
+            "gui/main_menu.png"
+          ]
+        },
+        {
+          "bytes": 269,
+          "files": [
+            "gui/button/hover_background.png",
+            "gui/button/idle_background.png",
+            "gui/namebox.png"
+          ]
+        },
+        {
+          "bytes": 144,
+          "files": [
+            "gui/button/check_selected_foreground.png",
+            "gui/button/radio_selected_foreground.png"
+          ]
+        },
+        {
+          "bytes": 133,
+          "files": [
+            "gui/button/quick_hover_background.png",
+            "gui/button/quick_idle_background.png"
+          ]
+        },
+        {
+          "bytes": 97,
+          "files": [
+            "gui/button/check_foreground.png",
+            "gui/button/radio_foreground.png"
+          ]
+        }
+      ],
+      "offline": {
+        "maskedMovies": [],
+        "matrixColor": [],
+        "formats": []
+      },
+      "redefined": [],
+      "fonts": [],
+      "constants": [],
+      "constantsTotal": 0,
+      "geometry": [],
+      "geometryTruncated": false,
+      "autoGroups": [],
+      "notes": {
+        "archives": 0,
+        "autoDefinedImages": 12,
+        "hashedBytes": 3673933,
+        "hashTruncated": false
+      }
+    }
+  }
+}

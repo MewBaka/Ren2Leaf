@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "updatedAt": "2026-10-19T15:00:20.397Z",
+  "speakers": {
+    "s": {
+      "role": "main",
+      "name": "Sylvie",
+      "note": "女主角，全篇唯一有立绘的角色，立绘 tag 为 sylvie",
+      "updatedAt": "2026-10-19T15:00:20.399Z"
+    },
+    "m": {
+      "role": "pov",
+      "name": "Me",
+      "note": "玩家视角的叙述者，原作未给专名，名字框固定显示 Me",
+      "updatedAt": "2026-10-19T15:00:20.399Z"
+    }
+  }
+}

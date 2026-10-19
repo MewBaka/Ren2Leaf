@@ -1,0 +1,3742 @@
+{
+ "key": "shot-20261019-230823",
+ "item": {
+  "kind": "manual",
+  "purpose": "设置"
+ },
+ "gameSize": [
+  1280,
+  720
+ ],
+ "elements": [
+  {
+   "type": "Image",
+   "class": null,
+   "rect": [
+    0,
+    0,
+    512.0,
+    512.0
+   ],
+   "depth": 2,
+   "screen": null,
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "info": "'_transparent_tile.png'",
+   "image": "_transparent_tile.png",
+   "n": 1,
+   "boxed": false,
+   "rect1920": [
+    0.0,
+    0.0,
+    768.0,
+    768.0
+   ]
+  },
+  {
+   "type": "ImageReference",
+   "class": null,
+   "rect": [
+    0,
+    0,
+    1280.0,
+    720.0
+   ],
+   "depth": 4,
+   "screen": null,
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "info": "('black',)",
+   "image": "black",
+   "n": 2,
+   "boxed": false,
+   "rect1920": [
+    0.0,
+    0.0,
+    1920.0,
+    1080.0
+   ]
+  },
+  {
+   "type": "Solid",
+   "class": null,
+   "rect": [
+    0,
+    0,
+    1280.0,
+    720.0
+   ],
+   "depth": 5,
+   "screen": null,
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "transformed": true,
+   "n": 3,
+   "boxed": false,
+   "rect1920": [
+    0.0,
+    0.0,
+    1920.0,
+    1080.0
+   ]
+  },
+  {
+   "type": "Image",
+   "class": null,
+   "rect": [
+    0,
+    0,
+    1280.0,
+    720.0
+   ],
+   "depth": 5,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    415
+   ],
+   "inButton": false,
+   "info": "'gui/main_menu.png'",
+   "image": "gui/main_menu.png",
+   "n": 4,
+   "boxed": false,
+   "rect1920": [
+    0.0,
+    0.0,
+    1920.0,
+    1080.0
+   ]
+  },
+  {
+   "type": "Window",
+   "class": null,
+   "rect": [
+    0,
+    0,
+    1282.0,
+    720.0
+   ],
+   "depth": 5,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    419
+   ],
+   "inButton": false,
+   "style": {
+    "name": "game_menu_outer_frame",
+    "font": "DejaVuSans.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<renpy.display.im.Image object ('gui/overlay/game_menu.png') at 0x102995190>",
+    "top_padding": 120,
+    "bottom_padding": 30
+   },
+   "n": 5,
+   "boxed": false,
+   "rect1920": [
+    0.0,
+    0.0,
+    1923.0,
+    1080.0
+   ]
+  },
+  {
+   "type": "Image",
+   "class": null,
+   "rect": [
+    0,
+    0,
+    1280.0,
+    720.0
+   ],
+   "depth": 6,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "info": "'gui/overlay/game_menu.png'",
+   "image": "gui/overlay/game_menu.png",
+   "n": 6,
+   "boxed": false,
+   "rect1920": [
+    0.0,
+    0.0,
+    1920.0,
+    1080.0
+   ]
+  },
+  {
+   "type": "Window",
+   "class": null,
+   "rect": [
+    0,
+    120,
+    280.0,
+    570.0
+   ],
+   "depth": 7,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    425
+   ],
+   "inButton": false,
+   "style": {
+    "name": "game_menu_navigation_frame",
+    "font": "DejaVuSans.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "xminimum": 280,
+    "xmaximum": 280
+   },
+   "n": 7,
+   "boxed": false,
+   "rect1920": [
+    0.0,
+    180.0,
+    420.0,
+    855.0
+   ]
+  },
+  {
+   "type": "Window",
+   "class": null,
+   "rect": [
+    280,
+    120,
+    1002.0,
+    570.0
+   ],
+   "depth": 7,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    428
+   ],
+   "inButton": false,
+   "style": {
+    "name": "game_menu_content_frame",
+    "font": "DejaVuSans.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "left_margin": 40,
+    "right_margin": 20,
+    "top_margin": 10
+   },
+   "n": 8,
+   "boxed": false,
+   "rect1920": [
+    420.0,
+    180.0,
+    1503.0,
+    855.0
+   ]
+  },
+  {
+   "type": "Side",
+   "class": null,
+   "rect": [
+    320,
+    130,
+    942.0,
+    560.0
+   ],
+   "depth": 8,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "n": 9,
+   "boxed": false,
+   "rect1920": [
+    480.0,
+    195.0,
+    1413.0,
+    840.0
+   ]
+  },
+  {
+   "type": "Viewport",
+   "class": null,
+   "rect": [
+    320.0,
+    130.0,
+    920.0,
+    560.0
+   ],
+   "depth": 9,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    433
+   ],
+   "inButton": false,
+   "n": 10,
+   "boxed": false,
+   "rect1920": [
+    480.0,
+    195.0,
+    1380.0,
+    840.0
+   ]
+  },
+  {
+   "type": "Window",
+   "class": null,
+   "rect": [
+    320,
+    130,
+    920.0,
+    560.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "style": {
+    "name": "radio_label",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "top_margin": 10,
+    "bottom_margin": 2
+   },
+   "n": 11,
+   "boxed": false,
+   "rect1920": [
+    480.0,
+    195.0,
+    1380.0,
+    840.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    320,
+    140,
+    56.0,
+    36.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    772
+   ],
+   "inButton": false,
+   "text": "显示",
+   "style": {
+    "name": "radio_label_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 28,
+    "color": [
+     204,
+     102,
+     0,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 12,
+   "boxed": true,
+   "rect1920": [
+    480.0,
+    210.0,
+    84.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    320.0,
+    178.0,
+    77.0,
+    36.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    773
+   ],
+   "inButton": false,
+   "style": {
+    "name": "radio_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/radio_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102b9ed20> (25,4,4,4)>",
+    "foreground": "<renpy.display.image.DynamicImage object ('gui/button/radio_[prefix_]foreground.png') at 0x102b9dee0>",
+    "left_padding": 25,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "窗口",
+   "n": 13,
+   "boxed": true,
+   "rect1920": [
+    480.0,
+    267.0,
+    115.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    345,
+    180,
+    48.0,
+    31.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    773
+   ],
+   "inButton": true,
+   "text": "窗口",
+   "style": {
+    "name": "radio_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 14,
+   "boxed": false,
+   "rect1920": [
+    517.5,
+    270.0,
+    72.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    320.0,
+    214.0,
+    77.0,
+    36.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    774
+   ],
+   "inButton": false,
+   "style": {
+    "name": "radio_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/radio_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102b9ec00> (25,4,4,4)>",
+    "foreground": "<renpy.display.image.DynamicImage object ('gui/button/radio_[prefix_]foreground.png') at 0x102b9ce30>",
+    "left_padding": 25,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "全屏",
+   "n": 15,
+   "boxed": true,
+   "rect1920": [
+    480.0,
+    321.0,
+    115.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    345,
+    216,
+    48.0,
+    31.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    774
+   ],
+   "inButton": true,
+   "text": "全屏",
+   "style": {
+    "name": "radio_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 16,
+   "boxed": false,
+   "rect1920": [
+    517.5,
+    324.0,
+    72.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Window",
+   "class": null,
+   "rect": [
+    545,
+    130,
+    695.0,
+    560.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "style": {
+    "name": "check_label",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "top_margin": 10,
+    "bottom_margin": 2
+   },
+   "n": 17,
+   "boxed": false,
+   "rect1920": [
+    817.5,
+    195.0,
+    1042.5,
+    840.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    545,
+    140,
+    56.0,
+    36.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    778
+   ],
+   "inButton": false,
+   "text": "快进",
+   "style": {
+    "name": "check_label_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 28,
+    "color": [
+     204,
+     102,
+     0,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 18,
+   "boxed": true,
+   "rect1920": [
+    817.5,
+    210.0,
+    84.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    545.0,
+    178.0,
+    125.0,
+    36.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    779
+   ],
+   "inButton": false,
+   "style": {
+    "name": "check_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/check_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102b34d70> (25,4,4,4)>",
+    "foreground": "<renpy.display.image.DynamicImage object ('gui/button/check_[prefix_]foreground.png') at 0x102090500>",
+    "left_padding": 25,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "未读文本",
+   "n": 19,
+   "boxed": true,
+   "rect1920": [
+    817.5,
+    267.0,
+    187.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    570,
+    180,
+    96.0,
+    31.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    779
+   ],
+   "inButton": true,
+   "text": "未读文本",
+   "style": {
+    "name": "check_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 20,
+   "boxed": false,
+   "rect1920": [
+    855.0,
+    270.0,
+    144.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    545.0,
+    214.0,
+    149.0,
+    36.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    780
+   ],
+   "inButton": false,
+   "style": {
+    "name": "check_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/check_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102b34d70> (25,4,4,4)>",
+    "foreground": "<renpy.display.image.DynamicImage object ('gui/button/check_[prefix_]foreground.png') at 0x102090500>",
+    "left_padding": 25,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "选项后继续",
+   "n": 21,
+   "boxed": true,
+   "rect1920": [
+    817.5,
+    321.0,
+    223.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    570,
+    216,
+    120.0,
+    31.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    780
+   ],
+   "inButton": true,
+   "text": "选项后继续",
+   "style": {
+    "name": "check_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 22,
+   "boxed": false,
+   "rect1920": [
+    855.0,
+    324.0,
+    180.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    545.0,
+    250.0,
+    125.0,
+    36.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    781
+   ],
+   "inButton": false,
+   "style": {
+    "name": "check_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/check_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102b34d70> (25,4,4,4)>",
+    "foreground": "<renpy.display.image.DynamicImage object ('gui/button/check_[prefix_]foreground.png') at 0x102090500>",
+    "left_padding": 25,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "忽略转场",
+   "n": 23,
+   "boxed": true,
+   "rect1920": [
+    817.5,
+    375.0,
+    187.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    570,
+    252,
+    96.0,
+    31.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    781
+   ],
+   "inButton": true,
+   "text": "忽略转场",
+   "style": {
+    "name": "check_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 24,
+   "boxed": false,
+   "rect1920": [
+    855.0,
+    378.0,
+    144.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Window",
+   "class": null,
+   "rect": [
+    770,
+    130,
+    470.0,
+    560.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "style": {
+    "name": "radio_label",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "top_margin": 10,
+    "bottom_margin": 2
+   },
+   "n": 25,
+   "boxed": false,
+   "rect1920": [
+    1155.0,
+    195.0,
+    705.0,
+    840.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    770,
+    140,
+    56.0,
+    36.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    790
+   ],
+   "inButton": false,
+   "text": "语言",
+   "style": {
+    "name": "radio_label_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 28,
+    "color": [
+     204,
+     102,
+     0,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 26,
+   "boxed": true,
+   "rect1920": [
+    1155.0,
+    210.0,
+    84.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    770.0,
+    178.0,
+    115.0,
+    36.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    792
+   ],
+   "inButton": false,
+   "style": {
+    "name": "radio_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/radio_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102b9ec00> (25,4,4,4)>",
+    "foreground": "<renpy.display.image.DynamicImage object ('gui/button/radio_[prefix_]foreground.png') at 0x102b9ce30>",
+    "left_padding": 25,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "English",
+   "n": 27,
+   "boxed": true,
+   "rect1920": [
+    1155.0,
+    267.0,
+    172.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    795,
+    181,
+    86.0,
+    29.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    792
+   ],
+   "inButton": true,
+   "text": "English",
+   "style": {
+    "name": "radio_button_text",
+    "font": "DejaVuSans.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 28,
+   "boxed": false,
+   "rect1920": [
+    1192.5,
+    271.5,
+    129.0,
+    43.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    770.0,
+    214.0,
+    100.0,
+    36.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    793
+   ],
+   "inButton": false,
+   "style": {
+    "name": "radio_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/radio_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102b9ec00> (25,4,4,4)>",
+    "foreground": "<renpy.display.image.DynamicImage object ('gui/button/radio_[prefix_]foreground.png') at 0x102b9ce30>",
+    "left_padding": 25,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "Česky",
+   "n": 29,
+   "boxed": true,
+   "rect1920": [
+    1155.0,
+    321.0,
+    150.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    795,
+    217,
+    71.0,
+    29.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    793
+   ],
+   "inButton": true,
+   "text": "Česky",
+   "style": {
+    "name": "radio_button_text",
+    "font": "DejaVuSans.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 30,
+   "boxed": false,
+   "rect1920": [
+    1192.5,
+    325.5,
+    106.5,
+    43.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    770.0,
+    250.0,
+    102.0,
+    36.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    794
+   ],
+   "inButton": false,
+   "style": {
+    "name": "radio_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/radio_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102b9ec00> (25,4,4,4)>",
+    "foreground": "<renpy.display.image.DynamicImage object ('gui/button/radio_[prefix_]foreground.png') at 0x102b9ce30>",
+    "left_padding": 25,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "Dansk",
+   "n": 31,
+   "boxed": true,
+   "rect1920": [
+    1155.0,
+    375.0,
+    153.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    795,
+    253,
+    73.0,
+    29.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    794
+   ],
+   "inButton": true,
+   "text": "Dansk",
+   "style": {
+    "name": "radio_button_text",
+    "font": "DejaVuSans.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 32,
+   "boxed": false,
+   "rect1920": [
+    1192.5,
+    379.5,
+    109.5,
+    43.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    770.0,
+    286.0,
+    126.0,
+    36.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    795
+   ],
+   "inButton": false,
+   "style": {
+    "name": "radio_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/radio_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102b9ec00> (25,4,4,4)>",
+    "foreground": "<renpy.display.image.DynamicImage object ('gui/button/radio_[prefix_]foreground.png') at 0x102b9ce30>",
+    "left_padding": 25,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "Français",
+   "n": 33,
+   "boxed": true,
+   "rect1920": [
+    1155.0,
+    429.0,
+    189.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    795,
+    289,
+    97.0,
+    29.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    795
+   ],
+   "inButton": true,
+   "text": "Français",
+   "style": {
+    "name": "radio_button_text",
+    "font": "DejaVuSans.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 34,
+   "boxed": false,
+   "rect1920": [
+    1192.5,
+    433.5,
+    145.5,
+    43.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    770.0,
+    322.0,
+    117.0,
+    36.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    796
+   ],
+   "inButton": false,
+   "style": {
+    "name": "radio_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/radio_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102b9ec00> (25,4,4,4)>",
+    "foreground": "<renpy.display.image.DynamicImage object ('gui/button/radio_[prefix_]foreground.png') at 0x102b9ce30>",
+    "left_padding": 25,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "Italiano",
+   "n": 35,
+   "boxed": true,
+   "rect1920": [
+    1155.0,
+    483.0,
+    175.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    795,
+    325,
+    88.0,
+    29.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    796
+   ],
+   "inButton": true,
+   "text": "Italiano",
+   "style": {
+    "name": "radio_button_text",
+    "font": "DejaVuSans.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 36,
+   "boxed": false,
+   "rect1920": [
+    1192.5,
+    487.5,
+    132.0,
+    43.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    770.0,
+    358.0,
+    207.0,
+    36.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    797
+   ],
+   "inButton": false,
+   "style": {
+    "name": "radio_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/radio_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102b9ec00> (25,4,4,4)>",
+    "foreground": "<renpy.display.image.DynamicImage object ('gui/button/radio_[prefix_]foreground.png') at 0x102b9ce30>",
+    "left_padding": 25,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "Bahasa Melayu",
+   "n": 37,
+   "boxed": true,
+   "rect1920": [
+    1155.0,
+    537.0,
+    310.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    795,
+    361,
+    178.0,
+    29.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    797
+   ],
+   "inButton": true,
+   "text": "Bahasa Melayu",
+   "style": {
+    "name": "radio_button_text",
+    "font": "DejaVuSans.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 38,
+   "boxed": false,
+   "rect1920": [
+    1192.5,
+    541.5,
+    267.0,
+    43.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    770.0,
+    394.0,
+    127.0,
+    36.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    798
+   ],
+   "inButton": false,
+   "style": {
+    "name": "radio_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/radio_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102b9ec00> (25,4,4,4)>",
+    "foreground": "<renpy.display.image.DynamicImage object ('gui/button/radio_[prefix_]foreground.png') at 0x102b9ce30>",
+    "left_padding": 25,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "Русский",
+   "n": 39,
+   "boxed": true,
+   "rect1920": [
+    1155.0,
+    591.0,
+    190.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    795,
+    397,
+    98.0,
+    29.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    798
+   ],
+   "inButton": true,
+   "text": "Русский",
+   "style": {
+    "name": "radio_button_text",
+    "font": "DejaVuSans.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 40,
+   "boxed": false,
+   "rect1920": [
+    1192.5,
+    595.5,
+    147.0,
+    43.5
+   ]
+  },
+  {
+   "type": "Window",
+   "class": null,
+   "rect": [
+    995,
+    130,
+    245.0,
+    560.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "style": {
+    "name": "radio_label",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "top_margin": 10,
+    "bottom_margin": 2
+   },
+   "n": 41,
+   "boxed": false,
+   "rect1920": [
+    1492.5,
+    195.0,
+    367.5,
+    840.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    995,
+    140,
+    6.0,
+    36.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    802
+   ],
+   "inButton": false,
+   "text": " ",
+   "style": {
+    "name": "radio_label_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 28,
+    "color": [
+     204,
+     102,
+     0,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 42,
+   "boxed": true,
+   "rect1920": [
+    1492.5,
+    210.0,
+    9.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    995.0,
+    178.0,
+    121.0,
+    36.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    804
+   ],
+   "inButton": false,
+   "style": {
+    "name": "radio_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/radio_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102b9ec00> (25,4,4,4)>",
+    "foreground": "<renpy.display.image.DynamicImage object ('gui/button/radio_[prefix_]foreground.png') at 0x102b9ce30>",
+    "left_padding": 25,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "Español",
+   "n": 43,
+   "boxed": true,
+   "rect1920": [
+    1492.5,
+    267.0,
+    181.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    1020,
+    181,
+    92.0,
+    29.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    804
+   ],
+   "inButton": true,
+   "text": "Español",
+   "style": {
+    "name": "radio_button_text",
+    "font": "DejaVuSans.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 44,
+   "boxed": false,
+   "rect1920": [
+    1530.0,
+    271.5,
+    138.0,
+    43.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    995.0,
+    214.0,
+    164.0,
+    36.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    805
+   ],
+   "inButton": false,
+   "style": {
+    "name": "radio_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/radio_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102b9ec00> (25,4,4,4)>",
+    "foreground": "<renpy.display.image.DynamicImage object ('gui/button/radio_[prefix_]foreground.png') at 0x102b9ce30>",
+    "left_padding": 25,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "Українська",
+   "n": 45,
+   "boxed": true,
+   "rect1920": [
+    1492.5,
+    321.0,
+    246.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    1020,
+    217,
+    135.0,
+    29.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    805
+   ],
+   "inButton": true,
+   "text": "Українська",
+   "style": {
+    "name": "radio_button_text",
+    "font": "DejaVuSans.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 46,
+   "boxed": false,
+   "rect1920": [
+    1530.0,
+    325.5,
+    202.5,
+    43.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    995.0,
+    250.0,
+    101.0,
+    36.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    806
+   ],
+   "inButton": false,
+   "style": {
+    "name": "radio_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/radio_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102b9ec00> (25,4,4,4)>",
+    "foreground": "<renpy.display.image.DynamicImage object ('gui/button/radio_[prefix_]foreground.png') at 0x102b9ce30>",
+    "left_padding": 25,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "日本語",
+   "n": 47,
+   "boxed": true,
+   "rect1920": [
+    1492.5,
+    375.0,
+    151.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    1020,
+    252,
+    72.0,
+    31.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    806
+   ],
+   "inButton": true,
+   "text": "日本語",
+   "style": {
+    "name": "radio_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 48,
+   "boxed": false,
+   "rect1920": [
+    1530.0,
+    378.0,
+    108.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    995.0,
+    286.0,
+    95.0,
+    36.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    807
+   ],
+   "inButton": false,
+   "style": {
+    "name": "radio_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/radio_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102b9ec00> (25,4,4,4)>",
+    "foreground": "<renpy.display.image.DynamicImage object ('gui/button/radio_[prefix_]foreground.png') at 0x102b9ce30>",
+    "left_padding": 25,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "한국어",
+   "n": 49,
+   "boxed": true,
+   "rect1920": [
+    1492.5,
+    429.0,
+    142.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    1020,
+    288,
+    66.0,
+    31.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    807
+   ],
+   "inButton": true,
+   "text": "한국어",
+   "style": {
+    "name": "radio_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 50,
+   "boxed": false,
+   "rect1920": [
+    1530.0,
+    432.0,
+    99.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    995.0,
+    322.0,
+    125.0,
+    36.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    808
+   ],
+   "inButton": false,
+   "style": {
+    "name": "radio_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/radio_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102b9ed20> (25,4,4,4)>",
+    "foreground": "<renpy.display.image.DynamicImage object ('gui/button/radio_[prefix_]foreground.png') at 0x102b9dee0>",
+    "left_padding": 25,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "简体中文",
+   "n": 51,
+   "boxed": true,
+   "rect1920": [
+    1492.5,
+    483.0,
+    187.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Frame",
+   "class": null,
+   "rect": [
+    995,
+    322,
+    245.0,
+    368.0
+   ],
+   "depth": 15,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": true,
+   "style": {
+    "name": "default",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ]
+   },
+   "image": "gui/button/idle_background.png",
+   "n": 52,
+   "boxed": false,
+   "rect1920": [
+    1492.5,
+    483.0,
+    367.5,
+    552.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    1020,
+    324,
+    96.0,
+    31.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    808
+   ],
+   "inButton": true,
+   "text": "简体中文",
+   "style": {
+    "name": "radio_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 53,
+   "boxed": false,
+   "rect1920": [
+    1530.0,
+    486.0,
+    144.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Image",
+   "class": null,
+   "rect": [
+    995,
+    322,
+    245.0,
+    368.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": true,
+   "info": "'gui/button/radio_selected_foreground.png'",
+   "image": "gui/button/radio_selected_foreground.png",
+   "n": 54,
+   "boxed": false,
+   "rect1920": [
+    1492.5,
+    483.0,
+    367.5,
+    552.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    995.0,
+    358.0,
+    125.0,
+    36.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    809
+   ],
+   "inButton": false,
+   "style": {
+    "name": "radio_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/radio_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102b9ec00> (25,4,4,4)>",
+    "foreground": "<renpy.display.image.DynamicImage object ('gui/button/radio_[prefix_]foreground.png') at 0x102b9ce30>",
+    "left_padding": 25,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "繁體中文",
+   "n": 55,
+   "boxed": true,
+   "rect1920": [
+    1492.5,
+    537.0,
+    187.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Frame",
+   "class": null,
+   "rect": [
+    995,
+    358,
+    245.0,
+    332.0
+   ],
+   "depth": 15,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": true,
+   "style": {
+    "name": "default",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ]
+   },
+   "image": "gui/button/idle_background.png",
+   "n": 56,
+   "boxed": false,
+   "rect1920": [
+    1492.5,
+    537.0,
+    367.5,
+    498.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    1020,
+    360,
+    96.0,
+    31.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    809
+   ],
+   "inButton": true,
+   "text": "繁體中文",
+   "style": {
+    "name": "radio_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 57,
+   "boxed": false,
+   "rect1920": [
+    1530.0,
+    540.0,
+    144.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Image",
+   "class": null,
+   "rect": [
+    995,
+    358,
+    245.0,
+    332.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": true,
+   "info": "'gui/button/radio_foreground.png'",
+   "image": "gui/button/radio_foreground.png",
+   "n": 58,
+   "boxed": false,
+   "rect1920": [
+    1492.5,
+    537.0,
+    367.5,
+    498.0
+   ]
+  },
+  {
+   "type": "Window",
+   "class": null,
+   "rect": [
+    320,
+    470,
+    920.0,
+    220.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "style": {
+    "name": "slider_label",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "top_margin": 10,
+    "bottom_margin": 2
+   },
+   "n": 59,
+   "boxed": false,
+   "rect1920": [
+    480.0,
+    705.0,
+    1380.0,
+    330.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    320,
+    480,
+    112.0,
+    36.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    821
+   ],
+   "inButton": false,
+   "text": "文字速度",
+   "style": {
+    "name": "slider_label_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 28,
+    "color": [
+     204,
+     102,
+     0,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 60,
+   "boxed": true,
+   "rect1920": [
+    480.0,
+    720.0,
+    168.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Bar",
+   "class": null,
+   "rect": [
+    320.0,
+    518.0,
+    350.0,
+    30.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    823
+   ],
+   "inButton": false,
+   "style": {
+    "name": "slider_slider",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "xminimum": 350,
+    "xmaximum": 350,
+    "yminimum": 30,
+    "ymaximum": 30,
+    "thumb": "<renpy.display.image.DynamicImage object ('gui/slider/horizontal_[prefix_]thumb.png') at 0x102bba900>"
+   },
+   "n": 61,
+   "boxed": true,
+   "rect1920": [
+    480.0,
+    777.0,
+    525.0,
+    45.0
+   ]
+  },
+  {
+   "type": "Window",
+   "class": null,
+   "rect": [
+    320,
+    548,
+    920.0,
+    142.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "style": {
+    "name": "slider_label",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "top_margin": 10,
+    "bottom_margin": 2
+   },
+   "n": 62,
+   "boxed": false,
+   "rect1920": [
+    480.0,
+    822.0,
+    1380.0,
+    213.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    320,
+    558,
+    168.0,
+    36.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    825
+   ],
+   "inButton": false,
+   "text": "自动前进时间",
+   "style": {
+    "name": "slider_label_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 28,
+    "color": [
+     204,
+     102,
+     0,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 63,
+   "boxed": true,
+   "rect1920": [
+    480.0,
+    837.0,
+    252.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Bar",
+   "class": null,
+   "rect": [
+    320.0,
+    596.0,
+    350.0,
+    30.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    827
+   ],
+   "inButton": false,
+   "style": {
+    "name": "slider_slider",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "xminimum": 350,
+    "xmaximum": 350,
+    "yminimum": 30,
+    "ymaximum": 30,
+    "thumb": "<renpy.display.image.DynamicImage object ('gui/slider/horizontal_[prefix_]thumb.png') at 0x102bba900>"
+   },
+   "n": 64,
+   "boxed": true,
+   "rect1920": [
+    480.0,
+    894.0,
+    525.0,
+    45.0
+   ]
+  },
+  {
+   "type": "Image",
+   "class": null,
+   "rect": [
+    666,
+    622,
+    574.0,
+    68.0
+   ],
+   "depth": 17,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "info": "'gui/slider/horizontal_idle_bar.png'",
+   "image": "gui/slider/horizontal_idle_bar.png",
+   "n": 65,
+   "boxed": false,
+   "rect1920": [
+    999.0,
+    933.0,
+    861.0,
+    102.0
+   ]
+  },
+  {
+   "type": "Window",
+   "class": null,
+   "rect": [
+    770,
+    470,
+    470.0,
+    220.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "style": {
+    "name": "slider_label",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "top_margin": 10,
+    "bottom_margin": 2
+   },
+   "n": 66,
+   "boxed": false,
+   "rect1920": [
+    1155.0,
+    705.0,
+    705.0,
+    330.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    770,
+    480,
+    112.0,
+    36.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    832
+   ],
+   "inButton": false,
+   "text": "音乐音量",
+   "style": {
+    "name": "slider_label_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 28,
+    "color": [
+     204,
+     102,
+     0,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 67,
+   "boxed": true,
+   "rect1920": [
+    1155.0,
+    720.0,
+    168.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Bar",
+   "class": null,
+   "rect": [
+    770.0,
+    518.0,
+    350.0,
+    30.0
+   ],
+   "depth": 15,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    835
+   ],
+   "inButton": false,
+   "style": {
+    "name": "slider_slider",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "xminimum": 350,
+    "xmaximum": 350,
+    "yminimum": 30,
+    "ymaximum": 30,
+    "thumb": "<renpy.display.image.DynamicImage object ('gui/slider/horizontal_[prefix_]thumb.png') at 0x102bba900>"
+   },
+   "n": 68,
+   "boxed": true,
+   "rect1920": [
+    1155.0,
+    777.0,
+    525.0,
+    45.0
+   ]
+  },
+  {
+   "type": "Window",
+   "class": null,
+   "rect": [
+    770,
+    548,
+    470.0,
+    142.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "style": {
+    "name": "slider_label",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "top_margin": 10,
+    "bottom_margin": 2
+   },
+   "n": 69,
+   "boxed": false,
+   "rect1920": [
+    1155.0,
+    822.0,
+    705.0,
+    213.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    770,
+    558,
+    112.0,
+    36.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    839
+   ],
+   "inButton": false,
+   "text": "音效音量",
+   "style": {
+    "name": "slider_label_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 28,
+    "color": [
+     204,
+     102,
+     0,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 70,
+   "boxed": true,
+   "rect1920": [
+    1155.0,
+    837.0,
+    168.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Bar",
+   "class": null,
+   "rect": [
+    770.0,
+    596.0,
+    350.0,
+    30.0
+   ],
+   "depth": 15,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    842
+   ],
+   "inButton": false,
+   "style": {
+    "name": "slider_slider",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "xminimum": 350,
+    "xmaximum": 350,
+    "yminimum": 30,
+    "ymaximum": 30,
+    "thumb": "<renpy.display.image.DynamicImage object ('gui/slider/horizontal_[prefix_]thumb.png') at 0x102bba900>"
+   },
+   "n": 71,
+   "boxed": true,
+   "rect1920": [
+    1155.0,
+    894.0,
+    525.0,
+    45.0
+   ]
+  },
+  {
+   "type": "Image",
+   "class": null,
+   "rect": [
+    774,
+    622,
+    466.0,
+    68.0
+   ],
+   "depth": 18,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "info": "'gui/slider/horizontal_idle_bar.png'",
+   "image": "gui/slider/horizontal_idle_bar.png",
+   "n": 72,
+   "boxed": false,
+   "rect1920": [
+    1161.0,
+    933.0,
+    699.0,
+    102.0
+   ]
+  },
+  {
+   "type": "Image",
+   "class": null,
+   "rect": [
+    1105,
+    596,
+    135.0,
+    94.0
+   ],
+   "depth": 17,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "info": "'gui/slider/horizontal_idle_thumb.png'",
+   "image": "gui/slider/horizontal_idle_thumb.png",
+   "n": 73,
+   "boxed": false,
+   "rect1920": [
+    1657.5,
+    894.0,
+    202.5,
+    141.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    770.0,
+    636.0,
+    125.0,
+    36.0
+   ],
+   "depth": 14,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    860
+   ],
+   "inButton": false,
+   "style": {
+    "name": "mute_all_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/check_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102b34d70> (25,4,4,4)>",
+    "foreground": "<renpy.display.image.DynamicImage object ('gui/button/check_[prefix_]foreground.png') at 0x102090500>",
+    "left_padding": 25,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "全部静音",
+   "n": 74,
+   "boxed": true,
+   "rect1920": [
+    1155.0,
+    954.0,
+    187.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Frame",
+   "class": null,
+   "rect": [
+    770,
+    636,
+    470.0,
+    54.0
+   ],
+   "depth": 15,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": true,
+   "style": {
+    "name": "default",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ]
+   },
+   "image": "gui/button/idle_background.png",
+   "n": 75,
+   "boxed": false,
+   "rect1920": [
+    1155.0,
+    954.0,
+    705.0,
+    81.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    795,
+    638,
+    96.0,
+    31.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    860
+   ],
+   "inButton": true,
+   "text": "全部静音",
+   "style": {
+    "name": "mute_all_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 76,
+   "boxed": false,
+   "rect1920": [
+    1192.5,
+    957.0,
+    144.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Image",
+   "class": null,
+   "rect": [
+    770,
+    636,
+    470.0,
+    54.0
+   ],
+   "depth": 16,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": true,
+   "info": "'gui/button/check_foreground.png'",
+   "image": "gui/button/check_foreground.png",
+   "n": 77,
+   "boxed": false,
+   "rect1920": [
+    1155.0,
+    954.0,
+    705.0,
+    81.0
+   ]
+  },
+  {
+   "type": "Bar",
+   "class": null,
+   "rect": [
+    1250,
+    130,
+    12.0,
+    560.0
+   ],
+   "depth": 9,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "style": {
+    "name": "game_menu_vscrollbar",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "xminimum": 12,
+    "xmaximum": 12,
+    "thumb": "<Frame <renpy.display.image.DynamicImage object ('gui/scrollbar/vertical_[prefix_]thumb.png') at 0x101f058e0> (4,4,4,4)>"
+   },
+   "n": 78,
+   "boxed": true,
+   "rect1920": [
+    1875.0,
+    195.0,
+    18.0,
+    840.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    40.0,
+    242.0,
+    104.0,
+    36.0
+   ],
+   "depth": 6,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    295
+   ],
+   "inButton": false,
+   "style": {
+    "name": "navigation_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/navigation_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994f80> (4,4,4,4)>",
+    "left_padding": 4,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "开始游戏",
+   "n": 79,
+   "boxed": true,
+   "rect1920": [
+    60.0,
+    363.0,
+    156.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Frame",
+   "class": null,
+   "rect": [
+    40,
+    242,
+    104.0,
+    36.0
+   ],
+   "depth": 7,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": true,
+   "style": {
+    "name": "default",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ]
+   },
+   "image": "gui/button/idle_background.png",
+   "n": 80,
+   "boxed": false,
+   "rect1920": [
+    60.0,
+    363.0,
+    156.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    44,
+    244,
+    96.0,
+    31.0
+   ],
+   "depth": 7,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    295
+   ],
+   "inButton": true,
+   "text": "开始游戏",
+   "style": {
+    "name": "navigation_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 81,
+   "boxed": false,
+   "rect1920": [
+    66.0,
+    366.0,
+    144.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    40.0,
+    282.0,
+    104.0,
+    36.0
+   ],
+   "depth": 6,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    303
+   ],
+   "inButton": false,
+   "style": {
+    "name": "navigation_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/navigation_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994f80> (4,4,4,4)>",
+    "left_padding": 4,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "读取游戏",
+   "n": 82,
+   "boxed": true,
+   "rect1920": [
+    60.0,
+    423.0,
+    156.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    44,
+    284,
+    96.0,
+    31.0
+   ],
+   "depth": 7,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    303
+   ],
+   "inButton": true,
+   "text": "读取游戏",
+   "style": {
+    "name": "navigation_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 83,
+   "boxed": false,
+   "rect1920": [
+    66.0,
+    426.0,
+    144.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    40.0,
+    322.0,
+    104.0,
+    36.0
+   ],
+   "depth": 6,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    305
+   ],
+   "inButton": false,
+   "style": {
+    "name": "navigation_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/navigation_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994530> (4,4,4,4)>",
+    "left_padding": 4,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "设置",
+   "n": 84,
+   "boxed": true,
+   "rect1920": [
+    60.0,
+    483.0,
+    156.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Frame",
+   "class": null,
+   "rect": [
+    40,
+    322,
+    104.0,
+    36.0
+   ],
+   "depth": 7,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": true,
+   "style": {
+    "name": "default",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ]
+   },
+   "image": "gui/button/idle_background.png",
+   "n": 85,
+   "boxed": false,
+   "rect1920": [
+    60.0,
+    483.0,
+    156.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    44,
+    324,
+    48.0,
+    31.0
+   ],
+   "depth": 7,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    305
+   ],
+   "inButton": true,
+   "text": "设置",
+   "style": {
+    "name": "navigation_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 86,
+   "boxed": false,
+   "rect1920": [
+    66.0,
+    486.0,
+    72.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    40.0,
+    362.0,
+    104.0,
+    36.0
+   ],
+   "depth": 6,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    315
+   ],
+   "inButton": false,
+   "style": {
+    "name": "navigation_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/navigation_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994f80> (4,4,4,4)>",
+    "left_padding": 4,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "关于",
+   "n": 87,
+   "boxed": true,
+   "rect1920": [
+    60.0,
+    543.0,
+    156.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    44,
+    364,
+    48.0,
+    31.0
+   ],
+   "depth": 7,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    315
+   ],
+   "inButton": true,
+   "text": "关于",
+   "style": {
+    "name": "navigation_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 88,
+   "boxed": false,
+   "rect1920": [
+    66.0,
+    546.0,
+    72.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    40.0,
+    402.0,
+    104.0,
+    36.0
+   ],
+   "depth": 6,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    320
+   ],
+   "inButton": false,
+   "style": {
+    "name": "navigation_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/navigation_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994f80> (4,4,4,4)>",
+    "left_padding": 4,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "帮助",
+   "n": 89,
+   "boxed": true,
+   "rect1920": [
+    60.0,
+    603.0,
+    156.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    44,
+    404,
+    48.0,
+    31.0
+   ],
+   "depth": 7,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    320
+   ],
+   "inButton": true,
+   "text": "帮助",
+   "style": {
+    "name": "navigation_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 90,
+   "boxed": false,
+   "rect1920": [
+    66.0,
+    606.0,
+    72.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    40.0,
+    442.0,
+    104.0,
+    36.0
+   ],
+   "depth": 6,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    325
+   ],
+   "inButton": false,
+   "style": {
+    "name": "navigation_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/navigation_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994f80> (4,4,4,4)>",
+    "left_padding": 4,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "退出",
+   "n": 91,
+   "boxed": true,
+   "rect1920": [
+    60.0,
+    663.0,
+    156.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    44,
+    444,
+    48.0,
+    31.0
+   ],
+   "depth": 7,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    325
+   ],
+   "inButton": true,
+   "text": "退出",
+   "style": {
+    "name": "navigation_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 92,
+   "boxed": false,
+   "rect1920": [
+    66.0,
+    666.0,
+    72.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    40.0,
+    654.0,
+    104.0,
+    36.0
+   ],
+   "depth": 5,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    465
+   ],
+   "inButton": false,
+   "style": {
+    "name": "return_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/navigation_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994f80> (4,4,4,4)>",
+    "left_padding": 4,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "返回",
+   "n": 93,
+   "boxed": true,
+   "rect1920": [
+    60.0,
+    981.0,
+    156.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    44,
+    656,
+    48.0,
+    31.0
+   ],
+   "depth": 6,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    465
+   ],
+   "inButton": true,
+   "text": "返回",
+   "style": {
+    "name": "return_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 94,
+   "boxed": false,
+   "rect1920": [
+    66.0,
+    984.0,
+    72.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Window",
+   "class": null,
+   "rect": [
+    50,
+    0,
+    100.0,
+    120.0
+   ],
+   "depth": 5,
+   "screen": "preferences",
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "style": {
+    "name": "game_menu_label",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "yminimum": 120,
+    "ymaximum": 120
+   },
+   "n": 95,
+   "boxed": false,
+   "rect1920": [
+    75.0,
+    0.0,
+    150.0,
+    180.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    50,
+    29,
+    100.0,
+    62.0
+   ],
+   "depth": 6,
+   "screen": "preferences",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    470
+   ],
+   "inButton": false,
+   "text": "设置",
+   "style": {
+    "name": "game_menu_label_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 50,
+    "color": [
+     204,
+     102,
+     0,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 96,
+   "boxed": true,
+   "rect1920": [
+    75.0,
+    43.5,
+    150.0,
+    93.0
+   ]
+  }
+ ]
+}

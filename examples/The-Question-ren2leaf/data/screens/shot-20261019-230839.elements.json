@@ -1,0 +1,2844 @@
+{
+ "key": "shot-20261019-230839",
+ "item": {
+  "kind": "manual",
+  "purpose": "读取游戏"
+ },
+ "gameSize": [
+  1280,
+  720
+ ],
+ "elements": [
+  {
+   "type": "Image",
+   "class": null,
+   "rect": [
+    0,
+    0,
+    512.0,
+    512.0
+   ],
+   "depth": 2,
+   "screen": null,
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "info": "'_transparent_tile.png'",
+   "image": "_transparent_tile.png",
+   "n": 1,
+   "boxed": false,
+   "rect1920": [
+    0.0,
+    0.0,
+    768.0,
+    768.0
+   ]
+  },
+  {
+   "type": "ImageReference",
+   "class": null,
+   "rect": [
+    0,
+    0,
+    1280.0,
+    720.0
+   ],
+   "depth": 4,
+   "screen": null,
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "info": "('black',)",
+   "image": "black",
+   "n": 2,
+   "boxed": false,
+   "rect1920": [
+    0.0,
+    0.0,
+    1920.0,
+    1080.0
+   ]
+  },
+  {
+   "type": "Solid",
+   "class": null,
+   "rect": [
+    0,
+    0,
+    1280.0,
+    720.0
+   ],
+   "depth": 5,
+   "screen": null,
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "transformed": true,
+   "n": 3,
+   "boxed": false,
+   "rect1920": [
+    0.0,
+    0.0,
+    1920.0,
+    1080.0
+   ]
+  },
+  {
+   "type": "Image",
+   "class": null,
+   "rect": [
+    0,
+    0,
+    1280.0,
+    720.0
+   ],
+   "depth": 5,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    415
+   ],
+   "inButton": false,
+   "info": "'gui/main_menu.png'",
+   "image": "gui/main_menu.png",
+   "n": 4,
+   "boxed": false,
+   "rect1920": [
+    0.0,
+    0.0,
+    1920.0,
+    1080.0
+   ]
+  },
+  {
+   "type": "Window",
+   "class": null,
+   "rect": [
+    0,
+    0,
+    1280.0,
+    720.0
+   ],
+   "depth": 5,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    419
+   ],
+   "inButton": false,
+   "style": {
+    "name": "game_menu_outer_frame",
+    "font": "DejaVuSans.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<renpy.display.im.Image object ('gui/overlay/game_menu.png') at 0x102995190>",
+    "top_padding": 120,
+    "bottom_padding": 30
+   },
+   "n": 5,
+   "boxed": false,
+   "rect1920": [
+    0.0,
+    0.0,
+    1920.0,
+    1080.0
+   ]
+  },
+  {
+   "type": "Image",
+   "class": null,
+   "rect": [
+    0,
+    0,
+    1280.0,
+    720.0
+   ],
+   "depth": 6,
+   "screen": "load",
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "info": "'gui/overlay/game_menu.png'",
+   "image": "gui/overlay/game_menu.png",
+   "n": 6,
+   "boxed": false,
+   "rect1920": [
+    0.0,
+    0.0,
+    1920.0,
+    1080.0
+   ]
+  },
+  {
+   "type": "Window",
+   "class": null,
+   "rect": [
+    0,
+    120,
+    280.0,
+    570.0
+   ],
+   "depth": 7,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    425
+   ],
+   "inButton": false,
+   "style": {
+    "name": "game_menu_navigation_frame",
+    "font": "DejaVuSans.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "xminimum": 280,
+    "xmaximum": 280
+   },
+   "n": 7,
+   "boxed": false,
+   "rect1920": [
+    0.0,
+    180.0,
+    420.0,
+    855.0
+   ]
+  },
+  {
+   "type": "Window",
+   "class": null,
+   "rect": [
+    280,
+    120,
+    1000.0,
+    570.0
+   ],
+   "depth": 7,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    428
+   ],
+   "inButton": false,
+   "style": {
+    "name": "game_menu_content_frame",
+    "font": "DejaVuSans.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "left_margin": 40,
+    "right_margin": 20,
+    "top_margin": 10
+   },
+   "n": 8,
+   "boxed": false,
+   "rect1920": [
+    420.0,
+    180.0,
+    1500.0,
+    855.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    574.0,
+    654.0,
+    32.0,
+    36.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    696
+   ],
+   "inButton": false,
+   "style": {
+    "name": "page_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/page_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x1029943e0> (10,4,10,4)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "<",
+   "n": 9,
+   "boxed": true,
+   "rect1920": [
+    861.0,
+    981.0,
+    48.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Frame",
+   "class": null,
+   "rect": [
+    574,
+    654,
+    32.0,
+    36.0
+   ],
+   "depth": 11,
+   "screen": "load",
+   "id": null,
+   "location": null,
+   "inButton": true,
+   "style": {
+    "name": "default",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ]
+   },
+   "image": "gui/button/idle_background.png",
+   "n": 10,
+   "boxed": false,
+   "rect1920": [
+    861.0,
+    981.0,
+    48.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    584,
+    656,
+    12.0,
+    31.0
+   ],
+   "depth": 11,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    696
+   ],
+   "inButton": true,
+   "text": "<",
+   "style": {
+    "name": "page_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 11,
+   "boxed": false,
+   "rect1920": [
+    876.0,
+    984.0,
+    18.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    606.0,
+    654.0,
+    35.0,
+    36.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    700
+   ],
+   "inButton": false,
+   "style": {
+    "name": "page_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/page_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x1029943e0> (10,4,10,4)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "{#auto_page}A",
+   "n": 12,
+   "boxed": true,
+   "rect1920": [
+    909.0,
+    981.0,
+    52.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    616,
+    656,
+    15.0,
+    31.0
+   ],
+   "depth": 11,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    700
+   ],
+   "inButton": true,
+   "text": "{#auto_page}A",
+   "style": {
+    "name": "page_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 13,
+   "boxed": false,
+   "rect1920": [
+    924.0,
+    984.0,
+    22.5,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    641.0,
+    654.0,
+    36.0,
+    36.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    703
+   ],
+   "inButton": false,
+   "style": {
+    "name": "page_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/page_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x1029943e0> (10,4,10,4)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "{#quick_page}Q",
+   "n": 14,
+   "boxed": true,
+   "rect1920": [
+    961.5,
+    981.0,
+    54.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    651,
+    656,
+    16.0,
+    31.0
+   ],
+   "depth": 11,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    703
+   ],
+   "inButton": true,
+   "text": "{#quick_page}Q",
+   "style": {
+    "name": "page_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 15,
+   "boxed": false,
+   "rect1920": [
+    976.5,
+    984.0,
+    24.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    677.0,
+    654.0,
+    33.0,
+    36.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    707
+   ],
+   "inButton": false,
+   "style": {
+    "name": "page_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/page_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x1029948f0> (10,4,10,4)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "1",
+   "n": 16,
+   "boxed": true,
+   "rect1920": [
+    1015.5,
+    981.0,
+    49.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Frame",
+   "class": null,
+   "rect": [
+    677,
+    654,
+    33.0,
+    36.0
+   ],
+   "depth": 11,
+   "screen": "load",
+   "id": null,
+   "location": null,
+   "inButton": true,
+   "style": {
+    "name": "default",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ]
+   },
+   "image": "gui/button/idle_background.png",
+   "n": 17,
+   "boxed": false,
+   "rect1920": [
+    1015.5,
+    981.0,
+    49.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    687,
+    656,
+    13.0,
+    31.0
+   ],
+   "depth": 11,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    707
+   ],
+   "inButton": true,
+   "text": "1",
+   "style": {
+    "name": "page_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 18,
+   "boxed": false,
+   "rect1920": [
+    1030.5,
+    984.0,
+    19.5,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    710.0,
+    654.0,
+    33.0,
+    36.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    707
+   ],
+   "inButton": false,
+   "style": {
+    "name": "page_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/page_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x1029943e0> (10,4,10,4)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "2",
+   "n": 19,
+   "boxed": true,
+   "rect1920": [
+    1065.0,
+    981.0,
+    49.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    720,
+    656,
+    13.0,
+    31.0
+   ],
+   "depth": 11,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    707
+   ],
+   "inButton": true,
+   "text": "2",
+   "style": {
+    "name": "page_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 20,
+   "boxed": false,
+   "rect1920": [
+    1080.0,
+    984.0,
+    19.5,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    743.0,
+    654.0,
+    33.0,
+    36.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    707
+   ],
+   "inButton": false,
+   "style": {
+    "name": "page_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/page_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x1029943e0> (10,4,10,4)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "3",
+   "n": 21,
+   "boxed": true,
+   "rect1920": [
+    1114.5,
+    981.0,
+    49.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    753,
+    656,
+    13.0,
+    31.0
+   ],
+   "depth": 11,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    707
+   ],
+   "inButton": true,
+   "text": "3",
+   "style": {
+    "name": "page_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 22,
+   "boxed": false,
+   "rect1920": [
+    1129.5,
+    984.0,
+    19.5,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    776.0,
+    654.0,
+    33.0,
+    36.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    707
+   ],
+   "inButton": false,
+   "style": {
+    "name": "page_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/page_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x1029943e0> (10,4,10,4)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "4",
+   "n": 23,
+   "boxed": true,
+   "rect1920": [
+    1164.0,
+    981.0,
+    49.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    786,
+    656,
+    13.0,
+    31.0
+   ],
+   "depth": 11,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    707
+   ],
+   "inButton": true,
+   "text": "4",
+   "style": {
+    "name": "page_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 24,
+   "boxed": false,
+   "rect1920": [
+    1179.0,
+    984.0,
+    19.5,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    809.0,
+    654.0,
+    33.0,
+    36.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    707
+   ],
+   "inButton": false,
+   "style": {
+    "name": "page_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/page_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x1029943e0> (10,4,10,4)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "5",
+   "n": 25,
+   "boxed": true,
+   "rect1920": [
+    1213.5,
+    981.0,
+    49.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    819,
+    656,
+    13.0,
+    31.0
+   ],
+   "depth": 11,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    707
+   ],
+   "inButton": true,
+   "text": "5",
+   "style": {
+    "name": "page_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 26,
+   "boxed": false,
+   "rect1920": [
+    1228.5,
+    984.0,
+    19.5,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    842.0,
+    654.0,
+    33.0,
+    36.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    707
+   ],
+   "inButton": false,
+   "style": {
+    "name": "page_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/page_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x1029943e0> (10,4,10,4)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "6",
+   "n": 27,
+   "boxed": true,
+   "rect1920": [
+    1263.0,
+    981.0,
+    49.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    852,
+    656,
+    13.0,
+    31.0
+   ],
+   "depth": 11,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    707
+   ],
+   "inButton": true,
+   "text": "6",
+   "style": {
+    "name": "page_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 28,
+   "boxed": false,
+   "rect1920": [
+    1278.0,
+    984.0,
+    19.5,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    875.0,
+    654.0,
+    33.0,
+    36.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    707
+   ],
+   "inButton": false,
+   "style": {
+    "name": "page_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/page_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x1029943e0> (10,4,10,4)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "7",
+   "n": 29,
+   "boxed": true,
+   "rect1920": [
+    1312.5,
+    981.0,
+    49.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    885,
+    656,
+    13.0,
+    31.0
+   ],
+   "depth": 11,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    707
+   ],
+   "inButton": true,
+   "text": "7",
+   "style": {
+    "name": "page_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 30,
+   "boxed": false,
+   "rect1920": [
+    1327.5,
+    984.0,
+    19.5,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    908.0,
+    654.0,
+    33.0,
+    36.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    707
+   ],
+   "inButton": false,
+   "style": {
+    "name": "page_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/page_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x1029943e0> (10,4,10,4)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "8",
+   "n": 31,
+   "boxed": true,
+   "rect1920": [
+    1362.0,
+    981.0,
+    49.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    918,
+    656,
+    13.0,
+    31.0
+   ],
+   "depth": 11,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    707
+   ],
+   "inButton": true,
+   "text": "8",
+   "style": {
+    "name": "page_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 32,
+   "boxed": false,
+   "rect1920": [
+    1377.0,
+    984.0,
+    19.5,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    941.0,
+    654.0,
+    33.0,
+    36.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    707
+   ],
+   "inButton": false,
+   "style": {
+    "name": "page_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/page_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x1029943e0> (10,4,10,4)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "9",
+   "n": 33,
+   "boxed": true,
+   "rect1920": [
+    1411.5,
+    981.0,
+    49.5,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    951,
+    656,
+    13.0,
+    31.0
+   ],
+   "depth": 11,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    707
+   ],
+   "inButton": true,
+   "text": "9",
+   "style": {
+    "name": "page_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 34,
+   "boxed": false,
+   "rect1920": [
+    1426.5,
+    984.0,
+    19.5,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    974.0,
+    654.0,
+    32.0,
+    36.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    709
+   ],
+   "inButton": false,
+   "style": {
+    "name": "page_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/page_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x1029943e0> (10,4,10,4)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": ">",
+   "n": 35,
+   "boxed": true,
+   "rect1920": [
+    1461.0,
+    981.0,
+    48.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    984,
+    656,
+    12.0,
+    31.0
+   ],
+   "depth": 11,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    709
+   ],
+   "inButton": true,
+   "text": ">",
+   "style": {
+    "name": "page_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 36,
+   "boxed": false,
+   "rect1920": [
+    1476.0,
+    984.0,
+    18.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Grid",
+   "class": null,
+   "rect": [
+    366,
+    199,
+    848.0,
+    422.0
+   ],
+   "depth": 9,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    660
+   ],
+   "inButton": false,
+   "n": 37,
+   "boxed": false,
+   "rect1920": [
+    549.0,
+    298.5,
+    1272.0,
+    633.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    366,
+    199,
+    276.0,
+    206.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    672
+   ],
+   "inButton": false,
+   "style": {
+    "name": "slot_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/slot_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x1029958e0> (10,10,10,10)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 10,
+    "bottom_padding": 10,
+    "xminimum": 276,
+    "xmaximum": 276,
+    "yminimum": 206,
+    "ymaximum": 206
+   },
+   "image": "gui/button/slot_idle_background.png",
+   "label": "空存档位",
+   "n": 38,
+   "boxed": true,
+   "rect1920": [
+    549.0,
+    298.5,
+    414.0,
+    309.0
+   ]
+  },
+  {
+   "type": "Frame",
+   "class": null,
+   "rect": [
+    366,
+    199,
+    276.0,
+    206.0
+   ],
+   "depth": 11,
+   "screen": "load",
+   "id": null,
+   "location": null,
+   "inButton": true,
+   "style": {
+    "name": "default",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ]
+   },
+   "image": "gui/button/slot_idle_background.png",
+   "n": 39,
+   "boxed": false,
+   "rect1920": [
+    549.0,
+    298.5,
+    414.0,
+    309.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    476,
+    353,
+    56.0,
+    18.0
+   ],
+   "depth": 12,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    679
+   ],
+   "inButton": true,
+   "text": "空存档位",
+   "style": {
+    "name": "slot_time_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 14,
+    "color": [
+     85,
+     85,
+     85,
+     127
+    ],
+    "text_align": 0.5
+   },
+   "transformed": true,
+   "n": 40,
+   "boxed": false,
+   "rect1920": [
+    714.0,
+    529.5,
+    84.0,
+    27.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    652,
+    199,
+    276.0,
+    206.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    672
+   ],
+   "inButton": false,
+   "style": {
+    "name": "slot_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/slot_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x1029958e0> (10,10,10,10)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 10,
+    "bottom_padding": 10,
+    "xminimum": 276,
+    "xmaximum": 276,
+    "yminimum": 206,
+    "ymaximum": 206
+   },
+   "image": "gui/button/slot_idle_background.png",
+   "label": "空存档位",
+   "n": 41,
+   "boxed": true,
+   "rect1920": [
+    978.0,
+    298.5,
+    414.0,
+    309.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    762,
+    353,
+    56.0,
+    18.0
+   ],
+   "depth": 12,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    679
+   ],
+   "inButton": true,
+   "text": "空存档位",
+   "style": {
+    "name": "slot_time_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 14,
+    "color": [
+     85,
+     85,
+     85,
+     127
+    ],
+    "text_align": 0.5
+   },
+   "transformed": true,
+   "n": 42,
+   "boxed": false,
+   "rect1920": [
+    1143.0,
+    529.5,
+    84.0,
+    27.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    938,
+    199,
+    276.0,
+    206.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    672
+   ],
+   "inButton": false,
+   "style": {
+    "name": "slot_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/slot_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x1029958e0> (10,10,10,10)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 10,
+    "bottom_padding": 10,
+    "xminimum": 276,
+    "xmaximum": 276,
+    "yminimum": 206,
+    "ymaximum": 206
+   },
+   "image": "gui/button/slot_idle_background.png",
+   "label": "空存档位",
+   "n": 43,
+   "boxed": true,
+   "rect1920": [
+    1407.0,
+    298.5,
+    414.0,
+    309.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    1048,
+    353,
+    56.0,
+    18.0
+   ],
+   "depth": 12,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    679
+   ],
+   "inButton": true,
+   "text": "空存档位",
+   "style": {
+    "name": "slot_time_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 14,
+    "color": [
+     85,
+     85,
+     85,
+     127
+    ],
+    "text_align": 0.5
+   },
+   "transformed": true,
+   "n": 44,
+   "boxed": false,
+   "rect1920": [
+    1572.0,
+    529.5,
+    84.0,
+    27.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    366,
+    415,
+    276.0,
+    206.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    672
+   ],
+   "inButton": false,
+   "style": {
+    "name": "slot_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/slot_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x1029958e0> (10,10,10,10)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 10,
+    "bottom_padding": 10,
+    "xminimum": 276,
+    "xmaximum": 276,
+    "yminimum": 206,
+    "ymaximum": 206
+   },
+   "image": "gui/button/slot_idle_background.png",
+   "label": "空存档位",
+   "n": 45,
+   "boxed": true,
+   "rect1920": [
+    549.0,
+    622.5,
+    414.0,
+    309.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    476,
+    569,
+    56.0,
+    18.0
+   ],
+   "depth": 12,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    679
+   ],
+   "inButton": true,
+   "text": "空存档位",
+   "style": {
+    "name": "slot_time_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 14,
+    "color": [
+     85,
+     85,
+     85,
+     127
+    ],
+    "text_align": 0.5
+   },
+   "transformed": true,
+   "n": 46,
+   "boxed": false,
+   "rect1920": [
+    714.0,
+    853.5,
+    84.0,
+    27.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    652,
+    415,
+    276.0,
+    206.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    672
+   ],
+   "inButton": false,
+   "style": {
+    "name": "slot_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/slot_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x1029958e0> (10,10,10,10)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 10,
+    "bottom_padding": 10,
+    "xminimum": 276,
+    "xmaximum": 276,
+    "yminimum": 206,
+    "ymaximum": 206
+   },
+   "image": "gui/button/slot_idle_background.png",
+   "label": "空存档位",
+   "n": 47,
+   "boxed": true,
+   "rect1920": [
+    978.0,
+    622.5,
+    414.0,
+    309.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    762,
+    569,
+    56.0,
+    18.0
+   ],
+   "depth": 12,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    679
+   ],
+   "inButton": true,
+   "text": "空存档位",
+   "style": {
+    "name": "slot_time_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 14,
+    "color": [
+     85,
+     85,
+     85,
+     127
+    ],
+    "text_align": 0.5
+   },
+   "transformed": true,
+   "n": 48,
+   "boxed": false,
+   "rect1920": [
+    1143.0,
+    853.5,
+    84.0,
+    27.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    938,
+    415,
+    276.0,
+    206.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    672
+   ],
+   "inButton": false,
+   "style": {
+    "name": "slot_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/slot_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x1029958e0> (10,10,10,10)>",
+    "left_padding": 10,
+    "right_padding": 10,
+    "top_padding": 10,
+    "bottom_padding": 10,
+    "xminimum": 276,
+    "xmaximum": 276,
+    "yminimum": 206,
+    "ymaximum": 206
+   },
+   "image": "gui/button/slot_idle_background.png",
+   "label": "空存档位",
+   "n": 49,
+   "boxed": true,
+   "rect1920": [
+    1407.0,
+    622.5,
+    414.0,
+    309.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    1048,
+    569,
+    56.0,
+    18.0
+   ],
+   "depth": 12,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    679
+   ],
+   "inButton": true,
+   "text": "空存档位",
+   "style": {
+    "name": "slot_time_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 14,
+    "color": [
+     85,
+     85,
+     85,
+     127
+    ],
+    "text_align": 0.5
+   },
+   "transformed": true,
+   "n": 50,
+   "boxed": false,
+   "rect1920": [
+    1572.0,
+    853.5,
+    84.0,
+    27.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    698.0,
+    130.0,
+    184.0,
+    42.0
+   ],
+   "depth": 9,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    648
+   ],
+   "inButton": false,
+   "style": {
+    "name": "page_label",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "left_padding": 50,
+    "right_padding": 50,
+    "top_padding": 3,
+    "bottom_padding": 3
+   },
+   "n": 51,
+   "boxed": true,
+   "rect1920": [
+    1047.0,
+    195.0,
+    276.0,
+    63.0
+   ]
+  },
+  {
+   "type": "Input",
+   "class": null,
+   "rect": [
+    748,
+    133,
+    84.0,
+    36.0
+   ],
+   "depth": 10,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    655
+   ],
+   "inButton": true,
+   "info": "'第 1 页'",
+   "style": {
+    "name": "page_label_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 28,
+    "color": [
+     204,
+     102,
+     0,
+     255
+    ],
+    "text_align": 0.5
+   },
+   "transformed": true,
+   "n": 52,
+   "boxed": false,
+   "rect1920": [
+    1122.0,
+    199.5,
+    126.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    40.0,
+    242.0,
+    104.0,
+    36.0
+   ],
+   "depth": 6,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    295
+   ],
+   "inButton": false,
+   "style": {
+    "name": "navigation_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/navigation_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994f80> (4,4,4,4)>",
+    "left_padding": 4,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "开始游戏",
+   "n": 53,
+   "boxed": true,
+   "rect1920": [
+    60.0,
+    363.0,
+    156.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Frame",
+   "class": null,
+   "rect": [
+    40,
+    242,
+    104.0,
+    36.0
+   ],
+   "depth": 7,
+   "screen": "load",
+   "id": null,
+   "location": null,
+   "inButton": true,
+   "style": {
+    "name": "default",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ]
+   },
+   "image": "gui/button/idle_background.png",
+   "n": 54,
+   "boxed": false,
+   "rect1920": [
+    60.0,
+    363.0,
+    156.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    44,
+    244,
+    96.0,
+    31.0
+   ],
+   "depth": 7,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    295
+   ],
+   "inButton": true,
+   "text": "开始游戏",
+   "style": {
+    "name": "navigation_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 55,
+   "boxed": false,
+   "rect1920": [
+    66.0,
+    366.0,
+    144.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    40.0,
+    282.0,
+    104.0,
+    36.0
+   ],
+   "depth": 6,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    303
+   ],
+   "inButton": false,
+   "style": {
+    "name": "navigation_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/navigation_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994530> (4,4,4,4)>",
+    "left_padding": 4,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "读取游戏",
+   "n": 56,
+   "boxed": true,
+   "rect1920": [
+    60.0,
+    423.0,
+    156.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Frame",
+   "class": null,
+   "rect": [
+    40,
+    282,
+    104.0,
+    36.0
+   ],
+   "depth": 7,
+   "screen": "load",
+   "id": null,
+   "location": null,
+   "inButton": true,
+   "style": {
+    "name": "default",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ]
+   },
+   "image": "gui/button/idle_background.png",
+   "n": 57,
+   "boxed": false,
+   "rect1920": [
+    60.0,
+    423.0,
+    156.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    44,
+    284,
+    96.0,
+    31.0
+   ],
+   "depth": 7,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    303
+   ],
+   "inButton": true,
+   "text": "读取游戏",
+   "style": {
+    "name": "navigation_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 58,
+   "boxed": false,
+   "rect1920": [
+    66.0,
+    426.0,
+    144.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    40.0,
+    322.0,
+    104.0,
+    36.0
+   ],
+   "depth": 6,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    305
+   ],
+   "inButton": false,
+   "style": {
+    "name": "navigation_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/navigation_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994f80> (4,4,4,4)>",
+    "left_padding": 4,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "设置",
+   "n": 59,
+   "boxed": true,
+   "rect1920": [
+    60.0,
+    483.0,
+    156.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    44,
+    324,
+    48.0,
+    31.0
+   ],
+   "depth": 7,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    305
+   ],
+   "inButton": true,
+   "text": "设置",
+   "style": {
+    "name": "navigation_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 60,
+   "boxed": false,
+   "rect1920": [
+    66.0,
+    486.0,
+    72.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    40.0,
+    362.0,
+    104.0,
+    36.0
+   ],
+   "depth": 6,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    315
+   ],
+   "inButton": false,
+   "style": {
+    "name": "navigation_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/navigation_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994f80> (4,4,4,4)>",
+    "left_padding": 4,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "关于",
+   "n": 61,
+   "boxed": true,
+   "rect1920": [
+    60.0,
+    543.0,
+    156.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    44,
+    364,
+    48.0,
+    31.0
+   ],
+   "depth": 7,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    315
+   ],
+   "inButton": true,
+   "text": "关于",
+   "style": {
+    "name": "navigation_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 62,
+   "boxed": false,
+   "rect1920": [
+    66.0,
+    546.0,
+    72.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    40.0,
+    402.0,
+    104.0,
+    36.0
+   ],
+   "depth": 6,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    320
+   ],
+   "inButton": false,
+   "style": {
+    "name": "navigation_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/navigation_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994f80> (4,4,4,4)>",
+    "left_padding": 4,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "帮助",
+   "n": 63,
+   "boxed": true,
+   "rect1920": [
+    60.0,
+    603.0,
+    156.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    44,
+    404,
+    48.0,
+    31.0
+   ],
+   "depth": 7,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    320
+   ],
+   "inButton": true,
+   "text": "帮助",
+   "style": {
+    "name": "navigation_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 64,
+   "boxed": false,
+   "rect1920": [
+    66.0,
+    606.0,
+    72.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    40.0,
+    442.0,
+    104.0,
+    36.0
+   ],
+   "depth": 6,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    325
+   ],
+   "inButton": false,
+   "style": {
+    "name": "navigation_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/navigation_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994f80> (4,4,4,4)>",
+    "left_padding": 4,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "退出",
+   "n": 65,
+   "boxed": true,
+   "rect1920": [
+    60.0,
+    663.0,
+    156.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    44,
+    444,
+    48.0,
+    31.0
+   ],
+   "depth": 7,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    325
+   ],
+   "inButton": true,
+   "text": "退出",
+   "style": {
+    "name": "navigation_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 66,
+   "boxed": false,
+   "rect1920": [
+    66.0,
+    666.0,
+    72.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Button",
+   "class": null,
+   "rect": [
+    40.0,
+    654.0,
+    104.0,
+    36.0
+   ],
+   "depth": 5,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    465
+   ],
+   "inButton": false,
+   "style": {
+    "name": "return_button",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "background": "<Frame <renpy.display.image.DynamicImage object (['gui/button/navigation_[prefix_]background.png', 'gui/button/[prefix_]background.png']) at 0x102994f80> (4,4,4,4)>",
+    "left_padding": 4,
+    "right_padding": 4,
+    "top_padding": 4,
+    "bottom_padding": 4,
+    "yminimum": 36,
+    "ymaximum": 36
+   },
+   "image": "gui/button/idle_background.png",
+   "label": "返回",
+   "n": 67,
+   "boxed": true,
+   "rect1920": [
+    60.0,
+    981.0,
+    156.0,
+    54.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    44,
+    656,
+    48.0,
+    31.0
+   ],
+   "depth": 6,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    465
+   ],
+   "inButton": true,
+   "text": "返回",
+   "style": {
+    "name": "return_button_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 24,
+    "color": [
+     85,
+     85,
+     85,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 68,
+   "boxed": false,
+   "rect1920": [
+    66.0,
+    984.0,
+    72.0,
+    46.5
+   ]
+  },
+  {
+   "type": "Window",
+   "class": null,
+   "rect": [
+    50,
+    0,
+    200.0,
+    120.0
+   ],
+   "depth": 5,
+   "screen": "load",
+   "id": null,
+   "location": null,
+   "inButton": false,
+   "style": {
+    "name": "game_menu_label",
+    "font": "SourceHanSansLite.ttf",
+    "size": 22,
+    "color": [
+     255,
+     255,
+     255,
+     255
+    ],
+    "yminimum": 120,
+    "ymaximum": 120
+   },
+   "n": 69,
+   "boxed": false,
+   "rect1920": [
+    75.0,
+    0.0,
+    300.0,
+    180.0
+   ]
+  },
+  {
+   "type": "Text",
+   "class": null,
+   "rect": [
+    50,
+    29,
+    200.0,
+    62.0
+   ],
+   "depth": 6,
+   "screen": "load",
+   "id": null,
+   "location": [
+    "game/screens.rpy",
+    470
+   ],
+   "inButton": false,
+   "text": "读取游戏",
+   "style": {
+    "name": "game_menu_label_text",
+    "font": "SourceHanSansLite.ttf",
+    "size": 50,
+    "color": [
+     204,
+     102,
+     0,
+     255
+    ]
+   },
+   "transformed": true,
+   "n": 70,
+   "boxed": true,
+   "rect1920": [
+    75.0,
+    43.5,
+    300.0,
+    93.0
+   ]
+  }
+ ]
+}
