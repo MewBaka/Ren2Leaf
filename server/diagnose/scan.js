@@ -483,7 +483,7 @@ function scanCallSites(col, ctx, ln, { screenLanguage = false }) {
             if (!first) {
                 if (kind === "ShowMenu") {
                     col.callSites.push({ ...site(ctx, ln, kind, null, argsText), gameMenuDefault: true });
-                } else col.addReview("unparsed", ctx, ln, `${kind}() 没有界面名参数`);
+                } else col.addReview("unparsed", ctx, ln, `${kind}() 缺少界面名参数`);
                 continue;
             }
             const lit = literalAt(ln, first[0], first[1]);

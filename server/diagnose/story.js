@@ -274,7 +274,7 @@ export function storyStatement(col, ctx, ln, m) {
             col.voiceLines.push({ file: ctx.file, line: ln.line, label: ctx.label ?? null, audio: file, dir: voiceDir(file) });
             noteAudioRefs(col, ctx, ln, "voice", "voice");
         } else {
-            col.addReview("dynamicVoice", ctx, ln, "voice 的文件名不是字面量，无法作为身份证据");
+            col.addReview("dynamicVoice", ctx, ln, "voice 的文件名非字面量，无法作为角色身份证据");
         }
         return {};
     }

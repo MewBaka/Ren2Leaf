@@ -103,7 +103,7 @@ export async function mount(host, ctx) {
         if (state.sdks.trusted) return true;
         const ok = await ctx.confirm({
             title: "在副本中运行游戏",
-            message: "截图会用 Ren'Py SDK 运行该游戏的脚本，只在信任该游戏时继续。运行使用工作目录中的副本，存档写入工作目录，原游戏目录不会被修改",
+            message: "截图功能将通过 Ren'Py SDK 运行游戏脚本，仅在确认信任该游戏后继续。运行时使用工作目录中的副本，存档写入工作目录，不会修改原游戏目录",
             confirmText: "信任并运行",
         });
         if (!ok) return false;
@@ -173,18 +173,18 @@ export async function mount(host, ctx) {
                 bar.append(h("select", { class: "select cap-sdk", "aria-label": "Ren'Py SDK" },
                     sdks.map((s) => h("option", { value: s.path, selected: s.path === state.sdks.defaultSdk }, `Ren'Py ${s.version || "?"}`))));
             }
-            if (state.sdks.sandboxAvailable) bar.append(switchEl("cap-sandbox", "沙盒", true, "断开网络，只允许写入工作目录"));
+            if (state.sdks.sandboxAvailable) bar.append(switchEl("cap-sandbox", "沙盒", true, "断开网络连接，仅允许写入工作目录"));
             if (info.saveCount) {
-                bar.append(switchEl("cap-saves-opt", `使用我的存档 ${info.saveCount}`, true, "复制到工作目录后读取，原存档不受影响"));
+                bar.append(switchEl("cap-saves-opt", `使用本地存档（${info.saveCount} 个）`, true, "存档将复制到工作目录后读取，原存档不受影响"));
             }
             // Where those saves come from: the game's own folder by default, changeable here.
             bar.append(h("button", {
                 type: "button",
                 class: "btn btn-quiet btn-sm",
-                "data-tip": info.saveSource || "没有找到存档目录",
+                "data-tip": info.saveSource || "未找到存档目录",
                 onclick: pickSaves,
-            }, info.saveCount ? "换存档目录" : "选择存档目录"));
-            bar.append(switchEl("cap-unlock", "全部解锁", false, "副本中所有图片、剧情与音频视为已解锁"));
+            }, info.saveCount ? "更改存档目录" : "选择存档目录"));
+            bar.append(switchEl("cap-unlock", "全部解锁", false, "副本中的所有图片、剧情及音频均视为已解锁"));
         }
         bar.append(h("span", { class: "cap-toolbar-spacer" }));
         const n = info.shots.length;
@@ -213,12 +213,12 @@ export async function mount(host, ctx) {
                 "aria-selected": state.selected === s.key ? "true" : "false",
                 onclick: () => select(s.key),
             },
-            h("span", { class: "cap-row-name" }, s.purpose || "未写用途"),
+            h("span", { class: "cap-row-name" }, s.purpose || "未填写用途说明"),
             h("span", { class: "cap-row-value" }, `${s.crops?.length ? `${s.crops.length} 切图 · ` : ""}${formatTime(s.createdAt).split(" ")[1] || ""}`)));
         }
         const rest = uncovered();
         if (rest.length) {
-            list.append(h("div", { class: "cap-group" }, "扫描找到但还没截图"));
+            list.append(h("div", { class: "cap-group" }, "已识别但尚未截图"));
             for (const sc of rest) {
                 list.append(h("button", {
                     type: "button",
@@ -248,7 +248,7 @@ export async function mount(host, ctx) {
         if (!state.info.shots.length && !uncovered().length) {
             root.append(h("div", { class: "empty-state" },
                 h("div", { class: "empty-state-icon", html: ctx.icon("layers") }),
-                h("p", { class: "empty-state-title" }, "启动游戏后按 F9 截取需要移植的画面")));
+                h("p", { class: "empty-state-title" }, "启动游戏后按 F9 截取需要迁移的画面")));
             return;
         }
         root.append(h("div", { class: "cap-body" },
@@ -364,10 +364,10 @@ export async function mount(host, ctx) {
             if (!sc) return;
             const def = sc.definitions?.[0];
             pane.append(h("div", { class: "cap-detail-head" }, h("span", { class: "cap-detail-title" }, sc.name)));
-            pane.append(h("p", { class: "cap-note" }, "还没有这个界面的截图。游戏里走到它时按 F9，或者确认它不用移植"));
+            pane.append(h("p", { class: "cap-note" }, "该界面尚无截图。请在游戏中进入该界面时按 F9 截图，或确认其无需迁移"));
             const where = [
-                def ? `定义在 ${def.file}:${def.line}` : null,
-                sc.classification === "dialogue_like" ? "像台词界面" : sc.classification === "interactive" ? "可操作界面" : null,
+                def ? `定义于 ${def.file}:${def.line}` : null,
+                sc.classification === "dialogue_like" ? "疑似台词界面" : sc.classification === "interactive" ? "可交互界面" : null,
                 sc.callSites?.length ? `${sc.callSites.length} 处调用` : null,
             ].filter(Boolean);
             if (where.length) pane.append(h("p", { class: "cap-note mono" }, where.join(" · ")));
@@ -413,7 +413,7 @@ export async function mount(host, ctx) {
             }));
         pane.append(head);
 
-        const area = h("textarea", { class: "cap-textarea cap-purpose", rows: "2", placeholder: "这个画面在游戏里做什么，移植时要注意什么", "aria-label": "用途" }, meta.purpose || "");
+        const area = h("textarea", { class: "cap-textarea cap-purpose", rows: "2", placeholder: "描述该画面在游戏中的功能及迁移时的注意事项", "aria-label": "用途" }, meta.purpose || "");
         const saved = h("span", { class: "cap-toolbar-value" });
         const save = async () => {
             if (area.value === (meta.purpose || "")) return;
@@ -443,7 +443,7 @@ export async function mount(host, ctx) {
     }
 
     async function remove(meta) {
-        const ok = await ctx.confirm({ title: "删除截图", message: meta.purpose || "该截图没有写用途", confirmText: "删除", tone: "danger" });
+        const ok = await ctx.confirm({ title: "删除截图", message: meta.purpose || "该截图未填写用途说明", confirmText: "删除", tone: "danger" });
         if (!ok) return;
         await api.del(`/api/games/${gid}/manual/shots/${encodeURIComponent(meta.key)}`);
         state.selected = null;

@@ -171,14 +171,14 @@ function scoreBreaks(beats) {
             const near = sorted.find((x) => x.kind === other && Math.abs(x.line - b.line) <= PAIR_WINDOW && x.file === b.file);
             if (near) {
                 row.score = PAIR_SCORE;
-                row.reasons.push("黑场和 stop music 挨在一起");
+                row.reasons.push("黑场与 stop music 相邻出现");
             }
         }
         if (b.kind === "stopMusic" && row.score < PAIR_SCORE) {
             const swap = sorted.find((x) => x.kind === "music" && x.file === b.file && x.line > b.line && x.line - b.line <= PAIR_WINDOW);
             if (swap) {
                 row.score = SWAP_SCORE;
-                row.reasons.push("停止音乐之后换了别的曲子");
+                row.reasons.push("停止音乐后切换了其他曲目");
             }
         }
         if (b.kind === "opEd") row.reasons.push("OP/ED 视频");
@@ -301,7 +301,7 @@ export function buildFlow(col) {
         .filter((l) => !l.reachable && !ENGINE_LABELS.has(l.name) && !l.file.startsWith("tl/"))
         .map((l) => ({
             name: l.name, file: l.file, line: l.line, says: l.says, incoming: l.in.length,
-            reason: l.in.length ? "只被动态目标或界面动作引用" : "没有任何跳转指向它",
+            reason: l.in.length ? "只被动态目标或界面动作引用" : "无任何跳转指向该 label",
         }))
         .sort(byLocation);
 
@@ -332,7 +332,7 @@ export function buildFlow(col) {
         .filter((l) => l.reachable && l.terminal === "return" && (MENU_LABELS.has(l.name) || calledInto.has(l.name)))
         .map((l) => ({
             name: l.name, file: l.file, line: l.endLine, says: l.says,
-            reason: calledInto.has(l.name) ? `被 call 进来 ${l.calledFrom} 次，return 回到调用方` : "Ren'Py 自己进入的保留 label",
+            reason: calledInto.has(l.name) ? `被 call 调用 ${l.calledFrom} 次，return 返回调用方` : "Ren'Py 引擎保留 label",
         }))
         .sort(byLocation);
 
@@ -357,17 +357,17 @@ export function buildFlow(col) {
     if (divergesAt) {
         warnings.push({
             kind: "playOrderDiffersFromFileOrder",
-            message: `文件顺序和游玩顺序第 ${divergesAt.index + 1} 个 label 就不一样了（按文件是 ${divergesAt.byFile}，按游玩是 ${divergesAt.byPlay}）`,
+            message: `文件顺序与执行顺序从第 ${divergesAt.index + 1} 个 label 起产生分歧（按文件为 ${divergesAt.byFile}，按执行为 ${divergesAt.byPlay}）`,
         });
     }
     if (unreachable.length) {
-        warnings.push({ kind: "unreachableLabels", message: `${unreachable.length} 个 label 从入口走不到，可能是废稿、调试入口，或者只被动态跳转用到` });
+        warnings.push({ kind: "unreachableLabels", message: `${unreachable.length} 个 label 从入口不可达，可能是废弃内容、调试入口，或仅被动态跳转引用` });
     }
     if (dynamicTargets.length) {
-        warnings.push({ kind: "dynamicJumps", message: `${dynamicTargets.length} 处跳转目标是运行时表达式，图上缺这些边` });
+        warnings.push({ kind: "dynamicJumps", message: `${dynamicTargets.length} 处跳转目标为运行时表达式，流程图中缺少对应边` });
     }
     if (undefinedTargets.length) {
-        warnings.push({ kind: "undefinedTargets", message: `${undefinedTargets.length} 处跳到了源码里没有的 label，可能在 .rpyc 或 .rpa 里` });
+        warnings.push({ kind: "undefinedTargets", message: `${undefinedTargets.length} 处跳转至源码中不存在的 label，可能位于 .rpyc 或 .rpa 中` });
     }
     const laterLabels = labels.filter((l) => l.reachable && l.newGamePlus);
     if (laterLabels.length) {
@@ -379,12 +379,12 @@ export function buildFlow(col) {
     if (notEndings.length) {
         warnings.push({
             kind: "returnsThatAreNotEndings",
-            message: `${notEndings.length} 个以 return 收尾的 label 不是结局（被 call 的子流程，或 Ren'Py 的保留 label）`,
+            message: `${notEndings.length} 个以 return 结束的 label 并非结局（为被 call 的子流程或 Ren'Py 保留 label）`,
         });
     }
     warnings.push({
         kind: "chapterIsYours",
-        message: "章节由迁移者分：扫描只给出每个文件的台词量、label 和可能的分界信号（黑场、停止音乐、过场视频、成就点）",
+        message: "章节划分由迁移者决定：扫描仅提供每个文件的台词数、label 及疑似分界信号（黑场、停止音乐、过场视频、成就点）",
     });
 
     return {

@@ -7,10 +7,10 @@ const SOURCE_STATUS = {
     partialSource: "部分缺少源码",
     compiledOnly: "仅有 .rpyc",
     archivedOnly: "仅有 .rpa",
-    empty: "没有脚本",
+    empty: "无脚本文件",
 };
 
-const CLASSIFICATION = { dialogue_like: "像台词", interactive: "可操作" };
+const CLASSIFICATION = { dialogue_like: "疑似台词界面", interactive: "可交互界面" };
 const CATEGORY = { standard: "标准", custom: "自定义" };
 const CALL_KIND = { show: "show screen", call: "call screen", menu: "菜单动作", use: "use", python: "Python" };
 
@@ -97,7 +97,7 @@ export async function mount(host, ctx) {
             fact("分辨率", r?.width ? `${r.width}×${r.height}` : null, r && !r.is16x9 ? "warning" : null),
             fact("源码", SOURCE_STATUS[src.status] || src.status, src.status && src.status !== "source" ? "warning" : null),
             fact("推荐 SDK", rec ? (rec.exactVersion ? `Ren'Py ${rec.exactVersion}` : `Ren'Py ${rec.major}`) : null),
-            fact("界面", s.screens, null, s.customScreens ? `其中自定义 ${s.customScreens}` : "全部为标准界面"),
+            fact("界面", s.screens, null, s.customScreens ? `其中自定义界面 ${s.customScreens} 个` : "全部为标准界面"),
             fact("角色", s.characters),
             fact("需人工确认", s.needsReview || 0, s.needsReview ? "warning" : null));
     }
@@ -219,7 +219,7 @@ export async function mount(host, ctx) {
         if (health.length) scroll.append(section("源码问题", health.length, itemList(health, (e) => e.message)));
         const reasons = src.sdkRecommendation?.reasons || [];
         if (reasons.length) {
-            scroll.append(section("SDK 判断", undefined, h("div", { class: "dg-list" },
+            scroll.append(section("SDK 版本推断", undefined, h("div", { class: "dg-list" },
                 reasons.map((r) => h("div", { class: "dg-item", style: { gridTemplateColumns: "1fr" } }, r)))));
         }
         root.append(scroll);

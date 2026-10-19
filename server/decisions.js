@@ -160,7 +160,7 @@ export function cleanChapters(patch) {
             const file = text(f, "文件");
             if (!file) continue;
             if (file.includes("..") || path.isAbsolute(file)) throw new HttpError(400, `文件路径无效：${file}`, "bad_file");
-            if (seenFiles.has(file)) throw new HttpError(409, `${file} 被放进了两个章节：${seenFiles.get(file)} 和 ${title || id}`, "file_in_two_chapters");
+            if (seenFiles.has(file)) throw new HttpError(409, `${file} 被分配至两个章节：${seenFiles.get(file)} 和 ${title || id}`, "file_in_two_chapters");
             seenFiles.set(file, title || id);
             files.push(file);
             total++;
@@ -188,17 +188,17 @@ export function chapterIssues(doc, files = []) {
         const missing = c.files.filter((f) => !byFile.has(f));
         const says = rows.reduce((n, r) => n + (r?.says ?? 0), 0);
         const unreachable = c.files.filter((f) => byFile.get(f) && byFile.get(f).playOrder === null);
-        if (!c.files.length) issues.push({ kind: "emptyChapter", chapter: c.title, message: `章节「${c.title}」里没有文件` });
-        else if (!says) issues.push({ kind: "chapterWithoutDialogue", chapter: c.title, message: `章节「${c.title}」里一句台词都没有（${c.files.join("、")}）` });
-        if (missing.length) issues.push({ kind: "fileNotInScan", chapter: c.title, message: `章节「${c.title}」里的 ${missing.join("、")} 不在扫描结果里，可能是重扫之后文件改了名` });
-        if (unreachable.length) issues.push({ kind: "unreachableFile", chapter: c.title, message: `章节「${c.title}」里的 ${unreachable.join("、")} 从入口走不到，可能是测试稿或废稿` });
+        if (!c.files.length) issues.push({ kind: "emptyChapter", chapter: c.title, message: `章节「${c.title}」中未包含任何文件` });
+        else if (!says) issues.push({ kind: "chapterWithoutDialogue", chapter: c.title, message: `章节「${c.title}」中无台词内容（${c.files.join("、")}）` });
+        if (missing.length) issues.push({ kind: "fileNotInScan", chapter: c.title, message: `章节「${c.title}」中的 ${missing.join("、")} 未出现在扫描结果中，可能是重新扫描后文件已重命名` });
+        if (unreachable.length) issues.push({ kind: "unreachableFile", chapter: c.title, message: `章节「${c.title}」中的 ${unreachable.join("、")} 从入口不可达，可能是测试稿或废弃内容` });
     }
     if (doc.mode === "none" && chapters.length > 1) {
-        issues.push({ kind: "modeConflict", chapter: null, message: `拆分方式选的是「不拆分」，但分了 ${chapters.length} 个章节` });
+        issues.push({ kind: "modeConflict", chapter: null, message: `拆分方式为「不拆分」，但实际划分了 ${chapters.length} 个章节` });
     }
     if (doc.mode === "full") {
         const many = chapters.filter((c) => c.files.length > 1);
-        if (many.length) issues.push({ kind: "modeNote", chapter: null, message: `拆分方式选的是「全拆分」，有 ${many.length} 个章节装了多个文件（一个文件一个故事，章节装多个故事是正常的，只要确认不是漏拆）` });
+        if (many.length) issues.push({ kind: "modeNote", chapter: null, message: `拆分方式为「全拆分」，但有 ${many.length} 个章节包含多个文件（一个文件对应一个故事，章节包含多个故事属正常情况，请确认非遗漏拆分）` });
     }
     return issues;
 }

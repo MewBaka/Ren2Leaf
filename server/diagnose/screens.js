@@ -266,18 +266,18 @@ function classify(byName) {
         const reasons = [];
         if (!e.defined) {
             e.classification = null;
-            e.classificationReasons = ["没有找到定义，无法分类"];
+            e.classificationReasons = ["未找到定义，无法分类"];
             continue;
         }
         const parts = Object.entries(d.clickable).map(([k, v]) => `${k}×${v}`);
         if (parts.length) reasons.push(`含可点击控件：${parts.join("、")}`);
         const via = parts.length || d.custom.length ? null : interactiveVia(e.name);
-        if (via) reasons.push(`使用了可操作界面 ${via}`);
-        if (d.custom.length) reasons.push(`含自定义 Python 可视组件 ${d.custom.join("、")}，可能自己处理输入`);
+        if (via) reasons.push(`引用了可交互界面 ${via}`);
+        if (d.custom.length) reasons.push(`包含自定义 Python 可视组件 ${d.custom.join("、")}，可能自行处理输入`);
         if (d.dialogue.length) reasons.push(`显示台词：${d.dialogue.join("、")}`);
         if (d.modal) reasons.push("modal True");
         const interactive = parts.length > 0 || d.custom.length > 0 || !!via;
-        if (!interactive && !d.dialogue.length) reasons.push("没有可点击控件，只做显示");
+        if (!interactive && !d.dialogue.length) reasons.push("无可点击控件，仅用于显示");
         e.classification = interactive ? "interactive" : "dialogue_like";
         e.classificationReasons = reasons;
     }

@@ -19,10 +19,10 @@ const SAMPLE = 2;
 
 /** The four things a speaker can become. The hints are the rules this project settled on. */
 const ROLES = [
-    { id: "main", label: "主要角色", hint: "对剧情有贡献，不管有没有立绘；建在角色栏顶层" },
-    { id: "npc", label: "NPC / 别名", hint: "照样建角色，但收进「NPC / 别名」分组，角色栏才不乱" },
-    { id: "temp", label: "临时角色", hint: "不建角色，名字直接写在台词里；适合无立绘无配音的过场人物" },
-    { id: "pov", label: "POV 角色", hint: "视角角色，顶层，只是标出来" },
+    { id: "main", label: "主要角色", hint: "推动剧情发展的角色，无论是否有立绘；显示于角色列表顶层" },
+    { id: "npc", label: "NPC / 别名", hint: "仍创建角色条目，但归入「NPC / 别名」分组，以保持角色列表整洁" },
+    { id: "temp", label: "临时角色", hint: "不创建角色条目，名称直接写入台词；适用于无立绘、无配音的过场人物" },
+    { id: "pov", label: "POV 角色", hint: "视角角色，显示于顶层，仅作标记" },
 ];
 
 const ROLE_LABEL = Object.fromEntries(ROLES.map((r) => [r.id, r.label]));
@@ -83,7 +83,7 @@ export async function mount(host, ctx) {
         } else {
             // Nothing found. A cropped background would say nothing, so the name stands in for it.
             box.append(h("span", { class: "sp-figure-none" }, nameOf(sp)));
-            box.append(h("span", { class: "sp-figure-tag" }, "没有立绘"));
+            box.append(h("span", { class: "sp-figure-tag" }, "无立绘"));
         }
         return box;
     }
@@ -119,7 +119,7 @@ export async function mount(host, ctx) {
             h("button", {
                 type: "button",
                 class: "sp-remove",
-                "data-tip": "从名单里拿掉，报告里不再提它",
+                "data-tip": "从列表中移除，补充包中将不再包含该角色",
                 onclick: () => onPick(REMOVED),
             }, "移除"));
     }
@@ -132,7 +132,7 @@ export async function mount(host, ctx) {
             else selected.delete(key);
             step.redraw();
         });
-        return h("label", { class: "sp-pick", "data-tip": "选中后可以批量设置" }, box);
+        return h("label", { class: "sp-pick", "data-tip": "选中后可批量设置" }, box);
     }
 
     function roleCard(sp) {
@@ -151,7 +151,7 @@ export async function mount(host, ctx) {
                     ? h("div", { class: "sp-card-flags" }, sp.flags.map((f) => h("span", {}, `· ${f.message}`)))
                     : null,
                 role === "temp" && sp.voiced
-                    ? h("div", { class: "sp-card-flags" }, h("span", {}, `· 这个变量有 ${sp.voiced} 句配音，临时角色不会进配音表`))
+                    ? h("div", { class: "sp-card-flags" }, h("span", {}, `· 该变量关联 ${sp.voiced} 句配音，临时角色不会纳入配音表`))
                     : null,
                 roleButtons(role, (next) => save({ [sp.variable]: { role: next } }),
                     merged ? `已并入 ${merged}` : null)));
@@ -217,7 +217,7 @@ export async function mount(host, ctx) {
                 samples(keeper),
                 h("div", { class: "sp-merge" },
                     h("span", {}, "合并到"), pick,
-                    h("span", { class: "sp-merge-hint" }, "左边是它的立绘，换一个看看，挑主立绘那套"),
+                    h("span", { class: "sp-merge-hint" }, "左侧显示该角色的立绘，可切换预览，请选择主立绘"),
                     mergedCount ? h("span", { class: "sp-merge-done" }, `已合并 ${mergedCount} 个`) : null),
                 roleButtons(role === null || mergedCount !== others.length ? null : role, apply, null)));
     }
@@ -258,21 +258,21 @@ export async function mount(host, ctx) {
                 h("span", { class: "sp-legend-hint" }, r.hint))),
             h("div", { class: "sp-legend-row" },
                 h("span", { class: "sp-legend-name" }, "配音"),
-                h("span", { class: "sp-legend-hint" }, "配音表只能挂在真实存在的角色上，所以有配音的变量别选「临时角色」")),
+                h("span", { class: "sp-legend-hint" }, "配音表仅关联已创建的角色条目，有配音的变量请勿设为「临时角色」")),
             h("div", { class: "sp-legend-row" },
                 h("span", { class: "sp-legend-name" }, "别名"),
-                h("span", { class: "sp-legend-hint" }, "同一个人换了名字框（「？？？」之类）也各自建角色，归到 NPC / 别名 即可")));
+                h("span", { class: "sp-legend-hint" }, "同一角色使用不同名称框（如「？？？」）时，应分别创建角色条目并归入「NPC / 别名」分组")));
     }
 
     function helpButton() {
         return h("button", {
             type: "button",
             class: "sp-help",
-            "data-tip": "四类角色怎么选",
+            "data-tip": "角色分类说明",
             onclick: () => ctx.openModal({
-                title: "四类角色怎么选",
+                title: "角色分类说明",
                 body: roleGuide(),
-                footer: [{ label: "知道了", variant: "primary" }],
+                footer: [{ label: "了解", variant: "primary" }],
                 width: 560,
             }),
         }, "？");
@@ -352,23 +352,23 @@ export async function mount(host, ctx) {
                 const body = h("div", { class: "sp-legend" },
                     h("div", { class: "sp-legend-row" },
                         h("span", { class: "sp-legend-name" }, "主要角色"),
-                        h("span", { class: "sp-legend-hint" }, `有立绘、有配音，台词 ${AUTO.mainLines} 句以上——会填 ${count("main")} 个`)),
+                        h("span", { class: "sp-legend-hint" }, `有立绘且有配音，台词数 ≥ ${AUTO.mainLines}——将填入 ${count("main")} 个`)),
                     h("div", { class: "sp-legend-row" },
                         h("span", { class: "sp-legend-name" }, "NPC / 别名"),
-                        h("span", { class: "sp-legend-hint" }, `没有 voice 行，身份只能靠立绘和台词判断——会填 ${count("npc")} 个`)),
+                        h("span", { class: "sp-legend-hint" }, `无 voice 语句，身份仅可通过立绘与台词推断——将填入 ${count("npc")} 个`)),
                     h("div", { class: "sp-legend-row" },
                         h("span", { class: "sp-legend-name" }, "临时角色"),
-                        h("span", { class: "sp-legend-hint" }, `同样没有 voice 行，且台词少于 ${AUTO.tempLines} 句——会填 ${count("temp")} 个`)),
+                        h("span", { class: "sp-legend-hint" }, `同样无 voice 语句，且台词数 < ${AUTO.tempLines}——将填入 ${count("temp")} 个`)),
                     h("div", { class: "sp-legend-row" },
-                        h("span", { class: "sp-legend-name" }, "不动"),
-                        h("span", { class: "sp-legend-hint" }, `已经选过的不会被覆盖；另有 ${left} 个不符合上面任何一条，留着你自己定`)));
+                        h("span", { class: "sp-legend-name" }, "保持不变"),
+                        h("span", { class: "sp-legend-hint" }, `已选择的角色不会被覆盖；另有 ${left} 个不符合上述任何条件，需手动指定`)));
                 const ok = await ctx.openModal({
                     title: "按规则自动选择",
                     body,
                     width: 560,
                     footer: [
                         { label: "取消", variant: "secondary", value: false },
-                        { label: `填这 ${planned.length} 个`, variant: "primary", value: true },
+                        { label: `填入 ${planned.length} 个`, variant: "primary", value: true },
                     ],
                 }).closed;
                 if (ok !== true) return;
@@ -411,19 +411,19 @@ export async function mount(host, ctx) {
         const gone = all.filter((e) => e.removed);
         const cards = entries.map((e) => e.render());
         const out = [];
-        out.push(section("选角色", entries.length,
+        out.push(section("选择角色", entries.length,
             h("div", {}, bulkBar(entries), h("div", { class: "sp-grid" }, cards)),
             {
                 note: h("div", { class: "sp-note-row" },
-                    h("span", {}, "同名的变量已经合成一张卡片，选中即当成一个角色；合并到哪个变量，看左边的立绘决定，分体式立绘可能无法正常显示预览"),
+                    h("span", {}, "同名变量已合并为一张卡片，选中即视为同一角色；合并目标请根据左侧立绘预览决定，分体式立绘可能无法正常显示"),
                     helpButton()),
                 actions: h("span", { class: "sp-actions" }, autoButton(entries), saveStatus()),
             }));
         if (silent.length) {
             const silentEntries = entriesOf(silent).filter((e) => !e.removed);
-            out.push(section("没有台词的变量", silentEntries.length,
+            out.push(section("无台词变量", silentEntries.length,
                 h("div", { class: "sp-grid" }, silentEntries.map((e) => e.render())),
-                { note: "定义了但没有台词，通常不用建角色" }));
+                { note: "已定义但无台词，通常无需创建角色" }));
         }
         if (gone.length) {
             out.push(section("已移除", gone.length,
@@ -435,8 +435,8 @@ export async function mount(host, ctx) {
                             type: "button",
                             class: "sp-link",
                             onclick: () => save(patchFor(e, null)),
-                        }, "放回名单"))))),
-                { note: "这些不会出现在补充包里" }));
+                        }, "恢复到列表"))))),
+                { note: "以下内容不会写入补充包" }));
         }
         return out;
     }
@@ -467,10 +467,10 @@ export async function mount(host, ctx) {
             const out = [facts([
                 fact("说话人变量", s.speakers, null, `${s.withLines} 个有台词`),
                 fact("主要角色", main + count("pov"), main ? "success" : "warning", count("pov") ? `含 POV ${count("pov")}` : null),
-                fact("NPC / 别名", count("npc"), null, "进分组"),
-                fact("临时角色", count("temp"), null, "不建角色"),
-                fact("合并掉的变量", merged, null, "同名的另一套立绘"),
-                fact("还没定", todo, todo ? "warning" : "success"),
+                fact("NPC / 别名", count("npc"), null, "归入分组"),
+                fact("临时角色", count("temp"), null, "不创建角色"),
+                fact("已合并的变量", merged, null, "同名角色的另一套立绘"),
+                fact("未指定", todo, todo ? "warning" : "success"),
             ])];
             out.push(...rolesPhase(data));
 
@@ -482,10 +482,10 @@ export async function mount(host, ctx) {
                         h("td", {}, `${d.lines} 句`),
                         h("td", { class: "mono" }, d.variables.map((v) => `${v.variable} ${v.from ?? "?"}–${v.to ?? "?"}（${v.lines}）`).join("  "))));
                 }
-                const t = table(["22%", "72px", null], ["目录", "台词", "说出它的变量（取号范围）"], tbody);
+                const t = table(["22%", "72px", null], ["目录", "台词", "关联变量（编号范围）"], tbody);
                 t.classList.add("is-wrap");
                 out.push(section("配音目录对应的变量", data.voiceDirs.length, t,
-                    { note: "取号来自配音文件名里的序号。一位声优的取号通常是一整条连号，几个变量把同一条连号分着用，就是同一个人换了名字框" }));
+                    { note: "编号取自配音文件名中的序号。同一声优的编号通常为连续序列；若多个变量共享同一段连续编号，则表明为同一角色使用了不同名称框" }));
             }
 
             if (data.inlineSpeakers.length) {
@@ -496,9 +496,9 @@ export async function mount(host, ctx) {
                         h("td", {}, String(x.lines)),
                         h("td", { class: "mono" }, x.files.map((f) => f.file).join("  "))));
                 }
-                out.push(section("一次性说话人", data.inlineSpeakers.length,
+                out.push(section("单次出现的说话人", data.inlineSpeakers.length,
                     table(["24%", "80px", null], ["名字", "台词", "出现在"], tbody),
-                    { note: "源码里直接写成名字的台词，不用建角色，也不用在这里选" }));
+                    { note: "源码中直接以名称书写的台词，无需创建角色，也无需在此配置" }));
             }
 
             if (data.narrator.lines) {

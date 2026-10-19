@@ -72,7 +72,7 @@ export async function mount(host, ctx) {
                     type: "button",
                     class: "btn btn-quiet btn-sm",
                     onclick: () => selectStep(s.id),
-                }, "去这一步"))));
+                }, "前往该步骤"))));
     }
 
     function issueList() {
@@ -102,7 +102,7 @@ export async function mount(host, ctx) {
                 class: "btn btn-quiet btn-sm",
                 disabled: busy || !data?.document,
                 onclick: pickAndRun,
-            }, "生成到其他位置…"),
+            }, "导出到其他位置…"),
             h("span", { class: "an-spacer" }),
             error ? h("span", { class: "an-value is-danger" }, error)
                 : result ? h("span", { class: "an-value" }, `已生成 ${result.files.length} 个文件，${KB(result.bytes)}`)
@@ -117,8 +117,8 @@ export async function mount(host, ctx) {
             return;
         }
         if (!data.document) {
-            root.append(emptyState(ctx.icon("layers"), "还没有扫描结果，先跑一次诊断",
-                h("button", { type: "button", class: "btn btn-primary", onclick: () => selectStep("diagnose") }, "去诊断")));
+            root.append(emptyState(ctx.icon("layers"), "暂无扫描结果，请先执行诊断",
+                h("button", { type: "button", class: "btn btn-primary", onclick: () => selectStep("diagnose") }, "前往诊断")));
             return;
         }
 
@@ -129,25 +129,25 @@ export async function mount(host, ctx) {
             fact("文档", KB(new Blob([data.document]).size), null, "README.md"),
             fact("准备情况", `${data.readiness.steps.filter((s) => s.done).length} / ${data.readiness.steps.length}`,
                 data.readiness.steps.every((s) => s.done) ? "success" : "warning"),
-            fact("上次生成", data.lastExport ? formatTime(data.lastExport.at) : "还没有", null,
+            fact("上次生成", data.lastExport ? formatTime(data.lastExport.at) : "尚未生成", null,
                 result ? result.dir.replace(/^\/Users\/[^/]+/, "~") : null),
         ]));
 
-        scroll.append(section("交给 Agent 之前", undefined,
+        scroll.append(section("发送给 Agent 之前", undefined,
             h("div", { class: "an-steps" },
                 h("p", {}, "先安装或更新 NarraLeaf Skills："),
                 h("pre", { class: "an-code" }, data.skillsCommand),
-                h("p", {}, "然后把游戏源码和这份补充包一起发给 Agent。补充包开头已经写明要先更新 Skills"),
+                h("p", {}, "然后将游戏源码与补充包一并发送给 Agent。补充包开头已注明需先更新 Skills"),
                 h("p", {}, h("a", { class: "an-link", href: data.agentDocs, target: "_blank", rel: "noreferrer" }, "Agent 接入文档")))));
 
         scroll.append(section("准备情况", undefined, readinessList(), {
-            note: "没做完也能生成，缺的部分 Agent 就只能自己猜",
+            note: "未完成配置也可生成，但缺失部分将由 Agent 自行推断",
         }));
 
         const issues = issueList();
         if (issues) {
-            scroll.append(section("章节分组里前后不一致的地方", undefined, issues, {
-                note: "只是报出来，怎么分还是你的决定；这些话也会写进补充包",
+            scroll.append(section("章节分组中的不一致项", undefined, issues, {
+                note: "仅作为提示，最终分组由您决定；这些提示也会写入补充包",
             }));
         }
 
@@ -164,23 +164,23 @@ export async function mount(host, ctx) {
                         draw();
                     }, 1500);
                 } catch {
-                    error = "浏览器不允许复制，请从生成的文件里取";
+                    error = "浏览器不支持复制操作，请从生成的文件中获取";
                     draw();
                 }
             },
         }, copied ? "已复制" : "复制全文");
-        scroll.append(section("发给 Agent 的文档", undefined, documentView(), {
+        scroll.append(section("发送给 Agent 的文档", undefined, documentView(), {
             actions: copyBtn,
-            note: "这就是补充包里的 README.md，Agent 读的就是它",
+            note: "此即补充包中的 README.md，Agent 将以此为主要参考",
         }));
 
         const tbody = h("tbody");
         for (const f of data.files) {
             tbody.append(h("tr", {}, h("td", { class: "mono" }, f.path), h("td", {}, f.what)));
         }
-        const fileTable = table(["46%", null], ["文件", "是什么"], tbody);
+        const fileTable = table(["46%", null], ["文件", "说明"], tbody);
         fileTable.classList.add("is-wrap");
-        scroll.append(section("补充包里的文件", data.files.length, fileTable));
+        scroll.append(section("补充包文件说明", data.files.length, fileTable));
         root.append(scroll);
     }
 

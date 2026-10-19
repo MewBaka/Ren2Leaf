@@ -124,7 +124,7 @@ export class GameStore {
         // the list was lost, not emptied on purpose.
         const kept = this.readFile(this.backupFile).filter((g) => g && g.id && g.path);
         if (!kept.length) return games;
-        console.warn(`games.json 是空的，从 ${path.basename(this.backupFile)} 恢复了 ${kept.length} 个游戏`);
+        console.warn(`games.json 为空，已从 ${path.basename(this.backupFile)} 恢复 ${kept.length} 个游戏`);
         this.write(kept);
         return kept;
     }

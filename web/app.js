@@ -411,7 +411,7 @@ async function reveal(id, target) {
     try {
         await api.post(`/api/games/${id}/reveal`, { target });
     } catch (err) {
-        openModal({ title: "无法显示", body: err.message, footer: [{ label: "好", variant: "primary" }] });
+        openModal({ title: "无法显示", body: err.message, footer: [{ label: "确定", variant: "primary" }] });
     }
 }
 
@@ -419,7 +419,7 @@ async function removeGame(game) {
     try {
         await api.del(`/api/games/${game.id}`);
     } catch (err) {
-        openModal({ title: "无法移除", body: err.message, footer: [{ label: "好", variant: "primary" }] });
+        openModal({ title: "无法移除", body: err.message, footer: [{ label: "确定", variant: "primary" }] });
         return;
     }
     state.games = state.games.filter((g) => g.id !== game.id);
@@ -540,34 +540,34 @@ const PORT_SKILL_DIR = "skills/narraleaf-port-renpy/";
 /** The first thing anyone sees: what this tool does, and what to do before handing work to an agent. */
 function welcome() {
     const reasons = [
-        "对项目进行扫描，指出可被转换的代码，以及 Agent 需要决定的设计",
-        "对游戏 UI 元素截图、切图，让 Agent 理解元素位置，而不是从代码中推算",
-        "绑定角色别名，以防错误地将别名 / 非必要 NPC 角色作为角色添加",
-        "配置流程与章节，提升二次编辑可读性",
+        "扫描项目源码，标记可迁移的代码段及需由 Agent 决策的设计点",
+        "对游戏界面元素进行截图与切图，使 Agent 直接识别元素布局，而非仅从代码推算",
+        "配置角色别名与分类，避免将别名或非关键 NPC 误建为独立角色",
+        "规划剧本流程与章节结构，提升迁移后的可维护性",
     ];
     // Said before the list, because it is the expectation to set: the scanner is the part that
     // breaks on an unconventional game, not the port itself.
     const caveat = h("div", { class: "welcome-tip" },
-        h("p", {}, "即使游戏没有按 Ren'Py 的开发规范写，Agent 一样能完成迁移；但此工具可能因此出现各种问题"),
-        h("p", {}, "可预见的不规范写法我们已经做了处理，剩下的情况要交给 Agent 抉择"));
+        h("p", {}, "即使项目未遵循 Ren'Py 开发规范，Agent 仍可完成迁移；但本工具可能因非标准写法出现解析异常"),
+        h("p", {}, "已知的非标准写法已做兼容处理，其余情况将由 Agent 自行判断"));
     const note = h("div", { class: "welcome-note" },
-        h("p", {}, "配置结束后，Ren2Leaf 将会生成一个交给 Agent 的迁移补充包，请将游戏源代码与补充包一起发送"),
+        h("p", {}, "配置完成后，Ren2Leaf 将生成一份迁移补充包。请将游戏源码与补充包一并发送给 Agent"),
         h("p", {}, "在此之前，请先安装 NarraLeaf Skills："),
         h("pre", { class: "welcome-code" }, SKILLS_COMMAND),
-        h("p", {}, "Ren'Py 移植 skill 随本工具一起发布，在 Ren2Leaf 仓库的 ",
-            h("code", {}, PORT_SKILL_DIR), " 下，一并复制给 Agent"),
-        h("p", {}, "关于 NarraLeaf Studio Agent 接入相关事宜，请查看文档：",
+        h("p", {}, "Ren'Py 移植 Skill 随本工具一同发布，位于 Ren2Leaf 仓库的",
+            h("code", {}, PORT_SKILL_DIR), " 目录下，请将其一并提供给 Agent"),
+        h("p", {}, "NarraLeaf Studio Agent 接入相关事宜，请参阅文档：",
             h("a", { class: "welcome-link", href: AGENT_DOCS, target: "_blank", rel: "noreferrer" }, AGENT_DOCS)));
     const inner = h("div", { class: "welcome-inner" },
-        h("h1", { class: "welcome-title" }, "开始迁移游戏到 NarraLeaf 吧！"),
-        h("p", { class: "welcome-lead" }, "此工具将协助开发者利用 Agent 将自己的 Ren'Py 游戏高质量地迁移到 NarraLeaf Studio 内"),
+        h("h1", { class: "welcome-title" }, "将游戏迁移至 NarraLeaf"),
+        h("p", { class: "welcome-lead" }, "本工具协助开发者借助 Agent 将 Ren'Py 项目高质量迁移至 NarraLeaf Studio"),
         h("button", {
             type: "button",
             class: "btn btn-primary btn-lg welcome-cta",
             onclick: () => addGameDialog(),
         }, "添加游戏"),
         caveat,
-        h("h2", { class: "welcome-heading" }, "相比于直接迁移，Ren2Leaf 做了什么？"),
+        h("h2", { class: "welcome-heading" }, "相比直接迁移，Ren2Leaf 提供了哪些增强？"),
         h("ol", { class: "welcome-list" }, reasons.map((t) => h("li", {}, t))),
         note);
     return h("div", { class: "welcome" }, inner);
@@ -619,7 +619,7 @@ async function mountStep() {
     } catch (err) {
         console.error(err);
         if (token !== state.mountToken) return;
-        host.replaceChildren(emptyState("这一步加载失败"));
+        host.replaceChildren(emptyState("当前步骤加载失败"));
     }
 }
 

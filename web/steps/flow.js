@@ -97,7 +97,7 @@ export async function mount(host, ctx) {
                     onclick: () => save({ ...plan, chapters: plan.chapters.filter((x) => x.id !== c.id) }),
                 }, "删除")));
         }
-        if (!plan.chapters.length) box.append(h("div", { class: "ch-empty" }, "还没有章节。上面选一种拆分方式，或者直接新建章节，再在下面把文件放进去"));
+        if (!plan.chapters.length) box.append(h("div", { class: "ch-empty" }, "暂无章节。请选择一种拆分方式，或直接新建章节，然后在下方分配文件"));
         box.append(h("div", { class: "ch-row" },
             h("button", { type: "button", class: "btn btn-quiet btn-sm", onclick: () => addChapter() }, "新建章节"),
             plan.chapters.length
@@ -105,7 +105,7 @@ export async function mount(host, ctx) {
                     type: "button",
                     class: "btn btn-quiet btn-sm",
                     onclick: async () => {
-                        const ok = await ctx.confirm({ title: "清空分组", message: "所有章节和已分配的文件都会删掉，扫描结果不受影响", confirmText: "清空", tone: "danger" });
+                        const ok = await ctx.confirm({ title: "清空分组", message: "将删除所有章节及已分配的文件，扫描结果不受影响", confirmText: "清空", tone: "danger" });
                         if (ok) save({ ...plan, chapters: [] });
                     },
                 }, "清空分组")
@@ -121,8 +121,8 @@ export async function mount(host, ctx) {
                 if (m.apply && plan.chapters.length) {
                     const ok = await ctx.confirm({
                         title: m.title,
-                        message: "这会按这种方式重新分组，现在的章节会被替换",
-                        confirmText: "就这么分",
+                        message: "将按所选方式重新分组，当前章节配置将被替换",
+                        confirmText: "确认分组",
                     });
                     if (!ok) return;
                 }
@@ -177,8 +177,8 @@ export async function mount(host, ctx) {
             if (!data.files) {
                 return [section("流程与章节", undefined,
                     h("div", { class: "sp-empty" },
-                        h("p", {}, "这份扫描结果是旧版本，没有按文件统计的数据"),
-                        h("p", {}, "点上面的「重新扫描」再来")))];
+                        h("p", {}, "当前扫描结果为旧版本，缺少按文件统计的数据"),
+                        h("p", {}, "请点击上方「重新扫描」后再操作")))];
             }
             const s = data.summary;
             const assigned = plan.chapters.reduce((n, c) => n + c.files.length, 0);
@@ -189,11 +189,11 @@ export async function mount(host, ctx) {
                 fact("已分组", `${assigned} / ${withStory}`, assigned >= withStory && withStory ? "success" : "warning"),
                 fact("章节", plan.chapters.length, plan.chapters.length ? "success" : "warning"),
                 fact("拆分方式", MODES.find((m) => m.id === plan.mode)?.title ?? "未选", plan.mode ? null : "warning"),
-                fact("label", s.labels, null, `走不到 ${s.unreachable} 个`),
+                fact("label", s.labels, null, `不可达 ${s.unreachable} 个`),
                 fact("菜单", s.menus, null, `${s.choices} 个选项`),
             ]));
 
-            out.push(section("怎么拆", undefined, modePanel(data), {
+            out.push(section("拆分方式", undefined, modePanel(data), {
                 actions: saveError
                     ? h("span", { class: "an-value is-danger" }, saveError)
                     : saving ? h("span", { class: "an-value" }, "正在保存")
@@ -204,10 +204,10 @@ export async function mount(host, ctx) {
             out.push(section("章节", plan.chapters.length, chapterPanel(data)));
 
             const warn = h("div", { class: "ch-warn" },
-                h("p", {}, "分组前先确认一件事：",
-                    h("b", {}, "一个章节里不能出现两个章节的内容")),
+                h("p", {}, "分组前请确认以下事项：",
+                    h("b", {}, "同一章节内不应包含属于不同章节的内容")),
                 h("p", {}, "比如 c1c2.rpy 整个算第一章，那就把它整个放进第一章；但要保证这个文件里没有混进别的章节的内容。有人会把一章拆成几个文件，那就把这几个文件都放进同一个章节"),
-                h("p", {}, "这一条程序查不了，只能由你保证"));
+                h("p", {}, "此项无法由程序自动校验，需人工确认"));
             out.push(section("文件分组", data.files.length, h("div", {}, warn, fileTable(data)), {
                 note: "「游玩顺序」是从 start 走出来的先后，不是文件名的顺序；Ren'Py 的文件号常常和游玩顺序对不上",
             }));
@@ -236,13 +236,13 @@ export async function mount(host, ctx) {
                     ],
                     detail: () => props([
                         ["位置", `${l.file}:${l.line}–${l.endLine}`],
-                        ["台词", l.says ? `${l.says} 句` : "没有台词"],
-                        ["出去", l.out.filter((e) => e.to).map((e) => `${EDGE[e.kind] ?? e.kind} → ${e.to}`).join("；") || null],
-                        ["进来", l.in.map((e) => `${EDGE[e.kind] ?? e.kind} ← ${e.from ?? e.screen ?? "入口"}`).join("；") || null],
+                        ["台词", l.says ? `${l.says} 句` : "无台词"],
+                        ["出口", l.out.filter((e) => e.to).map((e) => `${EDGE[e.kind] ?? e.kind} → ${e.to}`).join("；") || null],
+                        ["入口", l.in.map((e) => `${EDGE[e.kind] ?? e.kind} ← ${e.from ?? e.screen ?? "入口"}`).join("；") || null],
                     ]),
                 });
             }
-            out.push(section("label 的游玩顺序", labels.length,
+            out.push(section("label 执行顺序", labels.length,
                 table(["28%", "88px", "26%", "72px", null], ["label", "游玩顺序", "位置", "台词", "说明"], tbody)));
 
             if (data.menus.length) {
@@ -254,10 +254,10 @@ export async function mount(host, ctx) {
                             h("td", {}, m.label || "—"),
                             h("td", {}, c.text),
                             h("td", {}, c.condition || "—"),
-                            h("td", { class: "mono" }, c.target || "顺序往下")));
+                            h("td", { class: "mono" }, c.target || "顺序执行")));
                     }
                 }
-                const t = table(["22%", "18%", null, "18%", "16%"], ["菜单", "所属 label", "选项", "条件", "去向"], mt);
+                const t = table(["22%", "18%", null, "18%", "16%"], ["菜单", "所属 label", "选项", "条件", "跳转目标"], mt);
                 t.classList.add("is-wrap");
                 out.push(section("菜单与选项", s.choices, t, {
                     note: "选「按选项拆分」时，Agent 就是按这些支线拆故事的",
@@ -273,26 +273,26 @@ export async function mount(host, ctx) {
                         h("td", {}, String(b.score)),
                         h("td", { class: "mono" }, b.snippet)));
                 }
-                out.push(section("可能的分界信号", data.breaks.length,
+                out.push(section("疑似分界信号", data.breaks.length,
                     table(["24%", "100px", "64px", null], ["位置", "信号", "权重", "原文"], bt),
-                    { note: "只是线索：黑场加停止音乐、过场视频、成就点常常就是一章的收尾，权重越高越像" }));
+                    { note: "仅供参考：黑场伴随停止音乐、过场视频、成就点通常为章节结尾的标志，权重越高越可能为分界点" }));
             }
 
             if (data.endings.length) {
                 out.push(section("结局", data.endings.length,
                     itemList(data.endings, (e) => `${e.name}（${e.says} 句）`,
-                        (e) => h("span", { class: "an-snippet" }, e.kind === "namedEnding" ? "名字像结局" : "以 return 收尾")),
-                    { note: "路线末尾的 return 在 NarraLeaf 里写成 /ending" }));
+                        (e) => h("span", { class: "an-snippet" }, e.kind === "namedEnding" ? "名称疑似结局" : "以 以 return 结束")),
+                    { note: "路线末尾的 return 在 NarraLeaf 中对应 /ending" }));
             }
 
             if (data.unreachable.length) {
-                out.push(section("走不到的 label", data.unreachable.length,
+                out.push(section("不可达的 label", data.unreachable.length,
                     itemList(data.unreachable, (l) => `${l.name}（${l.says} 句）`,
                         (l) => h("span", { class: "an-snippet" }, l.reason))));
             }
 
             if (data.warnings.length) {
-                out.push(section("要注意", data.warnings.length,
+                out.push(section("注意事项", data.warnings.length,
                     h("div", { class: "an-list" }, data.warnings.map((w) => h("div", { class: "an-item is-wide" }, w.message)))));
             }
             return out;

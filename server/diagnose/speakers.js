@@ -119,28 +119,28 @@ function dominantVoice(voiceDirs, voiced) {
 function flagsFor(sp, nameCounts, totalLines) {
     const flags = [];
     const name = sp.displayName;
-    if (!sp.lines) flags.push({ kind: "unused", message: "定义了但没有台词" });
-    if (sp.nameExpression) flags.push({ kind: "interpolatedName", message: `显示名是表达式 ${sp.nameExpression}，运行时才定` });
+    if (!sp.lines) flags.push({ kind: "unused", message: "已定义但无台词" });
+    if (sp.nameExpression) flags.push({ kind: "interpolatedName", message: `显示名为表达式 ${sp.nameExpression}，运行时才能确定` });
     else if (name === "") {
         // `Character("")` has a name box with nothing in it: in practice a text style (black
         // screen, centred text), spoken by whoever the voice line belongs to.
         flags.push({
             kind: "narratorStyle",
             message: sp.voiceDirs.length
-                ? `显示名是空字符串（Character("")），是一种文本样式而不是一个人；这些行带配音，说话的是 ${sp.voiceDirs.slice(0, 4).map((v) => `${v.dir}×${v.lines}`).join("、")} 对应的角色`
-                : '显示名是空字符串（Character("")），是一种文本样式而不是一个人',
+                ? `显示名为空字符串（Character("")），表示文本样式而非角色；这些行含配音，实际说话者为 ${sp.voiceDirs.slice(0, 4).map((v) => `${v.dir}×${v.lines}`).join("、")} 对应的角色`
+                : '显示名为空字符串（Character("")），表示文本样式而非角色',
         });
-    } else if (name == null && sp.declared) flags.push({ kind: "noName", message: "没有显示名，像旁白或内心独白" });
-    else if (name != null && PLACEHOLDER.test(name)) flags.push({ kind: "placeholderName", message: `显示名「${name}」是占位，背后可能不止一个人` });
-    if (name && nameCounts.get(name) > 1) flags.push({ kind: "duplicateName", message: `和另外 ${nameCounts.get(name) - 1} 个变量同名，可能是同一人的不同立绘` });
+    } else if (name == null && sp.declared) flags.push({ kind: "noName", message: "无显示名，疑似旁白或内心独白" });
+    else if (name != null && PLACEHOLDER.test(name)) flags.push({ kind: "placeholderName", message: `显示名「${name}」为占位符，可能对应多个角色` });
+    if (name && nameCounts.get(name) > 1) flags.push({ kind: "duplicateName", message: `与另外 ${nameCounts.get(name) - 1} 个变量同名，可能为同一角色的不同立绘` });
     if (sp.voiceDirs.length > 1) {
         flags.push({
             kind: "mixedVoiceDirs",
-            message: `配音来自 ${sp.voiceDirs.length} 个目录（${sp.voiceDirs.slice(0, 4).map((v) => `${v.dir}×${v.lines}`).join("、")}），可能不止一个人`,
+            message: `配音来自 ${sp.voiceDirs.length} 个目录（${sp.voiceDirs.slice(0, 4).map((v) => `${v.dir}×${v.lines}`).join("、")}），可能对应多个角色`,
         });
     }
-    if (!sp.declared) flags.push({ kind: "undeclared", message: "有台词但没找到 Character 定义，可能在 .rpyc 或动态生成" });
-    if (sp.lines && !sp.voiced) flags.push({ kind: "noVoice", message: "没有 voice 行，判身份只能靠立绘和台词" });
+    if (!sp.declared) flags.push({ kind: "undeclared", message: "有台词但未找到 Character 定义，可能位于 .rpyc 中或为动态生成" });
+    if (sp.lines && !sp.voiced) flags.push({ kind: "noVoice", message: "无 voice 语句，角色身份仅可通过立绘与台词推断" });
     if (sp.lines && totalLines && sp.lines / totalLines >= 0.05) flags.push({ kind: "major", message: `占全部台词的 ${Math.round((sp.lines / totalLines) * 100)}%` });
     return flags;
 }

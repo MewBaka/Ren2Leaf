@@ -552,7 +552,7 @@ screen _r2l_annotate(shot, candidates, state, chosen):
             vbox:
                 spacing _r2l_s(3)
                 text "截图用途" font _r2l_font size _r2l_s(18) color "#18181b"
-                text ("勾选要切下的元素，按尺寸从大到小排列" if crop_mode else "保存整个画面，或切换到切图选择元素") font _r2l_font size _r2l_s(13) color "#71717a"
+                text ("勾选需要切分的元素，按尺寸降序排列" if crop_mode else "保存完整画面，或切换至切图模式选择元素") font _r2l_font size _r2l_s(13) color "#71717a"
             frame:
                 xalign 1.0
                 yalign 0.5
@@ -585,7 +585,7 @@ screen _r2l_annotate(shot, candidates, state, chosen):
                 frame:
                     xysize (_r2l_s(496), _r2l_s(292))
                     background _r2l_round("#fafafa", 8, "#e4e4e7")
-                    text "这个画面没有可切的元素，只能保存全图" font _r2l_font size _r2l_s(13) color "#71717a" align (0.5, 0.5)
+                    text "该画面无可切分元素，仅可保存全图" font _r2l_font size _r2l_s(13) color "#71717a" align (0.5, 0.5)
             elif crop_mode:
                 frame:
                     xysize (_r2l_s(496), _r2l_s(292))
@@ -654,7 +654,7 @@ screen _r2l_annotate(shot, candidates, state, chosen):
     key "K_ESCAPE" action Return("__r2l_discard__")
     key "game_menu" action Return("__r2l_discard__")
     if _r2l_selftest:
-        timer 0.8 action [SetVariable("_r2l_purpose_text", u"自测：标题画面，迁移为启动页")]
+        timer 0.8 action [SetVariable("_r2l_purpose_text", u"测试：标题画面，迁移为启动页")]
         timer 1.4 action Function(_r2l_selftest_snap)
         timer 1.8 action Return(True)
 

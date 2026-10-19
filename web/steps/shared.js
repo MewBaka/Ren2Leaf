@@ -171,7 +171,7 @@ export async function mountScanStep(host, ctx, { key, title, render, onLoaded })
                     : null);
         root.replaceChildren(bar);
         if (!data) {
-            const why = busy ? "正在扫描" : inventory ? "这份扫描结果是旧版本，没有这一步的内容" : "还没有扫描结果";
+            const why = busy ? "正在扫描" : inventory ? "当前扫描结果为旧版本，不包含此步骤的数据" : "暂无扫描结果";
             root.append(emptyState(ctx.icon("layers"), why,
                 h("button", { type: "button", class: "btn btn-primary", disabled: busy, onclick: rescan },
                     inventory ? "重新扫描" : "开始扫描")));

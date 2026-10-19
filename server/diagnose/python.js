@@ -16,15 +16,15 @@ export const ENTRY_LIMIT = 800;
 /** Ren'Py APIs the port skill gives a row for. First match wins, so order matters. */
 const API_MAP = [
     { re: /^renpy\.pause\s*\(/, api: "renpy.pause", target: "/wait", category: "mapped", note: "参数是秒数" },
-    { re: /^renpy\.notify\s*\(/, api: "renpy.notify", target: "/blueprint", category: "mapped", note: "蓝图跑 Post Notification（blueprint.game.postNotification），文本接 message 针脚" },
-    { re: /^renpy\.movie_cutscene\s*\(/, api: "renpy.movie_cutscene", target: "/play", category: "mapped", note: "默认等播完再继续" },
+    { re: /^renpy\.notify\s*\(/, api: "renpy.notify", target: "/blueprint", category: "mapped", note: "蓝图执行 Post Notification（blueprint.game.postNotification），文本连接 message 引脚" },
+    { re: /^renpy\.movie_cutscene\s*\(/, api: "renpy.movie_cutscene", target: "/play", category: "mapped", note: "默认等待播放完毕后再继续" },
     { re: /^renpy\.movie_start_displayable\s*\(/, api: "renpy.movie_start_displayable", target: "/vfx", category: "mapped", note: "循环叠加的视频，可能带遮罩" },
     { re: /^renpy\.movie_stop\s*\(/, api: "renpy.movie_stop", target: "/hide", category: "mapped" },
     { re: /^achievement\.grant\s*\(/, api: "achievement.grant", target: "/blueprint", category: "mapped", note: "成就插件的解锁节点" },
     { re: /^achievement\.register\s*\(/, api: "achievement.register", target: "成就清单", category: "mapped", note: "成就声明，不是剧情行" },
     { re: /^achievement\.(progress|clear|clear_all|sync)\s*\(/, api: "achievement.*", target: "/blueprint", category: "mapped", note: "成就插件节点" },
     { re: /^renpy\.jump\s*\(/, api: "renpy.jump", target: "/jump", category: "mapped", note: "目标是字面量时才解析得出" },
-    { re: /^renpy\.(call|call_in_new_context|invoke_in_new_context)\s*\(/, api: "renpy.call", target: "/jump 'Scene' return", category: "mapped", note: "原作里这个 label 跑完会回到本行之后" },
+    { re: /^renpy\.(call|call_in_new_context|invoke_in_new_context)\s*\(/, api: "renpy.call", target: "/jump 'Scene' return", category: "mapped", note: "原项目中该 label 执行完毕后将返回至本行之后" },
     { re: /^renpy\.jump_out_of_context\s*\(/, api: "renpy.jump_out_of_context", target: "/jump", category: "needsAgent", note: "跨上下文跳转" },
     { re: /^renpy\.music\.play\s*\(/, api: "renpy.music.play", target: "/bgm", category: "mapped" },
     { re: /^renpy\.music\.(stop|queue)\s*\(/, api: "renpy.music.stop", target: "/stop bgm", category: "mapped" },
@@ -38,14 +38,14 @@ const API_MAP = [
     { re: /^renpy\.say\s*\(/, api: "renpy.say", target: "台词行", category: "mapped" },
     { re: /^renpy\.input\s*\(/, api: "renpy.input", target: "/blueprint", category: "needsAgent", note: "输入框" },
     { re: /^renpy\.(show_screen|call_screen|hide_screen|toggle_screen)\s*\(/, api: "renpy.show_screen", target: "页面 + /blueprint", category: "needsAgent", note: "界面" },
-    { re: /^renpy\.full_restart\s*\(/, api: "renpy.full_restart", target: "/ending", category: "mapped", note: "回标题画面" },
+    { re: /^renpy\.full_restart\s*\(/, api: "renpy.full_restart", target: "/ending", category: "mapped", note: "返回标题画面" },
     { re: /^renpy\.(quit|utter_restart)\s*\(/, api: "renpy.quit", target: null, category: "needsAgent" },
-    { re: /^renpy\.(block_rollback|retain_after_load|save_persistent|checkpoint|fix_rollback|restart_interaction|end_replay|dynamic|mark_image_seen|mark_label_seen|suspend_rollback)\s*\(/, api: "renpy 内部状态", target: null, category: "drop", note: "引擎自己的簿记" },
+    { re: /^renpy\.(block_rollback|retain_after_load|save_persistent|checkpoint|fix_rollback|restart_interaction|end_replay|dynamic|mark_image_seen|mark_label_seen|suspend_rollback)\s*\(/, api: "renpy 内部状态", target: null, category: "drop", note: "引擎内部簿记" },
     { re: /^renpy\.(loadable|exists|get_filename_line|version|variant|log|watch)\s*\(/, api: "renpy 查询", target: null, category: "drop" },
     { re: /^renpy\.(file|open_file|list_files|rename|unlink)\s*\(/, api: "renpy 文件", target: null, category: "needsAgent", note: "读写文件" },
     { re: /^renpy\.(get_screen|get_widget|restart|focus_coordinates|set_mouse_visible|free_memory)\s*\(/, api: "renpy 运行时", target: null, category: "drop" },
     { re: /^nvl_clear\s*\(/, api: "nvl_clear", target: "/nvl", category: "mapped", note: "NVL 段落边界" },
-    { re: /^(eval|exec|getattr|setattr|globals|locals|__import__)\s*\(/, api: "动态求值", target: null, category: "unresolvable", note: "运行时才知道跑了什么" },
+    { re: /^(eval|exec|getattr|setattr|globals|locals|__import__)\s*\(/, api: "动态求值", target: null, category: "unresolvable", note: "运行时才能确定执行内容" },
 ];
 
 /** Namespaces that are interface and build configuration: step ⑥ territory, not story logic. */
@@ -93,7 +93,7 @@ function assignEntry(col, ctx, ln, from, stmt, base) {
     }
     if (base.nested) {
         // Inside a def or class body: a local or an attribute, not a story variable.
-        return { ...base, kind: "localAssign", target: name, category: "drop", suggestion: null, reason: "函数或类内部的名字，不是故事变量" };
+        return { ...base, kind: "localAssign", target: name, category: "drop", suggestion: null, reason: "函数或类内部的局部名称，非故事变量" };
     }
     const t = classifyTarget(name);
     const stmtStart = ln.masked.indexOf(stmt, from);
@@ -146,7 +146,7 @@ export function classifyPython(col, ctx, ln, { from = 0, context = "python", nes
         const lit = nameArg && literalAt(ln, nameArg[0], nameArg[1]);
         const name = lit?.ok && typeof lit.value === "string" ? lit.value : null;
         col.customStatements.push({ name, file: ctx.file, line: ln.line, block: /\bblock\s*=\s*True/.test(ln.masked), usages: [] });
-        entry = { ...base, kind: "registerStatement", statementName: name, category: "needsAgent", suggestion: "/blueprint", reason: "自定义语句，剧本里有用到" };
+        entry = { ...base, kind: "registerStatement", statementName: name, category: "needsAgent", suggestion: "/blueprint", reason: "自定义语句，剧本中有引用" };
     } else if (/^(def|async\s+def)\s+/.test(stmt)) {
         entry = { ...base, kind: "def", name: /^(?:async\s+)?def\s+(\w+)/.exec(stmt)?.[1] ?? null, category: "needsAgent", suggestion: "/blueprint", reason: "自定义函数" };
     } else if (/^class\s+/.test(stmt)) {
@@ -166,7 +166,7 @@ export function classifyPython(col, ctx, ln, { from = 0, context = "python", nes
             const dynamic = /^renpy\.(show|jump|call|hide)\s*\(\s*[A-Za-z_]\w*\s*[,)]/.test(stmt) && !ln.strings.some((s) => s.start > from);
             entry = {
                 ...base, kind: "knownApi", api: api.api, category: dynamic ? "unresolvable" : api.category,
-                suggestion: api.target, reason: dynamic ? "参数是变量，目标要运行时才知道" : api.note ?? null,
+                suggestion: api.target, reason: dynamic ? "参数为变量，目标需运行时确定" : api.note ?? null,
             };
         } else if ((entry = assignEntry(col, ctx, ln, from, stmt, base))) {
             // handled by assignEntry
@@ -180,7 +180,7 @@ export function classifyPython(col, ctx, ln, { from = 0, context = "python", nes
                 entry = {
                     ...base, kind: known ? "customCall" : "unknownCall", callee: cm[1],
                     category: "needsAgent", suggestion: "/blueprint",
-                    reason: known ? "调用游戏自己的函数" : root === "renpy" || root === "achievement" ? "映射表里没有这个 API" : "调用来源不明的函数",
+                    reason: known ? "调用项目自定义函数" : root === "renpy" || root === "achievement" ? "映射表中无此 API" : "调用来源不明的函数",
                 };
             } else {
                 entry = { ...base, kind: "other", category: "needsAgent", suggestion: null, reason: "无法归类的 Python 语句" };

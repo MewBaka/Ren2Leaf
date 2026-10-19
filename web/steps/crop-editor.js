@@ -127,12 +127,12 @@ export function openCropEditor(ctx, { imageUrl, gameSize, elements, crops = [], 
         tiles.set(e.n, tile);
         list.append(tile);
     }
-    if (!candidates.length) list.append(h("p", { class: "cap-note" }, "该画面没有可切的元素"));
+    if (!candidates.length) list.append(h("p", { class: "cap-note" }, "该画面无可切分的元素"));
 
     const modal = ctx.openModal({
         title: "切图",
         body: h("div", { class: "crop-editor" },
-            h("div", { class: "crop-side" }, preview, h("p", { class: "crop-hint" }, "按尺寸从大到小排列，点击选择")),
+            h("div", { class: "crop-side" }, preview, h("p", { class: "crop-hint" }, "按尺寸降序排列，点击选择")),
             list),
         width: 1080,
         footer: [

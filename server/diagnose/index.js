@@ -34,7 +34,7 @@ export function resolveGameDirs(dir) {
     const abs = path.resolve(dir);
     if (isDir(path.join(abs, "game"))) return { root: abs, game: path.join(abs, "game") };
     if (path.basename(abs) === "game" && isDir(abs)) return { root: path.dirname(abs), game: abs };
-    throw Object.assign(new Error(`没有找到 game 文件夹：${abs}`), { code: "no_game_dir" });
+    throw Object.assign(new Error(`未找到 game 文件夹：${abs}`), { code: "no_game_dir" });
 }
 
 async function walk(base) {
@@ -114,7 +114,7 @@ async function versionClues(root, game, files) {
             if (!m) continue;
             const py = m[1] || "27";
             const v = { 27: "≤7", 39: "8.0–8.1", 311: "8.2–8.3", 312: "8.4+" }[py] || null;
-            clues.push({ source: "bytecodeCache", strength: "weak", file: `cache/${f}`, value: v, suggestsMajor: py.startsWith("2") ? 7 : 8, message: "字节码缓存，可能是之后用别的 SDK 运行时留下的" });
+            clues.push({ source: "bytecodeCache", strength: "weak", file: `cache/${f}`, value: v, suggestsMajor: py.startsWith("2") ? 7 : 8, message: "字节码缓存，可能由后续使用其他 SDK 运行时生成" });
         }
     } catch {}
     return clues;
@@ -129,7 +129,7 @@ function pickInfo(entries, col, ctxKind) {
     }
     const values = new Set(lits.map((e) => JSON.stringify(e.value)));
     if (values.size > 1) {
-        for (const e of lits.slice(1)) col.review.push({ kind: "conflictingConfig", file: e.file, line: e.line, label: null, screen: null, snippet: e.snippet, message: `${ctxKind} 有多处不同的定义，取第一处` });
+        for (const e of lits.slice(1)) col.review.push({ kind: "conflictingConfig", file: e.file, line: e.line, label: null, screen: null, snippet: e.snippet, message: `${ctxKind} 存在多处不同定义，取第一处` });
     }
     return lits[0] || null;
 }
@@ -174,21 +174,21 @@ function recommend(engineVersion, py2Syntax, py2Api, py3, clues) {
         major = engineVersion.major >= 8 ? 8 : 7;
         confidence = "high";
         reasons.push(`游戏由 Ren'Py ${engineVersion.version} 构建（${engineVersion.file}）`);
-        if (major === 8 && py2Syntax) reasons.push(`但有 ${py2Syntax} 处 Python 2 语法特征，可能在未加载的文件里，需要核对`);
+        if (major === 8 && py2Syntax) reasons.push(`但检测到 ${py2Syntax} 处 Python 2 语法特征，可能位于未加载的文件中，需人工核对`);
     } else if (py2Syntax) {
         major = 7;
         confidence = "high";
-        reasons.push(`有 ${py2Syntax} 处 Python 2 语法，Ren'Py 8 无法编译`);
+        reasons.push(`检测到 ${py2Syntax} 处 Python 2 语法，Ren'Py 8 无法编译`);
     } else if (py2Api) {
         major = 7;
         confidence = "medium";
-        reasons.push(`有 ${py2Api} 处 Python 2 专有 API 调用`);
+        reasons.push(`检测到 ${py2Api} 处 Python 2 专有 API 调用`);
     } else {
         major = 8;
         const weak = clues.find((c) => c.strength === "weak" && c.suggestsMajor);
         confidence = py3.length ? "high" : "medium";
-        if (py3.length) reasons.push(`有 ${py3.length} 处只有 Python 3 支持的写法`);
-        else reasons.push("没有 Python 2 特征，默认用 8");
+        if (py3.length) reasons.push(`检测到 ${py3.length} 处仅 Python 3 支持的语法`);
+        else reasons.push("未检测到 Python 2 特征，默认使用 Ren'Py 8");
         if (weak) reasons.push(`字节码缓存提示 ${weak.value}（弱线索）`);
     }
     return { major, exactVersion: engineVersion ? engineVersion.version : null, confidence, reasons };
@@ -257,8 +257,8 @@ export async function diagnose(gameDir) {
         const fm = /^(RPA-\d\.\d|ALT-\d\.\d)/.exec(head);
         archiveInfo.push({ path: f, size: (await fsp.stat(full)).size, format: fm ? fm[1] : "unknown" });
     }
-    for (const f of compiledOnly) col.review.push({ kind: "compiledOnlyFile", file: f, line: null, label: null, screen: null, snippet: null, message: "只有 .rpyc 没有源码，里面的界面和角色扫不到，需要先反编译" });
-    for (const a of archiveInfo) col.review.push({ kind: "archive", file: a.path, line: null, label: null, screen: null, snippet: null, message: "有 .rpa 归档，里面可能有脚本，本工具不解包" });
+    for (const f of compiledOnly) col.review.push({ kind: "compiledOnlyFile", file: f, line: null, label: null, screen: null, snippet: null, message: "仅有 .rpyc 而无源码，其中的界面和角色无法扫描，需先进行反编译" });
+    for (const a of archiveInfo) col.review.push({ kind: "archive", file: a.path, line: null, label: null, screen: null, snippet: null, message: "存在 .rpa 归档，其中可能包含脚本，本工具不支持解包" });
     for (const e of col.lexErrors) col.review.push({ kind: "lexError", file: e.file, line: e.line, label: null, screen: null, snippet: null, message: e.message });
 
     let status;
@@ -293,7 +293,7 @@ export async function diagnose(gameDir) {
     }
     if (!gameMenuScreen) {
         for (const s of col.callSites.filter((x) => x.gameMenuDefault)) {
-            col.review.push({ kind: "dynamicScreenName", file: s.file, line: s.line, label: s.label, screen: s.caller, snippet: `ShowMenu${s.args ?? "()"}`, message: "ShowMenu() 没写界面名，目标取 _game_menu_screen，没找到它的字面量定义" });
+            col.review.push({ kind: "dynamicScreenName", file: s.file, line: s.line, label: s.label, screen: s.caller, snippet: `ShowMenu${s.args ?? "()"}`, message: "ShowMenu() 未指定界面名，目标取自 _game_menu_screen，但未找到其字面量定义" });
         }
     }
 
@@ -301,7 +301,7 @@ export async function diagnose(gameDir) {
     for (const s of screens) {
         if (!s.defined && s.category === "custom") {
             const c = s.callSites[0];
-            col.review.push({ kind: "undefinedScreen", file: c?.file ?? null, line: c?.line ?? null, label: c?.label ?? null, screen: c?.caller ?? null, snippet: null, message: `界面 ${s.name} 被调用但源码里没有定义（可能在 .rpyc/.rpa 里）` });
+            col.review.push({ kind: "undefinedScreen", file: c?.file ?? null, line: c?.line ?? null, label: c?.label ?? null, screen: c?.caller ?? null, snippet: null, message: `界面 ${s.name} 被调用但未在源码中定义（可能位于 .rpyc/.rpa 中）` });
         }
     }
     const characters = resolveCharacterKinds(col);

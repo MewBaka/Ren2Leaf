@@ -136,9 +136,9 @@ export function resolvePortraits(game, speakers) {
 }
 
 const SOURCE_LABEL = {
-    image: "来自角色的 image= 设定",
-    variable: "按变量名找到的图片",
-    sprite: "按台上立绘 tag 找到的图片",
+    image: "来自角色的 image= 属性",
+    variable: "通过变量名匹配的图片",
+    sprite: "通过当前显示的立绘 tag 匹配的图片",
 };
 
 export function register(router, { games }) {
@@ -180,7 +180,7 @@ export function register(router, { games }) {
     router.get("/api/games/:id/speakers/portrait/:variable", ({ req, res, params }) => {
         const game = games.get(params.id);
         const hit = resolvePortraits(game, speakersOf(game)).get(params.variable);
-        if (!hit) throw new HttpError(404, "没有找到这个说话人的立绘", "no_portrait");
+        if (!hit) throw new HttpError(404, "未找到该说话人的立绘", "no_portrait");
         serve(req, res, game, hit);
     });
 }
