@@ -232,7 +232,7 @@ export async function mount(host, ctx) {
                     onclick: () => select(`screen:${sc.name}`),
                 },
                 h("span", { class: "cap-row-name" }, sc.name),
-                h("span", { class: "cap-row-value" }, sc.category === "custom" ? "自定义" : "标准")));
+                h("span", { class: "cap-row-value" }, sc.persistentReads?.length ? "多套状态" : sc.category === "custom" ? "自定义" : "标准")));
             }
         }
     }
@@ -376,6 +376,12 @@ export async function mount(host, ctx) {
                 sc.callSites?.length ? `${sc.callSites.length} 处调用` : null,
             ].filter(Boolean);
             if (where.length) pane.append(h("p", { class: "cap-note mono" }, where.join(" · ")));
+            // Before and after clearing the game, locked and unlocked: one screenshot shows one of
+            // them, and the report cannot tell the other one exists unless it is shot too.
+            if (sc.persistentReads?.length) {
+                pane.append(h("p", { class: "cap-note is-warning" },
+                    `该界面会随 ${sc.persistentReads.join("、")} 的值变化而呈现不同状态（如通关前/通关后）。请为每种状态分别截图，并在用途中注明对应状态`));
+            }
             return;
         }
 

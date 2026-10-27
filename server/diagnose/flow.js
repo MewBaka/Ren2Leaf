@@ -22,6 +22,16 @@ const ENGINE_LABELS = new Set([
  */
 const MENU_LABELS = new Set([...ENGINE_LABELS].filter((n) => n !== "start"));
 
+/**
+ * Jumping here is the end of a route: the game is back at the title screen. A commercial game
+ * often has no `return` at all — the good ending runs the credits and then `jump splashscreen`,
+ * and the bad ending jumps straight back — so a route that ends in `return` is only one of the
+ * two shapes an ending comes in.
+ */
+const TITLE_LABELS = new Set(["splashscreen", "main_menu", "_main_menu", "before_main_menu"]);
+/** Python and screen actions that go back to the title or restart the game. */
+const TITLE_CALLS = /(?<![\w.])(MainMenu\s*\(|renpy\.full_restart\s*\(|renpy\.utter_restart\s*\()/;
+
 /** Edge kinds that come back: the called label's `return` goes to the line after the call. */
 const CALL_KINDS = new Set(["call", "callExpression", "Call()", "renpy.call", "renpy.call_in_new_context", "renpy.invoke_in_new_context", "renpy.call_replay", "Replay()"]);
 const isCall = (kind) => CALL_KINDS.has(kind);
@@ -31,6 +41,7 @@ const PAIR_WINDOW = 6;      // lines within which two signals count as one cut
 const PAIR_SCORE = 8;       // a blackout together with `stop music`
 const SWAP_SCORE = 5;       // `stop music` followed by different music
 const CUT_SCORE = 6;        // a signal strong enough to be worth showing as a possible break
+const SAMPLE_CALLERS = 5;   // how many jump/call sites are kept per cross-file entry
 
 function labelRegions(col) {
     const byFile = new Map();
@@ -60,13 +71,13 @@ function labelRegions(col) {
  */
 function terminalOf(label, outgoing, returns) {
     const stmts = [
-        ...outgoing.filter((e) => e.kind === "jump" || e.kind === "jumpExpression").map((e) => ({ line: e.line, indent: e.indent, kind: "jump" })),
-        ...returns.map((r) => ({ line: r.line, indent: r.indent, kind: "return" })),
+        ...outgoing.filter((e) => e.kind === "jump" || e.kind === "jumpExpression").map((e) => ({ line: e.line, indent: e.indent, kind: "jump", to: e.to })),
+        ...returns.map((r) => ({ line: r.line, indent: r.indent, kind: "return", to: null })),
     ].sort((a, b) => a.line - b.line);
     if (!stmts.length) return null;
     const base = Math.min(...stmts.map((s) => s.indent ?? 0));
     const last = stmts[stmts.length - 1];
-    return (last.indent ?? 0) === base ? last.kind : null;
+    return (last.indent ?? 0) === base ? last : null;
 }
 
 function graph(col, regions) {
@@ -102,7 +113,10 @@ function graph(col, regions) {
     for (const [name, node] of nodes) {
         const region = byName.get(name);
         const returns = col.returns.filter((r) => r.label === name);
-        node.terminal = terminalOf(node, node.out, returns);
+        const term = terminalOf(node, node.out, returns);
+        node.terminal = term?.kind ?? null;
+        node.terminalTarget = term?.to ?? null;
+        node.terminalLine = term?.line ?? null;
         node.returns = returns.length;
         if (!node.terminal && region?.nextInFile) {
             node.fallsThroughTo = region.nextInFile;
@@ -294,7 +308,9 @@ export function buildFlow(col) {
     const dynamicTargets = [];
     for (const e of col.edges) {
         if (!e.to) dynamicTargets.push({ kind: e.kind, expr: e.expr, file: e.file, line: e.line, label: e.from, screen: e.screen });
-        else if (!defined.has(e.to)) undefinedTargets.push({ kind: e.kind, target: e.to, file: e.file, line: e.line, label: e.from, screen: e.screen });
+        // A jump to the title screen is an ending, not a broken target: `main_menu` comes from the
+        // engine, and a game without its own `splashscreen` still jumps there to go back.
+        else if (!defined.has(e.to) && !TITLE_LABELS.has(e.to)) undefinedTargets.push({ kind: e.kind, target: e.to, file: e.file, line: e.line, label: e.from, screen: e.screen });
     }
 
     const unreachable = labels
@@ -316,20 +332,61 @@ export function buildFlow(col) {
         .sort(byLocation);
     const calledInto = new Set(subroutines.map((s) => s.name));
 
+    // Where a route ends. Two shapes: a `return` that is not a return to a caller, and a jump
+    // back to the title screen (`jump splashscreen`, `MainMenu()`, `renpy.full_restart()`) — the
+    // shape a commercial game usually has, where the good ending runs the credits first.
+    const restarts = new Set();
+    for (const e of col.pyEntries) {
+        if (e.label && (e.api === "renpy.full_restart" || TITLE_CALLS.test(e.snippet ?? ""))) restarts.add(e.label);
+    }
+    // The jump that goes back to the title, wherever it sits in the label: a credits roll often
+    // has a dead `return` after it, and that return is not what ends the route.
+    const titleJump = (l) => l.out.find((e) => (e.kind === "jump" || e.kind === "jumpExpression") && TITLE_LABELS.has(e.to)) ?? null;
+    const endingOf = (l) => {
+        if (!l.reachable || MENU_LABELS.has(l.name)) return null;
+        if (titleJump(l)) return "toTitle";
+        if (restarts.has(l.name) && !l.out.some((e) => e.kind === "jump" && !TITLE_LABELS.has(e.to))) return "restart";
+        if (l.terminal !== "return" || l.out.some((e) => e.kind === "jump" || e.kind === "fallthrough")) return null;
+        // A called label's `return` goes back to the caller, and play carries on there.
+        if (calledInto.has(l.name)) return null;
+        if (l.name === "start") return "startEnd";
+        return /ending|_end$|end$|bad|good|true|normal/i.test(l.name) ? "namedEnding" : "return";
+    };
     const endings = labels
-        .filter((l) => l.reachable && l.terminal === "return" && !l.out.some((e) => e.kind === "jump" || e.kind === "fallthrough"))
-        // Ren'Py enters these by itself and they always end in `return`; and a called label's
-        // `return` is a return to the caller.
-        .filter((l) => !MENU_LABELS.has(l.name) && !calledInto.has(l.name))
-        .map((l) => ({
-            name: l.name, file: l.file, line: l.endLine, says: l.says,
-            newGamePlus: l.newGamePlus,
-            kind: l.name === "start" ? "startEnd" : /ending|_end$|end$|bad|good|true|normal/i.test(l.name) ? "namedEnding" : "return",
+        .map((l) => ({ label: l, kind: endingOf(l) }))
+        .filter((x) => x.kind)
+        .map(({ label: l, kind }) => ({
+            name: l.name,
+            line: kind === "toTitle" ? titleJump(l).line : kind === "restart" ? (l.terminalLine ?? l.endLine) : l.endLine,
+            file: l.file, says: l.says, newGamePlus: l.newGamePlus, kind,
+            titleTarget: kind === "toTitle" ? titleJump(l).to : null,
         }))
         .sort(byLocation);
+    const endingNames = new Set(endings.map((e) => e.name));
+
+    // Per file: how many routes end here, and which labels the game enters from another file.
+    // A file the migrator calls "not a script" is contradicted by an entry from a reachable label,
+    // so the chapter step and the export need this.
+    const byFileName = new Map(files.map((f) => [f.file, f]));
+    for (const e of endings) {
+        const row = byFileName.get(e.file);
+        if (row) row.endings++;
+    }
+    for (const node of nodes.values()) {
+        const row = byFileName.get(node.file);
+        if (!row) continue;
+        const outside = node.in.filter((e) => e.file !== node.file);
+        if (!outside.length) continue;
+        (row.enteredFrom ??= []).push({
+            label: node.name, line: node.line, reachable: node.reachable,
+            from: outside.slice(0, SAMPLE_CALLERS).map((e) => ({ file: e.file, line: e.line, kind: e.kind, label: e.from })),
+            incoming: outside.length,
+        });
+    }
+    for (const row of files) row.enteredFrom ??= [];
 
     const notEndings = labels
-        .filter((l) => l.reachable && l.terminal === "return" && (MENU_LABELS.has(l.name) || calledInto.has(l.name)))
+        .filter((l) => l.reachable && l.terminal === "return" && !endingNames.has(l.name) && (MENU_LABELS.has(l.name) || calledInto.has(l.name)))
         .map((l) => ({
             name: l.name, file: l.file, line: l.endLine, says: l.says,
             reason: calledInto.has(l.name) ? `被 call 调用 ${l.calledFrom} 次，return 返回调用方` : "Ren'Py 引擎保留 label",
@@ -374,6 +431,18 @@ export function buildFlow(col) {
         warnings.push({
             kind: "newGamePlusRoutes",
             message: `${laterLabels.length} 个 label 只在 persistent 标记打开后才走得到（${laterLabels.slice(0, 6).map((l) => l.name).join("、")}${laterLabels.length > 6 ? "…" : ""}），游玩顺序把它们排在一周目路线之后`,
+        });
+    }
+    if (!endings.length && labels.some((l) => l.reachable)) {
+        warnings.push({
+            kind: "noEndings",
+            message: "未检测到任何结局：既无以 return 结束的可达 label，也无跳转至标题画面的。剧本结尾可能位于未扫描的文件中（.rpyc、.rpa），或结局通过运行时表达式跳转",
+        });
+    }
+    if (endings.some((e) => e.kind === "toTitle" || e.kind === "restart")) {
+        warnings.push({
+            kind: "endingsReturnToTitle",
+            message: `${endings.filter((e) => e.kind === "toTitle" || e.kind === "restart").length} 个结局是跳回标题画面收尾的（jump splashscreen、MainMenu()、renpy.full_restart()），不是 return`,
         });
     }
     if (notEndings.length) {

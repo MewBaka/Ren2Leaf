@@ -166,6 +166,18 @@ init 999 python:
             }
             if cls == "Button":
                 button_here = e
+                # An image button carries one picture per state. The migrator needs all of them,
+                # not just the idle one: hover and selected are separate files in NarraLeaf too.
+                states = getattr(d, "state_children", None)
+                if isinstance(states, dict):
+                    picked = {}
+                    for key in ("idle_", "hover_", "insensitive_", "selected_idle_",
+                                "selected_hover_", "selected_insensitive_"):
+                        nm = _r2l_disp_name(states.get(key))
+                        if nm:
+                            picked[key.rstrip("_")] = nm
+                    if picked:
+                        e["states"] = picked
             try:
                 info = d._repr_info()
             except Exception:
@@ -191,6 +203,10 @@ init 999 python:
                             break
                     if e["image"]:
                         break
+            # Which picture this is. Without it the element table says where a box is but not
+            # what is in it, and four backgrounds on one screen are indistinguishable.
+            if cls in ("Image", "ImageReference", "Movie"):
+                e["image"] = _r2l_disp_name(d)
             # What a button shows (a gallery thumbnail, a locked mark) tells its states apart.
             if owner is not None and owner.get("image") is None and cls in ("Image", "ImageReference", "Frame"):
                 owner["image"] = e.get("image") or getattr(d, "filename", None) or e.get("info")

@@ -86,6 +86,7 @@ function writeFixture() {
         "",
         "label right_path:",
         '    e "右边。"',
+        '    call grant_ach("1")',
         "    jump shared",
         "",
         "label left_path:",
@@ -96,7 +97,7 @@ function writeFixture() {
         "    stop music",
         '    play music "bgm/next.ogg"',
         '    e "换曲之后。"',
-        "    return",
+        "    jump the_end",
         "",
         "label shared:",
         '    e2 "共用段落。"',
@@ -108,6 +109,45 @@ function writeFixture() {
         "",
         "label missing_target:",
         "    jump nowhere",
+        "",
+    ].join("\n"));
+
+    // The shapes a commercial game hides its achievements, its gallery and its sprite rewriting
+    // in: one parameterised label for every achievement, a Gallery object built call by call, and
+    // a global hook that rewrites attributes behind every `show`.
+    write("extras.rpy", [
+        "init python:",
+        '    achievement.register("NEW_1_3", steam="NEW_ACHIEVEMENT_1_3")',
+        '    achievement.register("NEW_2_1")',
+        "    def eileen_adjuster(name, attrs):",
+        '        if persistent.coat_color == "black":',
+        "            return attrs",
+        "        return attrs",
+        "    gal = Gallery()",
+        '    gal.button("cg1")',
+        '    gal.image("cg1_a")',
+        '    gal.image("cg1_b")',
+        '    gal.unlock_image("cg1_a")',
+        '    gal.condition("persistent.seen_cg1")',
+        '    gal.button("cg2")',
+        '    gal.image("cg2_a")',
+        'define config.adjust_attributes = {"eileen": eileen_adjuster}',
+        "",
+        "label grant_ach(who):",
+        '    if who == "1":',
+        '        $ achievement.grant("NEW_1_3")',
+        "    else:",
+        '        $ achievement.grant("NEW_2_1")',
+        "    return",
+        "",
+    ].join("\n"));
+
+    // The shape a commercial game ends with: the credits are their own file and jump back to the
+    // title screen, so nothing in the route ever says `return`.
+    write("end.rpy", [
+        "label the_end:",
+        "    scene black",
+        "    jump splashscreen",
         "",
     ].join("\n"));
 
@@ -237,6 +277,40 @@ describe("fixture game", () => {
         assert.equal(py.customStatements[0].usages[0].label, "start");
     });
 
+    test("a global hook that rewrites every show, and the persistent flag it reads", () => {
+        const hook = py.hooks.find((k) => k.hook === "config.adjust_attributes");
+        assert.deepEqual(hook.tags, ["eileen"]);
+        assert.equal(hook.everyTag, false);
+        assert.equal(hook.functions[0].name, "eileen_adjuster");
+        assert.deepEqual(hook.persistentReads, ["persistent.coat_color"]);
+    });
+
+    test("the gallery's own table of contents, not a pile of unknown calls", () => {
+        assert.deepEqual(py.galleries.map((g) => [g.button, g.images]), [
+            ["cg1", ["cg1_a", "cg1_b"]],
+            ["cg2", ["cg2_a"]],
+        ]);
+        assert.deepEqual(py.galleries[0].unlocks, ["cg1_a"]);
+        assert.deepEqual(py.galleries[0].conditions, ["persistent.seen_cg1"]);
+        // And they are no longer "a call to an unknown function".
+        assert.ok(!py.entries.some((e) => e.callee?.startsWith("gal.") && e.category === "needsAgent"));
+    });
+
+    test("an achievement unlocks where it is called, with its Steam id", () => {
+        const ach = inv.extensions.facts.achievements;
+        assert.deepEqual(ach.declared.map((d) => [d.name, d.steam]), [
+            ["NEW_1_3", "NEW_ACHIEVEMENT_1_3"],
+            ["NEW_2_1", null],
+        ]);
+        const unlock = ach.unlockPoints.find((u) => u.name === "NEW_1_3");
+        assert.ok(unlock.site.startsWith("script.rpy:"));
+        assert.equal(unlock.steam, "NEW_ACHIEVEMENT_1_3");
+        assert.equal(unlock.arguments, '("1")');
+        assert.equal(unlock.certain, true);
+        // The other branch does not match that call site, so it is not listed under it.
+        assert.ok(!ach.unlockPoints.some((u) => u.name === "NEW_2_1" && u.site === unlock.site));
+    });
+
     test("the game's own functions and modules are listed", () => {
         assert.ok(py.functions.some((f) => f.name === "my_helper"));
         assert.deepEqual(py.modules, [{ file: "helpers.py", lines: 2 }]);
@@ -260,7 +334,7 @@ describe("fixture game", () => {
 
     test("play order is not file order", () => {
         const play = flow.labels.filter((l) => l.reachable).map((l) => l.name);
-        assert.deepEqual(play.slice(0, 3), ["start", "left_path", "right_path"]);
+        assert.deepEqual(play.slice(0, 4), ["start", "left_path", "the_end", "right_path"]);
         assert.ok(flow.warnings.some((w) => w.kind === "playOrderDiffersFromFileOrder"));
     });
 
@@ -269,8 +343,12 @@ describe("fixture game", () => {
         assert.deepEqual(flow.undefinedTargets.map((e) => e.target), ["nowhere"]);
     });
 
-    test("routes that end with return are ending candidates", () => {
-        assert.deepEqual(flow.endings.map((e) => e.name).sort(), ["left_path", "shared"]);
+    test("routes end with a return, or with a jump back to the title screen", () => {
+        assert.deepEqual(flow.endings.map((e) => e.name).sort(), ["shared", "the_end"]);
+        const credits = flow.endings.find((e) => e.name === "the_end");
+        assert.equal(credits.kind, "toTitle");
+        assert.equal(credits.titleTarget, "splashscreen");
+        assert.ok(flow.warnings.some((w) => w.kind === "endingsReturnToTitle"));
     });
 
     test("per-file facts and the signals a chapter break could be cut at", () => {
@@ -322,6 +400,21 @@ function writeAssetFixture() {
         "image stack:",
         '    "images/stack_frame.png"',
         "    pause 1.0",
+        // A CG the original mirrors and shrinks, the way a commercial game reuses one drawing.
+        'image cg mirror = Transform("images/bg_room.png", zoom=0.5, xzoom=-0.5, yoffset=120)',
+        "image bg wide:",
+        '    "images/bg_room.png"',
+        "    zoom 0.9",
+        "    align (0.5, 1.0)",
+        "layeredimage girl:",
+        "    always:",
+        '        "images/eileen_happy.png"',
+        "    group coat:",
+        "        attribute black default",
+        "        attribute white",
+        "    group face auto:",
+        "        attribute smile",
+        'image girl small = LayeredImageProxy("girl", Transform(zoom=0.45, xzoom=-0.45, yoffset=700))',
         "",
     ].join("\n"));
 
@@ -355,13 +448,33 @@ describe("asset check", () => {
     after(() => fs.rmSync(dir, { recursive: true, force: true }));
 
     test("every file an image definition is built from is counted, ATL bodies included", () => {
-        assert.equal(assets.summary.imageDefinitions, 10);
-        assert.equal(assets.summary.imageReferences, 11);
+        assert.equal(assets.summary.imageDefinitions, 14);
+        assert.equal(assets.summary.imageReferences, 14);
         assert.equal(assets.summary.audioReferences, 4);
         // Four tags are asked for by show/scene; the character's image= tag is not one of them.
         assert.equal(assets.summary.shownTags, 4);
         // The string inside `image stack:` belongs to that image, so it is checked like any path.
         assert.deepEqual(assets.missing.find((r) => r.path === "images/stack_frame.png").statements, ["image stack"]);
+    });
+
+    test("how an image is placed: zoom, mirroring, layered groups and proxies", () => {
+        const byName = new Map(assets.geometry.map((d) => [d.name, d]));
+        const cg = byName.get("cg mirror");
+        assert.equal(cg.mirrored, true);
+        assert.deepEqual(cg.properties.map((p) => `${p.name} ${p.value}`), ["zoom 0.5", "xzoom -0.5", "yoffset 120"]);
+        const bg = byName.get("bg wide");
+        assert.deepEqual(bg.properties.map((p) => p.name), ["zoom", "align"]);
+        const girl = byName.get("girl");
+        assert.equal(girl.statement, "layeredimage");
+        assert.deepEqual(girl.groups.map((g) => [g.name, g.auto, g.attributes]), [
+            ["coat", false, ["black", "white"]],
+            ["face", true, ["smile"]],
+        ]);
+        assert.deepEqual(assets.autoGroups.map((g) => `${g.image}.${g.group}`), ["girl.face"]);
+        const proxy = byName.get("girl small");
+        assert.equal(proxy.proxyOf, "girl");
+        assert.equal(proxy.mirrored, true);
+        assert.equal(assets.summary.mirroredImages, 2);
     });
 
     test("a file the script points at and game/ does not have", () => {

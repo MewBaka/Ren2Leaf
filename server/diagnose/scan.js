@@ -21,6 +21,11 @@ export class Collector {
         this.store = new Map(); // name -> {declaredBy, file, line}
         this.callables = new Set();
         this.transforms = new Set();
+        // Global rewrite hooks: config.adjust_attributes and the config.*_callbacks family. One
+        // line here changes every `show` in the game, so they are collected on their own.
+        this.hooks = [];
+        // `define bgm_title = "audio/bgm/title.ogg"`: a name for a file, not a story variable.
+        this.assetConstants = [];
         this.info = { name: [], version: [], guiInit: [], screenWidth: [], screenHeight: [], saveDirectory: [], gameMenuScreen: [] };
         this.py2 = [];
         this.py3 = [];
@@ -216,7 +221,14 @@ export function scanFile(col, file, source, { pythonFile = false } = {}) {
             const frame = { indent: ln.indent, type: /^init\b/.test(m) ? "init" : "block", word, ...(extra?.frame ?? {}) };
             // What stands between the label and the lines inside this block. A jump under
             // `if persistent.x` is a second-playthrough route, not where play starts.
-            if (word && GUARD_WORDS.has(word)) frame.condition = m.slice(word.length).replace(/:$/, "").trim() || null;
+            if (word && GUARD_WORDS.has(word)) {
+                // `m` is masked, so string literals in the condition read as `"~"`. The condition
+                // is taken off `ln.text` at the same offsets, because `if who == "1"` is only
+                // useful with the "1" still in it.
+                const at = ln.masked.indexOf(m);
+                const raw = at >= 0 ? ln.text.slice(at + word.length, at + m.length) : m.slice(word.length);
+                frame.condition = raw.replace(/:\s*$/, "").trim() || null;
+            }
             stack.push(frame);
         }
     }
@@ -299,7 +311,27 @@ function scanStatement(col, ctx, ln, m) {
     let hm;
     // Inside `image x:` / `layeredimage x:`: every string is a file the image is built from.
     if (ctx.imageDef) {
-        for (const s of ln.strings) addAssetPath(ctx.imageDef, s.value);
+        const def = ctx.imageDef;
+        for (const s of ln.strings) addAssetPath(def, s.value);
+        let bm;
+        if ((bm = GROUP_LINE.exec(m))) {
+            // `group face auto:` takes in every image whose name starts with the group's prefix,
+            // including ones the definition never names.
+            const group = { name: bm[1], auto: /\bauto\b/.test(bm[2] ?? ""), attributes: [], line: ln.line };
+            if (def.groups.length < 40) def.groups.push(group);
+            openGroup.set(def, group);
+        } else if ((bm = ATTRIBUTE_LINE.exec(m))) {
+            const attr = { name: bm[1], default: /\bdefault\b/.test(bm[2] ?? ""), line: ln.line };
+            const group = openGroup.get(def);
+            if (group) group.attributes.push(attr.name);
+            else if (def.attributes.length < 60) def.attributes.push(attr);
+        } else if (/^always\s*:?\s*$/.test(m)) {
+            openGroup.delete(def);
+        } else if ((bm = ATL_LINE.exec(m))) {
+            noteProperty(def, bm[1], bm[2], ln.line);
+        } else {
+            keywordProperties(def, ln, 0);
+        }
         return {};
     }
     if ((hm = /^(define|default)\s+(?:[-+]?\d+\s+)?([\w.]+)\s*(\+=|\|=|=)\s*/.exec(m))) {
@@ -310,13 +342,28 @@ function scanStatement(col, ctx, ln, m) {
             const lit = literalAt(ln, off, ln.masked.length);
             if (!ctx.screenDef) col.notePersistent(name, stmt, ctx.file, ln.line, lit.ok ? lit.value : undefined);
         } else if (!name.includes(".")) {
-            if (!ctx.screenDef) col.declare(name, stmt, ctx.file, ln.line);
+            const lit = literalAt(ln, off, ln.masked.length);
+            const asset = stmt === "define" && lit.ok && typeof lit.value === "string" ? assetPath(lit.value) : null;
+            if (asset) {
+                // A path constant belongs with the assets: listing it as a story variable is noise,
+                // and the file it points at still has to be there.
+                col.assetConstants.push({ name, path: asset, file: ctx.file, line: ln.line });
+            } else if (!ctx.screenDef) col.declare(name, stmt, ctx.file, ln.line);
         }
         configAssignment(col, ctx, ln, name, off, ln.masked.length);
+        noteHook(col, ctx, ln, name, off);
         characterDef(col, ctx, ln, name, off);
         if (!ctx.screenDef) classifyDefinition(col, ctx, ln, stmt, name, off);
         scanPythonExpr(col, ctx, ln, off);
         return;
+    }
+    // `define config.adjust_attributes["<tag>_f"] = <tag>_adjuster`: a hook installed one key at a
+    // time. The statement above does not match it, because the name is followed by a subscript.
+    if ((hm = /^(?:define|default)\s+([\w.]+)((?:\[[^\]]*\])+)\s*=\s*/.exec(m))) {
+        const off = ln.masked.indexOf(hm[0]) + hm[0].length;
+        const keyStart = ln.masked.indexOf(hm[2], ln.masked.indexOf(hm[0]));
+        const keys = ln.strings.filter((x) => x.start >= keyStart && x.start < off).map((x) => x.value);
+        noteHook(col, ctx, ln, hm[1], off, ln.masked.length, keys);
     }
     if (!ctx.screenDef && (hm = IMAGE_HEAD.exec(m))) {
         const def = imageDefinition(col, ctx, ln, hm);
@@ -368,6 +415,23 @@ function scanStatement(col, ctx, ln, m) {
 // the tag `show` asks for.
 const IMAGE_HEAD = /^(image|layeredimage)\s+([A-Za-z_][\w.]*(?:\s+[\w.@-]+)*?)\s*(=|:)\s*/;
 const ASSET_EXT = /\.([A-Za-z0-9]{2,5})$/;
+
+/**
+ * The placement an image carries in its own definition. A commercial game puts half its art on
+ * screen through these — a CG mirrored with `xzoom -0.5`, a background at `zoom 0.9`, a sprite
+ * pushed down with `yoffset 700` — so the picture is wrong without them, whatever the file is.
+ */
+const ATL_PROPS = new Set([
+    "zoom", "xzoom", "yzoom", "rotate", "alpha", "align", "xalign", "yalign",
+    "pos", "xpos", "ypos", "offset", "xoffset", "yoffset", "anchor", "xanchor", "yanchor",
+    "size", "crop", "fit", "subpixel", "matrixcolor", "blur", "nearest", "zpos", "transform_anchor",
+]);
+const ATL_LINE = new RegExp(`^(${[...ATL_PROPS].join("|")})\\s+(.+)$`);
+/** The `group` an `attribute` line belongs to, while that definition's block is being read. */
+const openGroup = new WeakMap();
+
+const GROUP_LINE = /^group\s+([\w.]+)((?:\s+\w+)*)\s*:?\s*$/;
+const ATTRIBUTE_LINE = /^attribute\s+([\w.]+)((?:\s+(?:default|null))*)\s*(.*)$/;
 const PLAY_PREFIX = /^<[^>]*>/;
 
 /**
@@ -386,6 +450,25 @@ function addAssetPath(def, value) {
     if (p && !def.paths.includes(p)) def.paths.push(p);
 }
 
+/** One geometry property, from an ATL line or a keyword argument. */
+function noteProperty(def, name, value, line) {
+    const text = String(value ?? "").trim().replace(/^\(|\)$/g, "");
+    if (!text) return;
+    if (def.properties.length < 24) def.properties.push({ name, value: snippet(text), line });
+    const num = Number(/^-?\d*\.?\d+/.exec(text)?.[0]);
+    if ((name === "xzoom" || name === "yzoom" || name === "zoom") && num < 0) def.mirrored = true;
+}
+
+/** `Transform(…, zoom=.45, xzoom=-.45)`, including one nested in a `LayeredImageProxy`. */
+function keywordProperties(def, ln, from) {
+    const text = ln.masked.slice(from);
+    const re = /(?<![\w.])([a-z_]+)\s*=\s*([^,()]+)/g;
+    let m;
+    while ((m = re.exec(text))) {
+        if (ATL_PROPS.has(m[1])) noteProperty(def, m[1], m[2], ln.line);
+    }
+}
+
 function imageDefinition(col, ctx, ln, hm) {
     const name = hm[2].trim().replace(/\s+/g, " ");
     const parts = name.split(" ");
@@ -395,6 +478,7 @@ function imageDefinition(col, ctx, ln, hm) {
         statement: hm[1], name, tag: parts[0], attributes: parts.slice(1),
         constructor: /^([A-Za-z_][\w.]*)\s*\(/.exec(value)?.[1] ?? null,
         mask: null, paths: [],
+        properties: [], groups: [], attributes: [], mirrored: false, proxyOf: null,
         expression: value ? snippet(ln.text.slice(valueAt)) : null,
         file: ctx.file, line: ln.line, label: ctx.label ?? null,
     };
@@ -405,6 +489,13 @@ function imageDefinition(col, ctx, ln, hm) {
             const lit = literalAt(ln, ...call.keywords.mask);
             def.mask = lit.ok && typeof lit.value === "string" ? lit.value : "（不是字面量）";
         }
+    }
+    if (def.constructor) keywordProperties(def, ln, valueAt);
+    if (def.constructor === "LayeredImageProxy") {
+        // `LayeredImageProxy("<tag>", Transform(zoom=.45, xzoom=-.45))`: the sprite is another
+        // layered image seen through a transform, so both halves matter.
+        const first = ln.strings.find((s) => s.start >= valueAt);
+        def.proxyOf = first ? first.value : "（不是字面量）";
     }
     for (const s of ln.strings) if (s.start >= valueAt) addAssetPath(def, s.value);
     col.imageDefs.push(def);
@@ -540,6 +631,28 @@ function scanCallSites(col, ctx, ln, { screenLanguage = false }) {
 }
 
 /** define/assignment of config.* and gui.init. */
+/**
+ * `config.adjust_attributes`, `config.character_callback`, `config.*_callbacks`: Ren'Py calls these
+ * behind every statement, so a sprite can come out different from what the script asked for. The
+ * hook's own code is not followed here; the names it mentions are, so the report can say which
+ * tags are affected and which persistent flags decide the outcome.
+ */
+const HOOK_NAMES = /^config\.(adjust_attributes|character_callback|all_character_callbacks|say_arguments_callback|say_menu_text_filter|[a-z_]*callbacks?)$/;
+
+export function noteHook(col, ctx, ln, name, from, to = ln.masked.length, keys = null) {
+    if (!HOOK_NAMES.test(name)) return;
+    const text = ln.text.slice(from, to).trim();
+    // In a dict, a string key is the image tag the hook applies to; `None` means every tag.
+    const tags = keys ?? ln.strings.filter((x) => x.start >= from && x.start < to).map((x) => x.value);
+    const everyTag = /(?<![\w.])None\s*:/.test(ln.masked.slice(from, to));
+    const names = [...new Set((ln.masked.slice(from, to).match(/(?<![\w."'])[A-Za-z_]\w*/g) ?? [])
+        .filter((w) => !["None", "True", "False", "lambda", "dict", "store"].includes(w)))];
+    col.hooks.push({
+        hook: name, file: ctx.file, line: ln.line, expression: snippet(text),
+        tags, everyTag, names, functions: [], persistentReads: [],
+    });
+}
+
 function configAssignment(col, ctx, ln, name, a, b) {
     const map = {
         "config.name": "name",

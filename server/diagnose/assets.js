@@ -13,6 +13,7 @@ import fsp from "node:fs/promises";
 import path from "node:path";
 
 const TOP = 60;
+const GEOMETRY_TOP = 400;
 const SAMPLES = 5;
 const HASH_BUDGET = 512 * 1024 * 1024;
 
@@ -206,6 +207,10 @@ export async function buildAssets(col, files, gameDir) {
             });
         }
     });
+    for (const c of col.assetConstants) {
+        const kind = AUDIO_EXT.has(ext(c.path)) ? "audio" : "image";
+        refs.push({ path: c.path, kind, tag: null, tagShown: true, superseded: false, statement: `define ${c.name}`, file: c.file, line: c.line });
+    }
     for (const a of col.audioRefs) {
         refs.push({ path: a.path, kind: "audio", tag: null, tagShown: true, superseded: false, statement: `${a.statement} ${a.channel ?? ""}`.trim(), file: a.file, line: a.line });
     }
@@ -257,6 +262,7 @@ export async function buildAssets(col, files, gameDir) {
     // ---- what is on disk: format, size, duplicate content
     const media = files.filter(isMedia);
     const formatMismatch = [];
+    const fonts = [];
     const bySize = new Map();
     let mediaBytes = 0;
     for (const f of media) {
@@ -268,6 +274,9 @@ export async function buildAssets(col, files, gameDir) {
             continue;
         }
         mediaBytes += size;
+        // A Chinese font ships whole: several megabytes for a web build, where only the glyphs the
+        // game shows are needed. Worth knowing before the build is 30 MB of typeface.
+        if (FONT_EXT.has(ext(f))) fonts.push({ path: f, bytes: size });
         if (size > 0) {
             const bucket = bySize.get(size) ?? [];
             bucket.push(f);
@@ -351,12 +360,30 @@ export async function buildAssets(col, files, gameDir) {
         }))
         .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
+    // Where each image sits and how big it is on screen. The last definition of a name is the one
+    // the game runs, so that is the one listed.
+    const lastOf = new Map();
+    for (const d of col.imageDefs) lastOf.set(d.name, d);
+    const geometry = [...lastOf.values()]
+        .filter((d) => d.properties.length || d.groups.length || d.mirrored || d.proxyOf || d.statement === "layeredimage")
+        .map((d) => ({
+            name: d.name, tag: d.tag, statement: d.statement, constructor: d.constructor,
+            source: d.paths[0] ?? null, paths: d.paths.slice(0, SAMPLES),
+            properties: d.properties, mirrored: d.mirrored, proxyOf: d.proxyOf,
+            groups: d.groups.map((g) => ({ name: g.name, auto: g.auto, attributes: g.attributes.slice(0, 12), attributeCount: g.attributes.length })),
+            attributes: d.attributes.map((a) => a.name).slice(0, 20),
+            expression: d.expression, file: d.file, line: d.line,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+    const autoGroups = geometry.flatMap((d) => d.groups.filter((g) => g.auto).map((g) => ({ image: d.name, group: g.name, attributes: g.attributes, file: d.file, line: d.line })));
+
     const cap = (list) => list.slice(0, TOP);
     return {
         version: 1,
         summary: {
             imageDefinitions: col.imageDefs.length,
             referencedPaths: new Set(refs.map((r) => r.path)).size,
+            assetConstants: col.assetConstants.length,
             imageReferences: refs.filter((r) => r.kind === "image").length,
             audioReferences: refs.filter((r) => r.kind === "audio").length,
             missingPaths: missingRows.length,
@@ -376,8 +403,14 @@ export async function buildAssets(col, files, gameDir) {
             matrixColor: matrixColor.length,
             offlineFormats: offlineFormats.length,
             redefinedNames: redefined.length,
+            placedImages: geometry.length,
+            mirroredImages: geometry.filter((d) => d.mirrored).length,
+            layeredImages: geometry.filter((d) => d.statement === "layeredimage").length,
+            autoGroups: autoGroups.length,
             mediaFiles: media.length,
             mediaBytes,
+            fontFiles: fonts.length,
+            fontBytes: fonts.reduce((n, f) => n + f.bytes, 0),
         },
         missing: cap(missingRows.sort((a, b) => Number(a.superseded) - Number(b.superseded) || Number(b.tagShown) - Number(a.tagShown) || a.path.localeCompare(b.path))),
         missingTruncated: missingRows.length > TOP,
@@ -388,6 +421,12 @@ export async function buildAssets(col, files, gameDir) {
         duplicates: cap(duplicates),
         offline: { maskedMovies: cap(maskedMovies), matrixColor: cap(matrixColor), formats: offlineFormats },
         redefined: cap(redefined),
+        fonts: fonts.sort((a, b) => b.bytes - a.bytes),
+        constants: col.assetConstants.slice(0, TOP).map((c) => ({ ...c })),
+        constantsTotal: col.assetConstants.length,
+        geometry: geometry.slice(0, GEOMETRY_TOP),
+        geometryTruncated: geometry.length > GEOMETRY_TOP,
+        autoGroups,
         notes: {
             archives: archives.length,
             autoDefinedImages: auto.scanned,

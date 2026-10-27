@@ -232,7 +232,7 @@ export async function mount(host, ctx) {
                         String(l.says),
                         h("span", {},
                             l.menus ? tag(`${l.menus} 个菜单`, "primary") : null,
-                            l.terminal === "return" ? tag("return 收尾") : null,
+                            l.terminal === "return" ? tag("以 return 结束") : null,
                             l.fallsThroughTo ? tag("顺序进入下一个") : null),
                     ],
                     detail: () => props([
@@ -282,7 +282,7 @@ export async function mount(host, ctx) {
             if (data.endings.length) {
                 out.push(section("结局", data.endings.length,
                     itemList(data.endings, (e) => `${e.name}（${e.says} 句）`,
-                        (e) => h("span", { class: "an-snippet" }, e.kind === "namedEnding" ? "名称疑似结局" : "以 以 return 结束")),
+                        (e) => h("span", { class: "an-snippet" }, e.kind === "namedEnding" ? "名称疑似结局" : "以 return 结束")),
                     { note: "路线末尾的 return 在 NarraLeaf 中对应 /ending" }));
             }
 

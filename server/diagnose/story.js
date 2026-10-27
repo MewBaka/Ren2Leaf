@@ -2,7 +2,7 @@
 // label and menu structure, jump/call edges, and the stage changes that hint where a chapter ends.
 // Nothing here evaluates code; a say's text is kept in memory for samples only.
 
-import { depthMap } from "./lexer.js";
+import { depthMap, matchBracket } from "./lexer.js";
 import { isPropertyName } from "./vocab.js";
 import { assetPath, literalAt, parseCall, snippet } from "./scan.js";
 
@@ -132,7 +132,7 @@ function firstLiteral(ln) {
 
 const PERSISTENT_READ = /(?<![\w.])persistent\s*\./;
 
-function edge(col, ctx, ln, kind, to, expr) {
+function edge(col, ctx, ln, kind, to, expr, extra = null) {
     // The `if`/`while` conditions this jump sits under. One that reads persistent.* can only be
     // taken on a later playthrough, so it is not part of where a first play goes.
     const guards = (ctx.guards ?? []).filter((g) => g.condition).map((g) => `${g.word} ${g.condition}`);
@@ -141,6 +141,7 @@ function edge(col, ctx, ln, kind, to, expr) {
         line: ln.line, indent: ln.indent, screen: ctx.screen ?? null,
         guards: guards.length ? guards : null,
         persistentGuard: guards.some((g) => PERSISTENT_READ.test(g)),
+        ...extra,
     };
     col.edges.push(e);
     if (ctx.choice && !ctx.choice.target && to) ctx.choice.target = to;
@@ -310,8 +311,28 @@ export function storyStatement(col, ctx, ln, m) {
             }
         } else {
             const nm = /^([\w.]+)/.exec(hm[3]);
-            if (nm) edge(col, ctx, ln, kind, nm[1], null);
-            else col.addReview("unparsed", ctx, ln, `无法解析 ${kind} 语句`);
+            // `call achievement("1")` passes arguments to the label. One label with a parameter
+            // and an if-chain inside is how a game writes eight achievements as one place, so the
+            // arguments are what tells the call sites apart.
+            if (nm) {
+                // `m` is the masked line, where string literals are blanked out, so the arguments
+                // are read back off `ln.text` at the same offsets.
+                let at = ln.masked.indexOf(hm[3], ln.masked.indexOf(hm[0])) + nm[1].length;
+                // `call achievement ("4") from _call_achievement_1`: a space before the arguments
+                // and a `from` clause after them are both normal.
+                while (ln.masked[at] === " ") at++;
+                const close = ln.masked[at] === "(" ? matchBracket(ln.masked, at) : -1;
+                const extra = close > 0
+                    ? {
+                        arguments: snippet(ln.text.slice(at, close + 1)),
+                        argumentValues: [
+                            ...ln.strings.filter((x) => x.start > at && x.start < close).map((x) => x.value),
+                            ...(ln.masked.slice(at, close).match(/(?<![\w.~])-?\d+(?:\.\d+)?/g) ?? []),
+                        ],
+                    }
+                    : null;
+                edge(col, ctx, ln, kind, nm[1], null, extra);
+            } else col.addReview("unparsed", ctx, ln, `无法解析 ${kind} 语句`);
         }
         return {};
     }

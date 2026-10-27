@@ -152,7 +152,14 @@ function analyzeDefinition(def, col) {
         }
     }
 
-    return { meta, elements, actions, clickable, dialogue, customDisplayables, vars, unresolved };
+    // A screen that reads `persistent.*` has more than one look — before and after clearing the
+    // game, locked and unlocked — and a screenshot only ever catches one of them.
+    const persistentReads = new Set();
+    for (const item of def.body) {
+        for (const m of item.ln.masked.matchAll(/persistent\.(\w+)/g)) persistentReads.add(`persistent.${m[1]}`);
+    }
+
+    return { meta, elements, actions, clickable, dialogue, customDisplayables, vars, unresolved, persistentReads };
 }
 
 /**
@@ -163,7 +170,7 @@ export function buildScreens(col, gameMenuScreen) {
     const byName = new Map();
     const entry = (name) => {
         if (!byName.has(name)) {
-            byName.set(name, { name, category: screenCategory(name), defined: false, definitions: [], callSites: [], uses: [], usedBy: [], storeVariables: [], unresolvedNames: [], actions: {}, elements: {}, classification: null, classificationReasons: [], _a: [] });
+            byName.set(name, { name, category: screenCategory(name), defined: false, definitions: [], callSites: [], uses: [], usedBy: [], storeVariables: [], unresolvedNames: [], actions: {}, elements: {}, persistentReads: [], classification: null, classificationReasons: [], _a: [] });
         }
         return byName.get(name);
     };
@@ -203,6 +210,7 @@ export function buildScreens(col, gameMenuScreen) {
             for (const [k, v] of Object.entries(a.actions)) e.actions[k] = (e.actions[k] || 0) + v;
             for (const [k, v] of Object.entries(a.elements)) e.elements[k] = (e.elements[k] || 0) + v;
         }
+        e.persistentReads = [...new Set(e._a.flatMap((a) => [...(a.persistentReads ?? [])]))].sort();
         e.storeVariables = [...vars].map(([name, declaredBy]) => ({ name, declaredBy })).sort((x, y) => x.name.localeCompare(y.name));
         e.unresolvedNames = [...unresolved].sort();
         e.actions = sortObject(e.actions);

@@ -340,6 +340,36 @@ function pythonSection(python, skip) {
     out.push(`共 ${s.total} 条。其中字面量赋值 ${s.autoConvertible} 条，映射表里有的 API ${(python.apiUsage ?? []).reduce((n, a) => n + a.count, 0)} 处，没有现成对应的 ${s.needsAgent} 条，静态确定不了的 ${s.unresolvable} 条，界面与选项配置 ${s.configuration} 条，函数或类内部的名字 ${s.localAssigns ?? 0} 条。`, "");
     out.push("只有 label 里的 `$` 行、顶层 python 块和 `default`/`define` 会动到故事状态。函数体和类体里的名字是局部的，下面按函数折叠，不按行列。", "");
 
+    if (python.hooks?.length) {
+        out.push(h("会改写每一处演出的全局钩子"), "");
+        out.push("Ren'Py 在每条语句背后调用这些钩子，所以画面上出现的东西可能和剧本写的不一样。**这一节要先看**：漏掉一个钩子，后面每一处相关的立绘都是错的。", "");
+        out.push(mdTable(["钩子", "位置", "影响的 tag", "实现", "它读的 persistent", "原文"],
+            python.hooks.map((k) => [
+                `\`${k.hook}\``, `${k.file}:${k.line}`,
+                k.everyTag ? "所有 tag" : k.tags.length ? k.tags.join("、") : "—",
+                k.functions.map((f) => `${f.name}（${f.file}:${f.line}）`).join("、") || "—",
+                k.persistentReads.map((v) => `\`${v}\``).join("、") || "—",
+                k.expression,
+            ])), "");
+        const adjust = python.hooks.filter((k) => k.hook === "config.adjust_attributes");
+        if (adjust.length) {
+            const tags = adjust.flatMap((k) => (k.everyTag ? ["所有 tag"] : k.tags));
+            out.push(`⚠️ \`config.adjust_attributes\` 会在每次 \`show\` 时重写属性（这里影响 ${tags.join("、") || "未知的 tag"}）。`
+                + "剧本里写 `show <tag> happy` 不等于屏幕上就是 `happy`：属性会按钩子读到的值换掉。"
+                + "NarraLeaf 没有对应机制，要么在每次登场后补一段按变量分支的 `/if`，要么把变体做成不同的立绘层。", "");
+        }
+    }
+
+    if (python.galleries?.length) {
+        out.push(h("画廊目录"), "");
+        out.push(`原作用 Ren'Py 的 Gallery 插件做了 ${python.galleries.length} 组、${python.summary.galleryImages ?? 0} 张。每组一个按钮，按钮下面是这组的差分。`, "");
+        const { rows, note } = capped(python.galleries.map((g) => [
+            g.button || "—", g.images.length, g.images.slice(0, 8).join("、") + (g.images.length > 8 ? "…" : ""),
+            g.unlocks.join("、") || "—", g.conditions.join("、") || "—", `${g.file}:${g.line}`,
+        ]), MAX_ROWS, "data/inventory.json");
+        out.push(mdTable(["按钮", "张数", "图像", "解锁判定用的图", "解锁条件", "位置"], rows), note, "");
+    }
+
     const auto = python.entries.filter((e) => e.category === "autoSet");
     if (auto.length) {
         out.push(h("字面量赋值"), "");
@@ -393,9 +423,12 @@ function pythonSection(python, skip) {
 
     if (python.variables?.length) {
         out.push(h("变量"), "");
-        out.push("原作用 `default` 声明的是会变的量，`define` 的多半是常量。角色、位置、转场这类 `define`（值是 `Character(…)`、`Transform(…)` 之类）不在这张表里。", "");
+        out.push("原作用 `default` 声明的是会变的量，`define` 的多半是常量。不在这张表里的：角色、位置、转场这类 `define`（值是 `Character(…)`、`Transform(…)` 之类）；值是素材路径的 `define`（在第 8 节）；只有界面读写的名字（下面单列）。", "");
         const { rows, note } = capped(python.variables.map((v) => [v.name, v.declaredBy, `${v.file}:${v.line}`, v.writes]), MAX_ROWS, "data/inventory.json");
         out.push(mdTable(["变量", "来自", "首次出现", "写入次数"], rows), note, "");
+        if (python.interfaceVariables?.length) {
+            out.push(`只有界面用到、剧本里没有读写的 ${python.interfaceVariables.length} 个名字（界面运行时的缓存、临时状态之类，不是故事变量）：${python.interfaceVariables.slice(0, 30).map((v) => `\`${v.name}\`（${v.file}:${v.line}）`).join("、")}${python.interfaceVariables.length > 30 ? " …" : ""}`, "");
+        }
         if (python.notVariables?.length) {
             out.push(`从这张表里剔掉的 ${python.notVariables.length} 个名字（它们是角色、图像或转场的定义）：${python.notVariables.slice(0, 40).map((v) => `\`${v.name}\`${v.constructor ? `（${v.constructor}）` : ""}`).join("、")}${python.notVariables.length > 40 ? " …" : ""}`, "");
         }
@@ -515,10 +548,15 @@ function chaptersSection(flow, plan, skip) {
     }
 
     if (flow.endings.length) {
-        out.push("#### 结局", "", "这些 label 以 `return` 收尾，没有后续跳转，也不是被 `call` 进来的子流程。", "");
+        out.push("#### 结局", "", "路线在这里走完：要么以 `return` 收尾（而且不是被 `call` 进来的子流程），要么跳回标题画面。", "");
         out.push(mdTable(["label", "位置", "台词", "周目", "判断"],
             flow.endings.map((e) => [
-                e.name, `${e.file}:${e.line}`, e.says, e.newGamePlus ? "要 persistent 条件" : "", e.kind === "startEnd" ? "start 自己走到尾（主线以 call 串起来时，这里就是主线的终点）" : e.kind === "namedEnding" ? "名字像结局" : "以 return 收尾",
+                e.name, `${e.file}:${e.line}`, e.says, e.newGamePlus ? "要 persistent 条件" : "",
+                e.kind === "startEnd" ? "start 自己走到尾（主线以 call 串起来时，这里就是主线的终点）"
+                    : e.kind === "namedEnding" ? "名字像结局"
+                        : e.kind === "toTitle" ? `跳回标题画面（jump ${e.titleTarget}）`
+                            : e.kind === "restart" ? "回标题画面（MainMenu() / renpy.full_restart()）"
+                                : "以 return 收尾",
             ])), "");
     }
 
@@ -565,6 +603,12 @@ function screenshotSection(shots, screens, skip) {
     if (!shots.length) return "## 6　界面截图\n\n没有截图。界面的位置和尺寸只能从代码推，误差很大；回 Ren2Leaf 跑一次截图步骤才会有。\n";
     const out = ["## 6　界面截图", ""];
     out.push("迁移者一边玩一边截的**游戏实际画面**，元素坐标来自引擎，不是从代码推的。坐标是 `x, y, 宽, 高`，按截图分辨率。字号、颜色、描边、对齐不在截图数据里，要自己读 `screens.rpy` 和 gui 变量。", "");
+    const multi = (screens ?? []).filter((x) => x.defined && x.persistentReads?.length);
+    if (multi.length) {
+        out.push(`⚠️ 有 ${multi.length} 个界面会**随 persistent 变**，也就是同一个界面有好几套样子（通关前 / 通关后、锁定 / 解锁）。截图只能拍到当时那一套，另一套要自己从 \`screens.rpy\` 读，或者让迁移者各截一张：`, "");
+        out.push(mdTable(["界面", "它读的 persistent", "位置"],
+            multi.map((x) => [x.name, x.persistentReads.map((v) => `\`${v}\``).join("、"), x.definitions?.[0] ? `${x.definitions[0].file}:${x.definitions[0].line}` : "—"])), "");
+    }
     const screenOf = (s) => s.meta.find((m) => m[0] === "界面")?.[1] || "—";
     out.push(mdTable(["截图", "对应界面", "图", "元素", "说明"],
         shots.map((s) => [s.title, screenOf(s), `[${s.image}](${s.image})`, s.elements.length, s.note || ""])), "");
@@ -592,10 +636,15 @@ function screenshotSection(shots, screens, skip) {
             .map((e) => [
                 e.type + (e.class ? `（${e.class}）` : ""),
                 (e.rect || []).join(", "),
-                e.label || e.text || e.image || "—",
+                e.label || e.text || "—",
+                typeof e.image === "string" ? e.image : "—",
+                // `imagebutton auto "x_%s.png"` is four files; the screenshot only shows one.
+                e.states
+                    ? Object.entries(e.states).filter(([k]) => k !== "idle").map(([k, v]) => `${k}：${v}`).join("；") || "—"
+                    : "—",
                 e.location ? `${e.location[0]}:${e.location[1]}` : "—",
             ]);
-        if (rows.length) out.push(mdTable(["元素", "位置 x, y, w, h", "文字或图片", "定义处"], rows), "");
+        if (rows.length) out.push(mdTable(["元素", "位置 x, y, w, h", "文字", "图片", "其它状态的图", "定义处"], rows), "");
         for (const c of s.crops) out.push(`- 切图 ${c.label || c.type || c.n}：[${c.image}](${c.image})（${(c.rect || []).join(", ")}）`);
         if (s.crops.length) out.push("");
     }
@@ -627,6 +676,10 @@ function factsSection(facts, hooks, skip) {
     if (facts.attributedSays.lines) {
         out.push(h("说话行自带立绘属性"), "");
         out.push("原作里 `eileen happy sit \"…\"` 这种行，说这句话的同时把立绘换了。", "");
+        const rewritten = [...new Set((hooks ?? []).flatMap((k) => (k.everyTag ? ["所有 tag"] : k.tags)))];
+        if (rewritten.length) {
+            out.push(`⚠️ 其中 ${rewritten.join("、")} 这几个 tag 的属性会被第 4 节的全局钩子重写：这里写的属性不是最终上屏的属性。`, "");
+        }
         out.push(mdTable(["变量", "处数", "示例位置"],
             facts.attributedSays.speakers.map((x) => [x.name, x.count, x.sites.slice(0, 3).join("，")])), "");
         if (facts.attributedSays.attributes.length) {
@@ -664,9 +717,18 @@ function factsSection(facts, hooks, skip) {
             out.push(`原作把 \`achievement.grant\` 包在 ${ach.wrappers.map((w) => `\`${w}()\``).join("、")} 里，下面的解锁点算的是这个函数的调用处。`, "");
         }
         if (ach.declared.length) {
-            out.push(`\`achievement.register\` 声明了 ${ach.declared.length} 个：${ach.declared.map((a) => a.name || "?").join("、")}`, "");
+            out.push(`\`achievement.register\` 声明了 ${ach.declared.length} 个：${ach.declared.map((a) => (a.steam ? `${a.name || "?"}（Steam: \`${a.steam}\`）` : a.name || "?")).join("、")}`, "");
+        }
+        if (ach.unlockPoints?.length) {
+            out.push("**解锁点在调用处，不在 `achievement.grant` 那一行。** 原作把成就写成一个带参数的 label，参数决定解锁哪一个：", "");
+            out.push(mdTable(["成就 ID", "Steam ID", "解锁位置", "怎么调用的", "走的分支", "grant 在", "判定"],
+                ach.unlockPoints.slice(0, MAX_ROWS).map((u) => [
+                    u.name, u.steam || "—", u.site, u.arguments || "—", u.branch || "—", u.grantedAt,
+                    u.certain ? "参数对上了" : "参数静态对不上，要自己核",
+                ])), "");
         }
         if (ach.granted.length) {
+            out.push(ach.unlockPoints?.length ? "按 `achievement.grant` 本身的位置算是这样：" : "", "");
             out.push(mdTable(["成就", "解锁处数", "怎么解锁的", "位置"],
                 ach.granted.slice(0, MAX_ROWS).map((a) => [a.name, a.grants, (a.via ?? []).join("、"), a.sites.slice(0, 3).join("，")])), "");
         }
@@ -701,6 +763,34 @@ function assetsSection(assets, skip) {
         + `。\`show\`/\`scene\` 用到 ${a.shownTags} 个 tag。game/ 下媒体文件 ${a.mediaFiles} 个，共 ${mb(a.mediaBytes)}。`, "");
     if (assets.notes?.archives) {
         out.push(`另有 ${assets.notes.archives} 个 \`.rpa\` 归档，本工具不解包；下面说「没有」的文件有可能在归档里。`, "");
+    }
+
+    if (assets.constants?.length) {
+        out.push(h("给文件起的名字"), "");
+        out.push(`\`define xxx = "audio/bgm/a.ogg"\` 这种常量 ${assets.constantsTotal} 个：它们是素材的名字，不是故事变量，所以不在第 4 节的变量表里。剧本里 \`play music bgm_title\` 走的就是这些。`, "");
+        const { rows, note } = capped(assets.constants.map((c) => [c.name, c.path, `${c.file}:${c.line}`]), MAX_ROWS, "data/inventory.json");
+        out.push(mdTable(["名字", "文件", "位置"], rows), note, "");
+    }
+
+    if (assets.geometry?.length) {
+        out.push(h("图像定义里带的摆放和变换"), "");
+        out.push("画面对不对就看这张表：`xzoom` 为负是左右镜像，`zoom` 不是 1 的要按比例缩放，`align`/`offset` 决定它落在哪里。这些写在 `image` 定义里，剧本里的 `show` 看不出来。", "");
+        const { rows, note } = capped(assets.geometry.map((d) => [
+            d.name,
+            d.statement === "layeredimage" ? "layeredimage" : d.constructor || "image",
+            d.proxyOf ? `代理 ${d.proxyOf}` : d.source || (d.paths.length ? d.paths.join("、") : "—"),
+            d.properties.map((x) => `${x.name} ${x.value}`).join("；") || "—",
+            d.mirrored ? "是" : "",
+            d.groups.length
+                ? d.groups.map((g) => `${g.name}${g.auto ? "（auto）" : ""}${g.attributeCount ? `：${g.attributes.join("、")}${g.attributeCount > g.attributes.length ? "…" : ""}` : ""}`).join("；")
+                : d.attributes.length ? d.attributes.join("、") : "—",
+            `${d.file}:${d.line}`,
+        ]), MAX_ROWS, "data/inventory.json");
+        out.push(mdTable(["image 名", "写法", "图片", "变换", "镜像", "分组 / 属性", "位置"], rows), note, "");
+        if (assets.geometryTruncated) out.push(`定义太多，这里只列了前 ${assets.geometry.length} 条，全部在 \`data/inventory.json\` 里。`, "");
+        if (assets.autoGroups?.length) {
+            out.push(`⚠️ 有 ${assets.autoGroups.length} 个 \`group … auto\` 分组：auto 会把同前缀的图**全部**收进来，定义里没写出来的表情也在里面（${assets.autoGroups.slice(0, 4).map((g) => `${g.image}.${g.group}`).join("、")}${assets.autoGroups.length > 4 ? "…" : ""}）。按定义里列出的属性建角色会漏，要去 \`game/images/\` 下按前缀数一遍。`, "");
+        }
     }
 
     const beforeFindings = out.length;
@@ -777,6 +867,16 @@ function assetsSection(assets, skip) {
         }
     }
 
+    if (assets.fonts?.length) {
+        out.push(h("字体文件"), "");
+        out.push(`${a.fontFiles} 个，共 ${mb(a.fontBytes)}。`
+            + (a.fontBytes >= 4 * 1024 * 1024
+                ? "**这是要子集化的量**：中文字体整套几 MB 到十几 MB，网页端只需要游戏里真正出现的字，整套打进去会让首次加载很慢。"
+                : ""), "");
+        out.push(mdTable(["文件", "大小"], assets.fonts.slice(0, MAX_ROWS).map((f) => [f.path, mb(f.bytes)])), "");
+        out.push("哪个界面、哪段台词用哪个字体，要自己读 `gui.rpy` 和 `screens.rpy` 里的 `font`、`gui.*_font`。", "");
+    }
+
     if (assets.redefined.length) {
         out.push(h("同一个 image 名定义了多次"), "");
         out.push("Ren'Py 取最后一条。", "");
@@ -807,10 +907,10 @@ function reviewSection(inventory) {
         ["哪一行落到哪一张立绘", "第 8 节只按 tag 比对；一个 tag 下几十条只差属性的定义，哪一行用哪一条要运行时才知道"],
         ["ATL 动画本身", "transform 的内容只统计了用在哪里，没有读它做了什么；带 `repeat` 的循环只按参数数值猜"],
         ["翻译目录", "`tl/` 里是真译文还是只有引擎字符串"],
-        ["字体", "界面和台词用了哪些字体文件"],
+        ["字体怎么用", "第 8 节列了有哪些字体文件和多大；哪个界面、哪段台词用哪一个，要自己读 `gui.rpy` 和 `screens.rpy`"],
         ["界面文字样式", "截图给的是坐标和文字，字号、颜色、描边、对齐要自己从 `screens.rpy` 和 gui 变量里读"],
         ["按钮动作", "每个按钮的 `action`（`ShowMenu(…)`、`Start()` 之类）没有逐个列出，截图一节只给了元素"],
-        ["画廊与回想", "有哪些条目、各自的解锁条件"],
+        ["回想与播放模式", "画廊的目录在第 4 节（Gallery 对象）；回想（replay）、音乐鉴赏这类另做的模式没有展开"],
         [".rpa / .rpyc", "归档和只有字节码的文件没有解包，里面的脚本和界面不在本文件里"],
     ]), "");
     return `${out.join("\n")}\n`;

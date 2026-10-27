@@ -8,7 +8,7 @@
 //   unresolvable the name or target is built at runtime; static analysis cannot say
 //   drop         engine bookkeeping with no NarraLeaf equivalent
 
-import { literalAt, parseCall, snippet } from "./scan.js";
+import { literalAt, noteHook, parseCall, snippet } from "./scan.js";
 import { byLocation } from "./screens.js";
 
 export const ENTRY_LIMIT = 800;
@@ -85,7 +85,9 @@ function assignEntry(col, ctx, ln, from, stmt, base) {
     const name = am[1].trim();
     const ns = configRoot(name);
     if (ns) {
-        const lit = literalAt(ln, ln.masked.indexOf(stmt, from) + am[0].length, ln.masked.length);
+        const valueFrom = ln.masked.indexOf(stmt, from) + am[0].length;
+        noteHook(col, ctx, ln, name, valueFrom);
+        const lit = literalAt(ln, valueFrom, ln.masked.length);
         return { ...base, kind: "config", target: name, namespace: ns, category: "drop", suggestion: null, reason: CONFIG_REASON, value: lit.ok ? lit.value : null };
     }
     if (/[,()]/.test(name)) {
@@ -132,8 +134,11 @@ export function classifyPython(col, ctx, ln, { from = 0, context = "python", nes
     const base = {
         context, file: ctx.file, line: ln.line, endLine: ln.endLine,
         label: ctx.label ?? null, screen: ctx.screen ?? null, func: ctx.func ?? null,
-        inClass: ctx.pyClass ?? null,
+        inClass: ctx.pyClass ?? null, indent: ln.indent,
         nested: nested || !!ctx.func || !!ctx.pyClass,
+        // The `if`/`while` conditions this line sits under: an `if who == "1"` around a grant is
+        // what says which call site unlocks which achievement.
+        guards: (ctx.guards ?? []).filter((g) => g.condition).map((g) => `${g.word} ${g.condition}`),
         snippet: snippet(ln.text.slice(from)),
     };
 
@@ -270,6 +275,63 @@ export function buildPython(col) {
         };
     }).sort((a, b) => b.calls - a.calls || byLocation(a, b));
 
+    // A hook's own body: which persistent flags decide what it does, and where it is defined.
+    // an adjuster rewriting one of a sprite.s attributes from a `persistent.*` flag is the shape
+    // this catches — the hardest kind of thing to notice by reading the script.
+    const hooks = col.hooks.map((hook) => {
+        const resolved = [];
+        const reads = new Set();
+        for (const name of hook.names) {
+            const d = defined.get(name);
+            if (!d) continue;
+            const body = entries.filter((e) => e.func === name && e.file === d.file);
+            for (const e of body) {
+                for (const m of String(e.snippet ?? "").matchAll(/persistent\.(\w+)/g)) reads.add(`persistent.${m[1]}`);
+            }
+            resolved.push({ name, file: d.file, line: d.line, bodyLines: body.length });
+        }
+        return {
+            ...hook,
+            names: undefined,
+            functions: resolved,
+            persistentReads: [...reads].sort(),
+        };
+    });
+
+    // Ren'Py's Gallery plugin: `g = Gallery()` and then `g.button` / `g.image` per CG. Read in
+    // source order, those calls are the gallery's own table of contents — which is what the port
+    // needs, not eight hundred "a call to an unknown function" rows.
+    const galleryNames = new Set(entries
+        .filter((e) => /(?:^|=\s*)Gallery\s*\(/.test(String(e.expression ?? e.snippet ?? "")) && (e.variable || e.target))
+        .map((e) => e.variable || e.target));
+    const galleries = [];
+    if (galleryNames.size) {
+        const open = new Map();
+        for (const e of entries) {
+            const callee = e.callee ?? "";
+            const dot = callee.indexOf(".");
+            if (dot < 0) continue;
+            const object = callee.slice(0, dot);
+            const method = callee.slice(dot + 1);
+            if (!galleryNames.has(object)) continue;
+            e.category = "mapped";
+            e.suggestion = "画廊目录";
+            e.reason = "Ren'Py 画廊插件的调用";
+            const arg = /["']([^"']+)["']/.exec(String(e.snippet ?? ""))?.[1] ?? null;
+            if (method === "button") {
+                const group = { gallery: object, button: arg, images: [], unlocks: [], conditions: [], file: e.file, line: e.line };
+                galleries.push(group);
+                open.set(object, group);
+                continue;
+            }
+            const group = open.get(object);
+            if (!group) continue;
+            if (method === "image") group.images.push(arg ?? snippet(e.snippet ?? ""));
+            else if (method.startsWith("unlock")) group.unlocks.push(arg ?? snippet(e.snippet ?? ""));
+            else if (method === "condition") group.conditions.push(arg ?? snippet(e.snippet ?? ""));
+        }
+    }
+
     const apiUsage = [];
     for (const row of API_MAP) {
         const hits = entries.filter((e) => e.kind === "knownApi" && e.api === row.api);
@@ -280,13 +342,44 @@ export function buildPython(col) {
         });
     }
 
+    // A name only the interface uses. `cached_duration = {}` in `init python`, read by the music
+    // screen and by nothing in the script, is interface bookkeeping: offering it as a `/set` row
+    // sends the agent after a variable the story never has.
+    const inScreens = new Set();
+    for (const def of col.screenDefs) {
+        for (const item of def.body) {
+            for (const m of item.ln.masked.matchAll(/(?<![\w.$])[A-Za-z_]\w*/g)) inScreens.add(m[0]);
+        }
+    }
+    const inStory = new Set();
+    for (const e of entries) {
+        if (!e.label && !e.screen) continue;
+        if (e.variable) inStory.add(e.variable);
+        for (const m of String(e.snippet ?? "").matchAll(/(?<![\w.$])[A-Za-z_]\w*/g)) if (e.label) inStory.add(m[0]);
+    }
+    const interfaceOnly = new Set();
+    for (const e of entries) {
+        if (!e.variable || e.label || e.nested) continue;
+        if (e.context !== "initPython" && e.context !== "python" && e.context !== "pyFile") continue;
+        if (!inScreens.has(e.variable) || inStory.has(e.variable)) continue;
+        interfaceOnly.add(e.variable);
+        e.category = "drop";
+        e.suggestion = null;
+        e.reason = "界面运行时使用的名称，剧本中无读写操作";
+    }
+
     // `define x = Character(...)`, a position, a transition: a name, but not a story variable.
     const notVariables = [...col.store.keys()].filter((n) => col.displayables.has(n) || col.transforms.has(n));
     const skip = new Set(notVariables);
     const writes = countBy(entries.filter((e) => e.variable), "variable");
+    const variableRow = ([name, v]) => ({ name, declaredBy: v.declaredBy, file: v.file, line: v.line, writes: writes[name] || 0 });
     const variables = [...col.store.entries()]
-        .filter(([name]) => !skip.has(name))
-        .map(([name, v]) => ({ name, declaredBy: v.declaredBy, file: v.file, line: v.line, writes: writes[name] || 0 }))
+        .filter(([name]) => !skip.has(name) && !interfaceOnly.has(name))
+        .map(variableRow)
+        .sort((a, b) => a.name.localeCompare(b.name));
+    const interfaceVariables = [...col.store.entries()]
+        .filter(([name]) => !skip.has(name) && interfaceOnly.has(name))
+        .map(variableRow)
         .sort((a, b) => a.name.localeCompare(b.name));
     const persistent = [...col.persistent.values()]
         .map((v) => ({ ...v, value: v.value === undefined ? null : v.value, hasInitial: v.value !== undefined }))
@@ -307,16 +400,23 @@ export function buildPython(col) {
             customStatements: custom.length,
             unknownStatements: unknownStatements.reduce((n, u) => n + u.count, 0),
             variables: variables.length,
+            interfaceVariables: interfaceVariables.length,
             persistent: persistent.length,
             localAssigns: entries.filter((e) => e.kind === "localAssign").length,
+            hooks: hooks.length,
+            galleryButtons: galleries.length,
+            galleryImages: galleries.reduce((n, g) => n + g.images.length, 0),
             truncated: entries.length > ENTRY_LIMIT,
         },
         entries: entries.slice(0, ENTRY_LIMIT),
+        hooks,
+        galleries,
         apiUsage,
         functions,
         customStatements: custom.sort(byLocation),
         unknownStatements,
         variables,
+        interfaceVariables,
         notVariables: notVariables.sort((a, b) => a.localeCompare(b)).map((name) => ({ name, constructor: col.displayables.get(name) ?? (col.transforms.has(name) ? "transform" : null) })),
         persistent,
         modules: col.pyModules.sort((a, b) => a.file.localeCompare(b.file)),

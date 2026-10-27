@@ -102,14 +102,109 @@ function achievements(col) {
         else if ((e.kind === "customCall" || e.kind === "unknownCall") && wrappers.has(e.callee)) note(firstString(e.snippet), site, e.callee);
     }
     const declared = entries.filter((e) => e.api === "achievement.register")
-        .map((e) => ({ name: firstString(e.snippet), file: e.file, line: e.line }));
+        .map((e) => ({
+            name: firstString(e.snippet), file: e.file, line: e.line,
+            // `achievement.register("NEW_1_3", steam="NEW_ACHIEVEMENT_1_3")`: the Steam side has
+            // its own id, and that is the one the store shows.
+            steam: /steam\s*=\s*["']([^"']+)["']/.exec(String(e.snippet ?? ""))?.[1] ?? null,
+        }));
+    const steamOf = new Map(declared.filter((d) => d.name && d.steam).map((d) => [d.name, d.steam]));
     return {
         wrappers: [...wrappers],
         declared,
+        unlockPoints: unlockPoints(col, entries, steamOf),
         granted: [...grants.values()]
             .map((r) => ({ ...r, via: [...r.via] }))
             .sort((a, b) => b.grants - a.grants || a.name.localeCompare(b.name)),
     };
+}
+
+/** The parameter names of `label achievement(who, n=1)`. */
+function labelParams(text) {
+    return String(text ?? "").replace(/^\(|\)$/g, "").split(",")
+        .map((p) => p.trim().split("=")[0].trim()).filter((p) => /^\w+$/.test(p));
+}
+
+/**
+ * Where the player actually unlocks each achievement. A game that writes one
+ * `label achievement(who)` with an if-chain inside has its unlock points at the `call` sites, not
+ * at the `achievement.grant` line, and the argument is what says which achievement each one is.
+ */
+/**
+ * The `if` conditions a python line sits under. Inside a `python:` block the branches are python,
+ * not Ren'Py statements, so they are reconstructed from indentation: walking back up the file,
+ * each `if`/`elif` at a smaller indent than the last one is one more condition around this line.
+ */
+function pythonGuards(byFile, e) {
+    const rows = byFile.get(e.file) ?? [];
+    const out = [];
+    let indent = e.indent ?? 0;
+    for (let i = rows.indexOf(e) - 1; i >= 0 && indent > 0; i--) {
+        const r = rows[i];
+        if ((r.indent ?? 0) >= indent) continue;
+        if (r.kind === "control" && /^(if|elif)\b/.test(String(r.snippet ?? ""))) out.push(r.snippet);
+        indent = r.indent ?? 0;
+    }
+    return out;
+}
+
+function unlockPoints(col, entries, steamOf) {
+    const paramsOf = new Map();
+    for (const l of col.labels) if (l.parameters) paramsOf.set(l.name, labelParams(l.parameters));
+    const byFile = new Map();
+    for (const e of entries) {
+        if (!byFile.has(e.file)) byFile.set(e.file, []);
+        byFile.get(e.file).push(e);
+    }
+    for (const list of byFile.values()) list.sort((a, b) => a.line - b.line);
+    const guardsOf = (e) => ((e.guards ?? []).length ? e.guards : pythonGuards(byFile, e));
+
+    // Which parameter values a guarded branch in this label already claims, so an unguarded
+    // `else` branch is not credited to a call site another branch answers.
+    const claimed = new Map();
+    for (const e of entries) {
+        if (e.api !== "achievement.grant" || !e.label) continue;
+        for (const g of guardsOf(e)) {
+            const m = /(\w+)\s*==\s*["']?([\w.-]+)["']?/.exec(g);
+            if (m) claimed.set(`${e.label} ${m[1]} ${m[2]}`, true);
+        }
+    }
+    const rows = [];
+    for (const e of entries) {
+        if (e.api !== "achievement.grant" || !e.label) continue;
+        const params = paramsOf.get(e.label);
+        const calls = col.edges.filter((x) => x.to === e.label && (x.kind === "call" || x.kind === "renpy.call" || x.kind === "Call()"));
+        if (!params?.length || !calls.length) continue;
+        const name = firstString(e.snippet);
+        // The equalities this grant sits under, as parameter → value.
+        const wanted = new Map();
+        let opaque = false;
+        for (const g of guardsOf(e)) {
+            const m = /(\w+)\s*==\s*["']?([\w.-]+)["']?/.exec(g);
+            if (m && params.includes(m[1])) wanted.set(m[1], m[2]);
+            else if (/^(if|elif|while)\b/.test(g)) opaque = true;
+        }
+        for (const c of calls) {
+            const values = c.argumentValues ?? [];
+            const bound = new Map(params.map((p, i) => [p, values[i]]));
+            let matches = true;
+            for (const [p, v] of wanted) if (String(bound.get(p)) !== String(v)) matches = false;
+            // An unguarded grant is the `else`: it only runs for arguments no branch claims.
+            if (matches && !wanted.size) {
+                matches = ![...bound].some(([p, v]) => claimed.has(`${e.label} ${p} ${v}`));
+            }
+            if (!matches) continue;
+            rows.push({
+                name: name ?? "（名字不是字面量）", steam: steamOf.get(name) ?? null,
+                site: `${c.file}:${c.line}`, label: e.label,
+                arguments: c.arguments ?? null,
+                grantedAt: `${e.file}:${e.line}`,
+                certain: !opaque && wanted.size > 0 && values.length > 0,
+                branch: wanted.size ? [...wanted].map(([p, v]) => `${p} == ${v}`).join(" 且 ") : "其它（else）",
+            });
+        }
+    }
+    return rows.sort((a, b) => a.name.localeCompare(b.name) || a.site.localeCompare(b.site));
 }
 
 /** `show x at t(9999)`: a transform whose argument is big enough to be a loop that never ends. */
@@ -145,6 +240,7 @@ export function buildFacts(col) {
             longLoops: col.atClauses.filter((a) => a.numbers.some((n) => n >= LONG_LOOP)).length,
             achievements: ach.declared.length,
             achievementUnlocks: ach.granted.reduce((n, a) => n + a.grants, 0),
+            achievementUnlockPoints: ach.unlockPoints.length,
             audioStatements: col.audio.length,
             audioFiles: distinctAudio.size,
         },
