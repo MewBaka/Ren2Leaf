@@ -167,6 +167,7 @@ export async function mount(host, ctx) {
 
     step = await mountScanStep(host, ctx, {
         key: "flow",
+        documentStep: "flow",
         async onLoaded() {
             const res = await api.get(`/api/games/${game.id}/chapters/decisions`);
             plan = res.chapters;

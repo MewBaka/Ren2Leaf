@@ -743,6 +743,25 @@ button:disabled {
 .welcome-link { color: rgb(var(--ui-primary-ink)); text-decoration: none; overflow-wrap: anywhere; }
 .welcome-link:hover { text-decoration: underline; }
 
+/* The step's own switch: whether what it found goes into the package. */
+.an-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 10px 0 8px;
+    height: 28px;
+    border: 1px solid var(--ui-edge);
+    border-radius: var(--ui-radius-md);
+    color: rgb(var(--ui-fg-muted));
+    font-size: var(--ui-text-xs);
+    cursor: pointer;
+    user-select: none;
+}
+
+.an-toggle:hover { border-color: rgb(var(--ui-fg-subtle) / 0.5); }
+.an-toggle input { margin: 0; accent-color: rgb(var(--ui-primary)); }
+.an-toggle.is-off { border-color: rgb(var(--ui-warning) / 0.45); color: rgb(var(--ui-warning)); }
+
 /* 清理缓存: one row per group, its size on the right, what it costs to lose underneath. */
 .cache-total {
     display: flex;

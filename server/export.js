@@ -12,7 +12,7 @@ import fs from "node:fs";
 import fsp from "node:fs/promises";
 import path from "node:path";
 import { HttpError, readJson } from "./http.js";
-import { readDecisions, decisionStats, readChapters, chapterStats, chapterIssues } from "./decisions.js";
+import { readDecisions, decisionStats, readChapters, chapterStats, chapterIssues, readDocument } from "./decisions.js";
 import { resolveGameDirs } from "./diagnose/index.js";
 import { resolvePortraits } from "./portraits.js";
 import { pickFolder } from "./capture.js";
@@ -72,6 +72,14 @@ function capped(list, limit, where) {
 
 const yesNo = (v) => (v ? "是" : "否");
 
+/**
+ * A section the migrator chose not to hand over. The heading stays, so the numbering holds and the
+ * silence is visibly deliberate rather than a gap in the scan.
+ */
+function omitted(heading, what) {
+    return `${heading}\n\n迁移者没有把这一节交出来：${what}由你自己读源码判断。\n`;
+}
+
 /** Numbers the subsections of one section in the order they are actually written. */
 function numbering(section) {
     let n = 0;
@@ -114,7 +122,8 @@ export function sourceFingerprint(gamePath) {
 
 // ---------------------------------------------------------------- the document
 
-function headerSection(game, inventory, fingerprint) {
+function headerSection(game, inventory, fingerprint, skip = {}) {
+    const left = (step, text) => (skip[step] ? `${text}（迁移者留给你判断，本节没有内容）` : text);
     const info = inventory?.game ?? {};
     const r = info.resolution;
     return [
@@ -149,12 +158,12 @@ function headerSection(game, inventory, fingerprint) {
         "",
         mdTable(["节", "内容"], [
             ["2", "游戏规格：分辨率、引擎版本、源码完整度"],
-            ["3", "说话人：每个 Character 变量的证据，和迁移者的分类"],
-            ["4", "Python 逻辑：每一处 `$`、python 块、非字面量的 define/default"],
-            ["5", "流程与章节：迁移者定的章节分组，以及 label 图、菜单、结局"],
-            ["6", "界面截图：游戏实际跑出来的画面和元素坐标"],
-            ["7", "文本与演出：文字标签、插值、转场、transform、成就、persistent"],
-            ["8", "资产：引用不到的文件、格式不符、重复素材、要离线处理的素材"],
+            ["3", left("speakers", "说话人：每个 Character 变量的证据，和迁移者的分类")],
+            ["4", left("diagnose", "Python 逻辑：每一处 `$`、python 块、非字面量的 define/default")],
+            ["5", left("flow", "流程与章节：迁移者定的章节分组，以及 label 图、菜单、结局")],
+            ["6", left("capture", "界面截图：游戏实际跑出来的画面和元素坐标")],
+            ["7", left("diagnose", "文本与演出：文字标签、插值、转场、transform、成就、persistent")],
+            ["8", left("diagnose", "资产：引用不到的文件、格式不符、重复素材、要离线处理的素材")],
             ["9", "静态扫描确定不了的，以及本工具没有检查的"],
             ["10", "这份包里的文件"],
         ]),
@@ -189,7 +198,8 @@ function headerSection(game, inventory, fingerprint) {
 
 const NPC_GROUP = "NPC / 别名";
 
-function speakersSection(speakers, decisions, portraits) {
+function speakersSection(speakers, decisions, portraits, skip) {
+    if (skip) return omitted("## 3　说话人", "原作有哪些 Character 变量、谁是谁、怎么分组，");
     if (!speakers) return "## 3　说话人\n\n这份扫描结果里没有说话人数据，回 Ren2Leaf 重新诊断一次就有了。\n";
     const answers = decisions?.speakers ?? {};
     const s = speakers.summary;
@@ -321,7 +331,8 @@ function speakersSection(speakers, decisions, portraits) {
     return `${out.join("\n")}\n`;
 }
 
-function pythonSection(python) {
+function pythonSection(python, skip) {
+    if (skip) return omitted("## 4　Python 逻辑", "每一处 `$`、python 块和 define/default 做了什么，");
     if (!python) return "## 4　Python 逻辑\n\n这份扫描结果里没有 Python 数据，回 Ren2Leaf 重新诊断一次就有了。\n";
     const s = python.summary;
     const h = numbering(4);
@@ -433,7 +444,8 @@ const MODE_TEXT = {
     },
 };
 
-function chaptersSection(flow, plan) {
+function chaptersSection(flow, plan, skip) {
+    if (skip) return omitted("## 5　流程与章节", "剧本怎么分章、label 怎么跳、哪里是结局，");
     // `files` arrived with the chapter step; an inventory from before it is too old to use here.
     if (!flow?.files) return "## 5　流程与章节\n\n这份扫描结果里没有流程数据，回 Ren2Leaf 重新诊断一次就有了。\n";
     const s = flow.summary;
@@ -548,7 +560,8 @@ function coverage(shots, screens) {
         .sort((a, b) => Number(a.shot) - Number(b.shot) || a.name.localeCompare(b.name));
 }
 
-function screenshotSection(shots, screens) {
+function screenshotSection(shots, screens, skip) {
+    if (skip) return omitted("## 6　界面截图", "界面长什么样、元素在哪里，");
     if (!shots.length) return "## 6　界面截图\n\n没有截图。界面的位置和尺寸只能从代码推，误差很大；回 Ren2Leaf 跑一次截图步骤才会有。\n";
     const out = ["## 6　界面截图", ""];
     out.push("迁移者一边玩一边截的**游戏实际画面**，元素坐标来自引擎，不是从代码推的。坐标是 `x, y, 宽, 高`，按截图分辨率。字号、颜色、描边、对齐不在截图数据里，要自己读 `screens.rpy` 和 gui 变量。", "");
@@ -590,7 +603,8 @@ function screenshotSection(shots, screens) {
 }
 
 /** Section 7: what the dialogue and the staging are made of, counted. */
-function factsSection(facts) {
+function factsSection(facts, hooks, skip) {
+    if (skip) return omitted("## 7　文本与演出", "台词里的标签、转场、transform、成就和 persistent，");
     if (!facts) return "## 7　文本与演出\n\n这份扫描结果里没有这部分数据，回 Ren2Leaf 重新诊断一次就有了。\n";
     const f = facts.summary;
     const h = numbering(7);
@@ -675,7 +689,8 @@ function mb(bytes) {
 }
 
 /** What the script points at, and what is in game/. Facts only: no file is edited or converted. */
-function assetsSection(assets) {
+function assetsSection(assets, skip) {
+    if (skip) return omitted("## 8　资产", "引用到的文件在不在、格式对不对、有没有重复，");
     if (!assets) return "## 8　资产\n\n这份扫描结果里没有这部分数据，回 Ren2Leaf 重新诊断一次就有了。\n";
     const a = assets.summary;
     const h = numbering(8);
@@ -816,6 +831,7 @@ export function collect(game) {
     const inventory = readJsonFile(path.join(workDir, "inventory.json"));
     const decisions = readDecisions(workDir);
     const chapters = readChapters(workDir);
+    const document = readDocument(workDir);
     // Only the characters the migrator kept get their picture in the package.
     const speakers = inventory?.extensions?.speakers?.speakers ?? [];
     const wanted = speakers.filter((sp) => ["main", "pov", "npc"].includes(decisions.speakers?.[sp.variable]?.role));
@@ -851,7 +867,7 @@ export function collect(game) {
         });
     }
     return {
-        inventory, decisions, chapters, portraits,
+        inventory, decisions, chapters, document, portraits,
         shots: shots.slice(0, MAX_SCREENS),
         fingerprint: sourceFingerprint(game.path),
     };
@@ -860,6 +876,7 @@ export function collect(game) {
 /** What is ready and what is missing, for the step header. */
 export function readiness(game, parts) {
     const { inventory, decisions, chapters, shots } = parts;
+    const skip = parts.document?.skip ?? {};
     const issues = chapterIssues(chapters ?? { chapters: [] }, inventory?.extensions?.flow?.files ?? []);
     const stats = decisionStats(decisions);
     const plan = chapterStats(chapters ?? { chapters: [], mode: null, updatedAt: null });
@@ -881,21 +898,29 @@ export function readiness(game, parts) {
             required: false,
         },
     ];
-    return { steps, issues, ready: steps.every((s) => !s.required || s.done) };
+    for (const step of steps) {
+        if (!skip[step.id]) continue;
+        step.skipped = true;
+        step.done = true;
+        step.detail = "不写入文档，交给 Agent 判断";
+    }
+    return { steps, issues, skip, ready: steps.every((s) => !s.required || s.done) };
 }
 
 /** The document the agent reads. Pure: it writes nothing. */
 export function buildDocument(game, parts, files) {
     const { inventory, decisions, chapters, portraits, shots, fingerprint } = parts;
     const ext = inventory?.extensions ?? {};
+    // What the migrator left to the agent. The scan still ran; only the telling is skipped.
+    const skip = parts.document?.skip ?? {};
     return [
-        headerSection(game, inventory, fingerprint ?? null),
-        speakersSection(ext.speakers, decisions, portraits ?? new Map()),
-        pythonSection(ext.python),
-        chaptersSection(ext.flow, chapters),
-        screenshotSection(shots, inventory?.screens ?? []),
-        factsSection(ext.facts),
-        assetsSection(ext.assets),
+        headerSection(game, inventory, fingerprint ?? null, skip),
+        speakersSection(ext.speakers, decisions, portraits ?? new Map(), skip.speakers),
+        pythonSection(ext.python, skip.diagnose),
+        chaptersSection(ext.flow, chapters, skip.flow),
+        screenshotSection(shots, inventory?.screens ?? [], skip.capture),
+        factsSection(ext.facts, ext.python?.hooks ?? [], skip.diagnose),
+        assetsSection(ext.assets, skip.diagnose),
         reviewSection(inventory),
         filesSection(files),
         `---\n\n由 Ren2Leaf 生成于 ${new Date().toISOString()}（补充包格式 v${PACKAGE_VERSION}）\n`,

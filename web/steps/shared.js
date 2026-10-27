@@ -89,6 +89,40 @@ export function expandable(tbody, { key, open, onToggle, cells, detail, columns 
     if (open) tbody.append(h("tr", { class: "an-detail" }, h("td", { colspan: String(columns) }, detail())));
 }
 
+/** The migrator's answer to "does this step go into the package?", loaded once per step. */
+export async function loadDocumentPrefs(api, game) {
+    try {
+        return (await api.get(`/api/games/${game.id}/document/decisions`)).document ?? { skip: {} };
+    } catch {
+        return { skip: {} };
+    }
+}
+
+/**
+ * The switch every step carries. Off does not throw the step's work away: the document says this
+ * part was left to the agent, which then reads the source itself.
+ */
+export function documentToggle({ api, game, prefs, step, redraw }) {
+    const skipped = !!prefs?.skip?.[step];
+    const input = h("input", { type: "checkbox", checked: !skipped });
+    input.addEventListener("change", async () => {
+        const skip = !input.checked;
+        input.disabled = true;
+        try {
+            const res = await api.put(`/api/games/${game.id}/document/decisions`, { skip: { [step]: skip } });
+            if (prefs) prefs.skip = res.document.skip;
+        } catch {
+            input.checked = !input.checked;
+        }
+        input.disabled = false;
+        redraw?.();
+    });
+    return h("label", {
+        class: `an-toggle${skipped ? " is-off" : ""}`,
+        title: "关闭此项后，该步骤的内容将不写入补充包，由 Agent 自行分析源码判断",
+    }, input, h("span", {}, skipped ? "不写入补充包，由 Agent 自行判断" : "写入补充包"));
+}
+
 export function chips(options, value, onPick) {
     return h("div", { class: "an-chips" }, options.map((o) =>
         h("button", {
@@ -131,7 +165,7 @@ export function emptyState(icon, title, action) {
  * @param {string} opts.key   the key under inventory.extensions
  * @param {Function} opts.render  (data, inventory, api) => Node[]
  */
-export async function mountScanStep(host, ctx, { key, title, render, onLoaded }) {
+export async function mountScanStep(host, ctx, { key, title, render, onLoaded, documentStep }) {
     ensureCss(new URL("./analysis.css", import.meta.url).href);
     const { game, api } = ctx;
     const root = h("div", { class: "an" });
@@ -140,6 +174,7 @@ export async function mountScanStep(host, ctx, { key, title, render, onLoaded })
     let inventory = null;
     let busy = false;
     let error = null;
+    let prefs = { skip: {} };
 
     const rescan = async () => {
         busy = true;
@@ -163,6 +198,7 @@ export async function mountScanStep(host, ctx, { key, title, render, onLoaded })
         const bar = toolbar(
             h("button", { type: "button", class: "btn btn-quiet btn-sm", disabled: busy, onclick: rescan },
                 busy ? "正在扫描" : "重新扫描"),
+            documentStep ? documentToggle({ api, game, prefs, step: documentStep, redraw: draw }) : null,
             h("span", { class: "an-spacer" }),
             error
                 ? h("span", { class: "an-value is-danger" }, error)
@@ -184,6 +220,7 @@ export async function mountScanStep(host, ctx, { key, title, render, onLoaded })
     }
 
     try {
+        if (documentStep) prefs = await loadDocumentPrefs(api, game);
         ({ inventory } = await api.get(`/api/games/${game.id}/diagnose`));
         if (inventory) await onLoaded?.(inventory);
     } catch (err) {

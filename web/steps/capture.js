@@ -5,6 +5,7 @@
 // The screens step ① found that no shot covers yet are listed beside the shots, as a checklist.
 
 import { cropGallery, openCropEditor } from "./crop-editor.js";
+import { documentToggle, loadDocumentPrefs } from "./shared.js";
 
 function h(tag, attrs = {}, ...children) {
     const el = document.createElement(tag);
@@ -54,16 +55,19 @@ export async function mount(host, ctx) {
         source: null,
         disposed: false,
         bust: Date.now(),
+        document: { skip: {} },
     };
     const root = h("div", { class: "cap" });
     host.append(root);
 
     async function load() {
-        const [info, cap, scan] = await Promise.all([
+        const [info, cap, scan, prefs] = await Promise.all([
             api.get(`/api/games/${gid}/manual`),
             api.get(`/api/games/${gid}/capture`),
             api.get(`/api/games/${gid}/diagnose`).catch(() => ({ inventory: null })),
+            loadDocumentPrefs(api, game),
         ]);
+        state.document = prefs;
         state.info = info;
         state.sdks = cap;
         // The checklist: screens the game defines itself, engine internals left out.
@@ -186,6 +190,7 @@ export async function mount(host, ctx) {
             }, info.saveCount ? "更改存档目录" : "选择存档目录"));
             bar.append(switchEl("cap-unlock", "全部解锁", false, "副本中的所有图片、剧情及音频均视为已解锁"));
         }
+        bar.append(documentToggle({ api, game, prefs: state.document, step: "capture", redraw: renderToolbar }));
         bar.append(h("span", { class: "cap-toolbar-spacer" }));
         const n = info.shots.length;
         if (n) bar.append(h("span", { class: "cap-toolbar-value" }, `${n} 张截图`));

@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { diagnose } from "../server/diagnose/index.js";
-import { mergeDecisions, decisionStats } from "../server/decisions.js";
+import { mergeDecisions, decisionStats, mergeDocument, readDocument } from "../server/decisions.js";
 import { buildDocument, collect, folderName, planFiles, readiness, writePackage } from "../server/export.js";
 
 const SDK = process.env.RENPY_SDK || "/Applications/renpy-8.5.2-sdk";
@@ -623,6 +623,25 @@ describe("export package", () => {
         assert.equal(folderName("星之 / 轨迹"), "星之-轨迹");
         assert.equal(folderName("The Question"), "The-Question");
         assert.equal(folderName("///", "fallback"), "fallback");
+    });
+
+
+    test("a step switched off says so instead of going silent", () => {
+        const file = path.join(work, "decisions", "document.json");
+        fs.writeFileSync(file, JSON.stringify(mergeDocument(readDocument(work), { skip: { speakers: true, capture: true } })));
+        const parts = collect(game);
+        const doc = buildDocument(game, parts, planFiles(game, parts));
+        // The heading stays, so the numbering holds and the silence reads as a decision.
+        assert.ok(doc.includes("## 3　说话人"));
+        assert.ok(doc.includes("迁移者没有把这一节交出来"));
+        assert.ok(!doc.includes("### 3.1　主要角色"));
+        assert.ok(doc.includes("迁移者留给你判断，本节没有内容"));
+        // The other sections are untouched.
+        assert.ok(doc.includes("### 5.1　章节与文件"));
+        const r = readiness(game, parts);
+        assert.equal(r.steps.find((x) => x.id === "speakers").skipped, true);
+        assert.equal(r.steps.find((x) => x.id === "flow").skipped, undefined);
+        fs.rmSync(file, { force: true });
     });
 
     test("readiness names what is still missing", () => {

@@ -1,5 +1,7 @@
 // Step 1: diagnose. A static scan of the game's scripts; nothing is executed.
 
+import { documentToggle, loadDocumentPrefs } from "./shared.js";
+
 const CSS_ID = "step-diagnose-css";
 
 const SOURCE_STATUS = {
@@ -55,6 +57,7 @@ export async function mount(host, ctx) {
     let inventory = null;
     let busy = false;
     let error = null;
+    let prefs = { skip: {} };
     const open = new Set();
 
     async function run() {
@@ -75,6 +78,7 @@ export async function mount(host, ctx) {
         const bar = h("div", { class: "dg-toolbar" },
             h("button", { type: "button", class: "btn btn-primary btn-sm", disabled: busy, onclick: run },
                 busy ? "正在诊断" : inventory ? "重新诊断" : "开始诊断"),
+            documentToggle({ api, game, prefs, step: "diagnose", redraw: render }),
             h("span", { class: "dg-spacer" }));
         if (error) bar.append(h("span", { class: "dg-value", style: { color: "rgb(var(--ui-danger))" } }, error));
         else if (inventory) bar.append(h("span", { class: "dg-value" }, formatTime(inventory.generatedAt)));
@@ -226,6 +230,7 @@ export async function mount(host, ctx) {
     }
 
     try {
+        prefs = await loadDocumentPrefs(api, game);
         ({ inventory } = await api.get(`/api/games/${gid}/diagnose`));
     } catch (err) {
         error = err.message;

@@ -35,6 +35,46 @@ export function chaptersFile(workDir) {
     return path.join(workDir, "decisions", "chapters.json");
 }
 
+export function documentFile(workDir) {
+    return path.join(workDir, "decisions", "document.json");
+}
+
+/**
+ * Which steps put their findings in the package. A step the migrator switches off is not missing
+ * data: the document says the call was left to the agent, which then reads the source itself.
+ */
+export const DOCUMENT_STEPS = ["diagnose", "capture", "speakers", "flow"];
+
+const emptyDocument = () => ({ version: 1, updatedAt: null, skip: {} });
+
+export function readDocument(workDir) {
+    let data;
+    try {
+        data = JSON.parse(fs.readFileSync(documentFile(workDir), "utf8"));
+    } catch {
+        return emptyDocument();
+    }
+    if (!data || typeof data !== "object" || typeof data.skip !== "object" || !data.skip) return emptyDocument();
+    const skip = {};
+    for (const step of DOCUMENT_STEPS) if (data.skip[step] === true) skip[step] = true;
+    return { version: data.version ?? 1, updatedAt: data.updatedAt ?? null, skip };
+}
+
+/** Merges a patch of `{step: boolean}`; true means "leave this to the agent". */
+export function mergeDocument(doc, patch) {
+    if (!patch || typeof patch !== "object" || typeof patch.skip !== "object" || !patch.skip) {
+        throw new HttpError(400, "需要 skip 对象", "bad_patch");
+    }
+    const skip = { ...doc.skip };
+    for (const [step, value] of Object.entries(patch.skip)) {
+        if (!DOCUMENT_STEPS.includes(step)) throw new HttpError(400, `未知的步骤：${step}`, "unknown_step");
+        if (typeof value !== "boolean" && value !== null) throw new HttpError(400, "值必须是 true 或 false", "bad_value");
+        if (value === true) skip[step] = true;
+        else delete skip[step];
+    }
+    return { version: 1, updatedAt: new Date().toISOString(), skip };
+}
+
 export function readDecisions(workDir) {
     let data;
     try {
@@ -224,6 +264,18 @@ export function decisionStats(doc) {
 }
 
 export function register(router, { games }) {
+    router.get("/api/games/:id/document/decisions", ({ params }) => {
+        const game = games.get(params.id);
+        return { document: readDocument(game.workDir), file: documentFile(game.workDir) };
+    });
+
+    router.put("/api/games/:id/document/decisions", async ({ req, params }) => {
+        const game = games.get(params.id);
+        const doc = mergeDocument(readDocument(game.workDir), await readJson(req));
+        await writeDoc(documentFile(game.workDir), doc);
+        return { document: doc, file: documentFile(game.workDir) };
+    });
+
     router.get("/api/games/:id/speakers/decisions", ({ params }) => {
         const game = games.get(params.id);
         const doc = readDecisions(game.workDir);

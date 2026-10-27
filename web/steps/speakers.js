@@ -449,6 +449,7 @@ export async function mount(host, ctx) {
 
     step = await mountScanStep(host, ctx, {
         key: "speakers",
+        documentStep: "speakers",
         async onLoaded() {
             const [d, p] = await Promise.all([
                 api.get(`/api/games/${game.id}/speakers/decisions`),
