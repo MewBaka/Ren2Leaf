@@ -13,7 +13,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 
 // Step modules add their routes here. Each exports `register(router, ctx)`; a module that is not
 // written yet is skipped, so the shell runs on its own.
-const STEP_MODULES = ["server/diagnose/index.js", "server/capture.js", "server/decisions.js", "server/portraits.js", "server/export.js"];
+const STEP_MODULES = ["server/diagnose/index.js", "server/capture.js", "server/decisions.js", "server/portraits.js", "server/export.js", "server/cache.js"];
 
 function parseArgs(argv) {
     const args = { port: 4710, open: true };

@@ -16,6 +16,7 @@ const ICONS = {
     more: '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
     x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
     folder: '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+    broom: '<path d="M13 11l9-9"/><path d="M14.6 12.6c.8.8.9 2 .2 2.7l-1.3 1.3c-.7.7-1.9.6-2.7-.2L7.4 12.8c-.8-.8-.9-2-.2-2.7l1.3-1.3c.7-.7 1.9-.6 2.7.2Z"/><path d="M6 15a6 6 0 0 0-3 5c0 1 .5 1.5 1.5 1.5a6 6 0 0 0 5-3"/>',
     trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
     pulse: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
     camera: '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
@@ -399,6 +400,7 @@ function openSwitcher(anchor) {
     if (game) {
         items.push(
             { label: "在 Finder 中显示", icon: "folder", onSelect: () => reveal(game.id, "game") },
+            { label: "清理缓存…", icon: "broom", onSelect: () => cleanCache(game) },
             { label: "移除当前游戏", icon: "trash", danger: true, onSelect: () => removeGame(game) },
         );
     }
@@ -425,6 +427,16 @@ async function removeGame(game) {
     state.games = state.games.filter((g) => g.id !== game.id);
     if (state.gameId === game.id) state.gameId = state.games[0]?.id || null;
     renderAll();
+}
+
+/** The work directory's cache, cleared from a dialog the shell loads on demand. */
+async function cleanCache(game) {
+    const { openCacheDialog } = await import("./cache.js");
+    // A cleared scan or screenshot set changes what every step reads, so remount the one on screen.
+    if (await openCacheDialog(game)) {
+        await refreshGame();
+        mountStep();
+    }
 }
 
 // ------------------------------------------------------------------ add game

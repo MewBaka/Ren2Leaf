@@ -742,3 +742,71 @@ button:disabled {
 
 .welcome-link { color: rgb(var(--ui-primary-ink)); text-decoration: none; overflow-wrap: anywhere; }
 .welcome-link:hover { text-decoration: underline; }
+
+/* 清理缓存: one row per group, its size on the right, what it costs to lose underneath. */
+.cache-total {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: var(--ui-text-sm);
+    color: rgb(var(--ui-fg-muted));
+}
+
+.cache-total > span:first-child { white-space: nowrap; }
+
+/* The path is long and the size is the point here, so it is the path that gets cut. */
+.cache-path {
+    font-size: var(--ui-text-xs);
+    color: rgb(var(--ui-fg-subtle));
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    direction: rtl;
+}
+
+.cache-list { display: flex; flex-direction: column; gap: 6px; }
+
+.cache-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--ui-edge);
+    border-radius: var(--ui-radius-md);
+    background: rgb(var(--ui-surface));
+    cursor: pointer;
+}
+
+.cache-row:hover { border-color: var(--ui-edge-strong); }
+.cache-row.is-on { border-color: rgb(var(--ui-primary) / 0.5); background: rgb(var(--ui-primary) / 0.05); }
+.cache-row input { margin: 3px 0 0; accent-color: rgb(var(--ui-primary)); }
+.cache-row:has(input:disabled) { opacity: 0.5; cursor: default; }
+.cache-row-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+
+.cache-row-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: var(--ui-text-sm);
+}
+
+.cache-row-label { font-weight: var(--ui-weight-medium); }
+.cache-row-size { color: rgb(var(--ui-fg-subtle)); font-size: var(--ui-text-xs); white-space: nowrap; }
+.cache-row-hint { font-size: var(--ui-text-xs); line-height: 18px; color: rgb(var(--ui-fg-subtle)); text-wrap: pretty; }
+
+.cache-row.is-precious { border-color: rgb(var(--ui-danger) / 0.35); }
+.cache-row.is-precious.is-on { border-color: rgb(var(--ui-danger) / 0.6); background: rgb(var(--ui-danger) / 0.06); }
+.cache-row.is-precious input { accent-color: rgb(var(--ui-danger)); }
+
+.cache-sep {
+    margin: 16px 0 8px;
+    font-size: var(--ui-text-xs);
+    color: rgb(var(--ui-danger));
+}
+
+.cache-note { margin: 12px 0 0; font-size: var(--ui-text-xs); color: rgb(var(--ui-fg-subtle)); }
+.cache-warn { margin: 0 0 12px; font-size: var(--ui-text-sm); color: rgb(var(--ui-warning)); }
