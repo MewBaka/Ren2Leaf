@@ -495,15 +495,15 @@ function pythonSection(python, skip) {
 const MODE_TEXT = {
     none: {
         title: "不拆分",
-        means: "迁移者的意思是：全部剧本属于同一个章节，章节里按 label 分场景。",
+        means: "迁移者的意思是：全部剧本属于同一个章节，做成一个场景。",
     },
     choices: {
         title: "按选项拆分",
-        means: "迁移者的意思是：选项（menu）引出的支线各自成为独立的场景，主线留在本章的主场景里。",
+        means: "迁移者的意思是：选项（menu）引出的支线各自成为独立的场景，主线留在这一章做成的场景里。支线场景迁移者没有起名，用原作 label 的名字，不写描述。",
     },
     full: {
         title: "全拆分",
-        means: "迁移者的意思是：一个剧本文件对应一个章节（整部游戏仍然只有一个故事）。",
+        means: "迁移者的意思是：一个剧本文件对应一个章节，也就是一个场景（整部游戏仍然只有一个故事）。",
     },
 };
 
@@ -514,7 +514,14 @@ function chaptersSection(flow, plan, skip) {
     const s = flow.summary;
     const h = numbering(5);
     const out = ["## 5　流程与章节", ""];
-    out.push("Studio 的层级是**故事 → 章节 → 场景**：整部游戏是**一个**故事，一个剧本文件做成一个章节，文件里的 label 做成章节里的场景（`scene_create {name, chapter}`）。不要为每个文件各建一个故事——存读档和「继续游戏」都认故事，拆开会出问题。下面是迁移者定的分组。", "");
+    out.push("Studio 的层级是**故事 → 章节 → 场景**，整部游戏是**一个**故事：不要为每个文件各建一个故事——存读档和「继续游戏」都认故事，拆开会出问题。", "");
+    out.push("**迁移者在这里分的「章节」，在 Studio 里是场景**：下表一行做成一个场景（`scene_create {name}`），这一行的文件按顺序写进这一个场景，文件里的 label 不再各自成场景。场景都放进故事已有的那一章，不要自己起 Studio 的章节名。", "");
+    out.push("场景名和描述是迁移者的话，照抄，不改写：", "");
+    out.push("- 场景名：「标题」一列。迁移者没填的，用 Studio 默认的场景名 `New Scene`，不要按内容自己起名；有几个都叫 `New Scene` 时，之后按 `scene_create` 返回的 id 指认场景，不靠名字。", "");
+    out.push("- 每个场景的表头（`story_apply` 的 `#background` 和 `#description`，写法看 NarraLeaf Studio 的 Skill）：", "");
+    out.push("  - `#background` **每个场景都要写**：原作这一段开场时屏幕上的背景，一般是第一句 `scene` 的图；开场是黑屏或纯色就写 `#background none`。不写的话，复用骨架的示例场景会闪出示例图。", "");
+    out.push("  - `#description` **只写迁移者填的「描述」**，原样照抄。没填就不写这一行，不要自己总结剧情补上。", "");
+    out.push("下面是迁移者定的分组。", "");
 
     const mode = MODE_TEXT[plan?.mode] ?? null;
     if (mode) out.push(`**拆分方式：${mode.title}。** ${mode.means}`, "");
@@ -524,9 +531,11 @@ function chaptersSection(flow, plan, skip) {
     const assigned = new Set(planned.flatMap((c) => c.files));
     if (planned.length) {
         out.push(h("章节与文件"), "");
-        out.push(mdTable(["章节", "文件", "台词", "备注"],
-            planned.map((c) => [
-                c.title,
+        out.push(mdTable(["章节", "标题（场景名）", "描述（场景描述）", "文件", "台词", "备注"],
+            planned.map((c, i) => [
+                i + 1,
+                c.title || "（没填，用 `New Scene`）",
+                c.description || "（没填，不写）",
                 c.files.join("、") || "（空）",
                 c.files.reduce((n, f) => n + (flow.files.find((x) => x.file === f)?.says ?? 0), 0),
                 c.note || "",

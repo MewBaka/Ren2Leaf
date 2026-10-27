@@ -194,6 +194,9 @@ export async function mountScanStep(host, ctx, { key, title, render, onLoaded, d
     function draw() {
         // Every click rebuilds the page, so remember where the reader was.
         const where = root.querySelector(".an-scroll")?.scrollTop ?? 0;
+        // So does a text box being typed in, when it says who it is with data-keep.
+        const active = root.contains(document.activeElement) ? document.activeElement : null;
+        const keep = active?.dataset.keep ? { id: active.dataset.keep, value: active.value, caret: active.selectionStart } : null;
         const data = inventory?.extensions?.[key] ?? null;
         const bar = toolbar(
             h("button", { type: "button", class: "btn btn-quiet btn-sm", disabled: busy, onclick: rescan },
@@ -217,6 +220,13 @@ export async function mountScanStep(host, ctx, { key, title, render, onLoaded, d
         for (const node of render(data, inventory)) if (node) scroll.append(node);
         root.append(scroll);
         scroll.scrollTop = where;
+        const again = keep && [...root.querySelectorAll("[data-keep]")].find((el) => el.dataset.keep === keep.id);
+        if (again) {
+            // What was typed but not yet saved stays in the box.
+            if (again.value !== keep.value) again.value = keep.value;
+            again.focus({ preventScroll: true });
+            if (keep.caret !== null && again.setSelectionRange) again.setSelectionRange(keep.caret, keep.caret);
+        }
     }
 
     try {

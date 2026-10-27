@@ -711,6 +711,32 @@ describe("export package", () => {
         assert.ok(doc.includes("不拆分"));
         assert.ok(doc.includes("第一章"));
         assert.ok(doc.includes("一个文件只属于一个章节"));
+        assert.ok(doc.includes("在 Studio 里是场景"));
+        assert.ok(doc.includes("`#background` **每个场景都要写**"));
+    });
+
+    test("a chapter's title and description go over as written, and only when given", () => {
+        const file = path.join(work, "decisions", "chapters.json");
+        const before = fs.readFileSync(file, "utf8");
+        const plan = cleanChapters({
+            mode: "full",
+            chapters: [
+                { id: "ch1", title: "  开场  ", description: "主角醒来", files: ["script.rpy"] },
+                { id: "ch2", title: "", files: [] },
+            ],
+        });
+        // Nothing is filled in for the migrator: no id or file name stands in for a missing title.
+        assert.equal(plan.chapters[0].title, "开场");
+        assert.equal(plan.chapters[1].title, "");
+        assert.equal(plan.chapters[1].description, undefined);
+        assert.ok(chapterIssues(plan, [{ file: "script.rpy", says: 3, playOrder: 0 }]).some((i) => i.message.includes("「未命名 2」")));
+        fs.writeFileSync(file, JSON.stringify(plan));
+        const parts = collect(game);
+        const doc = buildDocument(game, parts, planFiles(game, parts));
+        const section = doc.slice(doc.indexOf("## 5"), doc.indexOf("## 6"));
+        assert.ok(section.includes("| 1 | 开场 | 主角醒来 | script.rpy |"));
+        assert.ok(section.includes("| 2 | （没填，用 `New Scene`） | （没填，不写） |"));
+        fs.writeFileSync(file, before);
     });
 
     test("screenshots and their element coordinates are listed", () => {

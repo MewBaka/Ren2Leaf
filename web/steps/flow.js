@@ -10,8 +10,8 @@ const MODES = [
     {
         id: "none",
         title: "不拆分",
-        detail: "所有剧本文件归入同一章节，章节内按 label 划分场景",
-        apply: (files) => [{ id: "ch1", title: "第一章", files: files.map((f) => f.file) }],
+        detail: "所有剧本文件归入同一章节，在 Studio 里做成一个场景",
+        apply: (files) => [{ id: "ch1", title: "", files: files.map((f) => f.file) }],
     },
     {
         id: "choices",
@@ -22,8 +22,8 @@ const MODES = [
     {
         id: "full",
         title: "全拆分",
-        detail: "每个剧本文件独立为一个章节，适用于每章一个文件的项目（仍为同一故事）",
-        apply: (files) => files.map((f, i) => ({ id: `ch${i + 1}`, title: f.file.replace(/^.*\//, "").replace(/\.rpym?$/, ""), files: [f.file] })),
+        detail: "每个剧本文件独立为一个章节，在 Studio 里各成一个场景（仍为同一故事）",
+        apply: (files) => files.map((f, i) => ({ id: `ch${i + 1}`, title: "", files: [f.file] })),
     },
 ];
 
@@ -46,6 +46,8 @@ export async function mount(host, ctx) {
     let plan = { mode: null, chapters: [] };
     let saving = 0;
     let saveError = null;
+    // A chapter just made, whose title box takes the focus once the list is drawn and saved.
+    let focusChapter = null;
     const openLabels = new Set();
     const openFiles = new Set();
     // file -> {text, bytes, truncated} once read, or "loading" / an error message.
@@ -71,6 +73,9 @@ export async function mount(host, ctx) {
         saving--;
         step?.redraw();
     }
+
+    // A chapter's title is the migrator's to give; one without is shown by its place in the list.
+    const chapterLabel = (c) => c.title || `未命名 ${plan.chapters.indexOf(c) + 1}`;
 
     const chapterOf = (file) => plan.chapters.find((c) => c.files.includes(file)) ?? null;
 
@@ -123,11 +128,12 @@ export async function mount(host, ctx) {
             more ? h("div", { class: "ch-dim src-more" }, more) : null);
     }
 
-    function addChapter(title) {
+    function addChapter() {
         const used = new Set(plan.chapters.map((c) => c.id));
         let n = plan.chapters.length + 1;
         while (used.has(`ch${n}`)) n++;
-        const chapter = { id: `ch${n}`, title: title || `第 ${plan.chapters.length + 1} 章`, files: [] };
+        const chapter = { id: `ch${n}`, title: "", files: [] };
+        focusChapter = chapter.id;
         save({ ...plan, chapters: [...plan.chapters, chapter] });
         return chapter;
     }
@@ -135,14 +141,29 @@ export async function mount(host, ctx) {
     function chapterPanel(data) {
         const box = h("div", { class: "ch-list" });
         for (const c of plan.chapters) {
-            const title = h("input", { class: "an-input ch-title", type: "text", value: c.title, spellcheck: "false" });
-            title.addEventListener("change", () => {
-                const next = plan.chapters.map((x) => (x.id === c.id ? { ...x, title: title.value.trim() || x.id } : x));
-                save({ ...plan, chapters: next });
-            });
+            const field = (key, placeholder, cls) => {
+                const input = h("input", {
+                    class: `an-input ${cls}`, type: "text", value: c[key] ?? "", placeholder, spellcheck: "false",
+                    "data-keep": `${c.id}:${key}`,
+                });
+                // "change" fires while focus is still leaving the box. Saving redraws the list, so it
+                // waits until focus has landed (on the next box, after a Tab) and the redraw keeps it there.
+                input.addEventListener("change", () => setTimeout(() => {
+                    const next = plan.chapters.map((x) => (x.id === c.id ? { ...x, [key]: input.value.trim() } : x));
+                    save({ ...plan, chapters: next });
+                }));
+                return input;
+            };
+            const title = field("title", `标题（${chapterLabel(c)}）`, "ch-title");
+            const description = field("description", "描述", "ch-desc");
+            if (focusChapter === c.id && !saving) {
+                focusChapter = null;
+                queueMicrotask(() => title.focus());
+            }
             const says = c.files.reduce((n, f) => n + (data.files.find((x) => x.file === f)?.says ?? 0), 0);
             box.append(h("div", { class: "ch-row" },
                 title,
+                description,
                 h("span", { class: "ch-meta" }, `${c.files.length} 个文件 · ${says} 句`),
                 h("button", {
                     type: "button",
@@ -194,7 +215,7 @@ export async function mount(host, ctx) {
             const out = isExcluded(f.file);
             const select = h("select", { class: "an-select ch-select" },
                 h("option", { value: "", selected: !current && !out }, "未分配"),
-                plan.chapters.map((c) => h("option", { value: c.id, selected: current?.id === c.id }, c.title)),
+                plan.chapters.map((c) => h("option", { value: c.id, selected: current?.id === c.id }, chapterLabel(c))),
                 h("option", { value: "+" }, "新建章节…"),
                 h("option", { value: "-", selected: out }, "排除（非剧本文件）"));
             select.addEventListener("change", () => {
@@ -281,10 +302,12 @@ export async function mount(host, ctx) {
                     ? h("span", { class: "an-value is-danger" }, saveError)
                     : saving ? h("span", { class: "an-value" }, "正在保存")
                         : plan.updatedAt ? h("span", { class: "an-value" }, "已保存") : null,
-                note: "Studio 的层级是故事 → 章节 → 场景：整部游戏是一个故事，一个剧本文件做成一个章节，文件里的 label 做成章节里的场景",
+                note: "这里的一个章节在 Studio 里做成一个场景，整部游戏是一个故事",
             }));
 
-            out.push(section("章节", plan.chapters.length, chapterPanel(data)));
+            out.push(section("章节", plan.chapters.length, chapterPanel(data), {
+                note: "标题是 Studio 里的场景名，描述是场景描述，都可以不填；不填的 Agent 不会替你写，场景名用 Studio 默认的 New Scene，描述留空",
+            }));
 
             const warn = h("div", { class: "ch-warn" },
                 h("p", {}, "分组前请确认以下事项：",

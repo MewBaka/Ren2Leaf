@@ -572,8 +572,9 @@ tr[aria-expanded="true"] .an-chevron { transform: rotate(90deg); }
 }
 
 .ch-row:last-child { border-bottom: 0; }
-.ch-title { max-width: 260px; }
-.ch-meta { flex: 1; font-size: var(--ui-text-xs); color: rgb(var(--ui-fg-subtle)); }
+.ch-title { width: 200px; flex: none; }
+.ch-desc { flex: 1; min-width: 0; }
+.ch-meta { flex: none; font-size: var(--ui-text-xs); color: rgb(var(--ui-fg-subtle)); }
 .ch-empty { padding: 16px; font-size: var(--ui-text-sm); color: rgb(var(--ui-fg-subtle)); }
 .ch-select { min-width: 120px; }
 .ch-dim { color: rgb(var(--ui-fg-subtle)); }

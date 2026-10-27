@@ -147,9 +147,13 @@ working folder.
 
 Decide, and write down with reasons (`references/statement-mapping.md` has the defaults):
 
-- **Scenes.** One Studio scene per Ren'Py label that is a unit of story; split very long labels at
-  `scene` statements (never inside a `menu`) and chain the parts with `/jump`. A scene of a few
-  hundred rows is comfortable to review and to re-apply.
+- **Scenes.** When the pack's section 5 groups the scripts, that grouping is the author's and wins:
+  each of its chapters is one Studio scene, named with its title and described with its description
+  exactly as written. A chapter without a title is `New Scene`, Studio's default; one without a
+  description gets no `#description`. Do not make either up. The labels inside become `/label`s in
+  that scene. Without a grouping: one Studio scene per Ren'Py label that is a unit of story; split
+  very long labels at `scene` statements (never inside a `menu`) and chain the parts with `/jump`.
+  A scene of a few hundred rows is comfortable to review and to re-apply.
 - **Characters.** Studio characters are people, and a Ren'Py game's speaker variables are not: one
   person is routinely several `Character` objects, an alias is another one again, and an empty
   display name is narration dressed as a speaker. Decide the cast from evidence - display-name
@@ -201,7 +205,9 @@ inline. Booleans and numbers map directly; Python objects need a decision (log i
 ## Step 6 - Story
 
 Generate `.story` per scene from the IR and send each with `story_apply` (dry run first). Map with
-`references/statement-mapping.md`. After each scene: `story_show` it back and check the row count and
+`references/statement-mapping.md`. Every scene's header states `#background`: the picture the
+original shows as the scene opens (`none` for black), or a reused skeleton scene flashes its demo
+picture. `#description` is the author's text from the pack, or left out. After each scene: `story_show` it back and check the row count and
 that nothing came back as an opaque `»` row you did not expect. Then:
 
 - **Voice.** There is no voice command in `.story`; link takes after the text is written:
