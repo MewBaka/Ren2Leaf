@@ -17,7 +17,7 @@ import { buildAssets } from "./assets.js";
 import { HttpError } from "../http.js";
 
 export const SCHEMA_VERSION = 2;
-export const SCANNER_VERSION = "0.2.0";
+export const SCANNER_VERSION = "0.3.0";
 
 const SKIP_DIRS = new Set(["cache", "saves", "__pycache__", "node_modules"]);
 const HIT_LIMIT = 500;
