@@ -637,3 +637,48 @@ tr[aria-expanded="true"] .an-chevron { transform: rotate(90deg); }
 }
 
 .sp-link:hover { text-decoration: underline; }
+
+/* A script file opened from the table, read-only, with the line numbers the report cites. */
+.src {
+    border: 1px solid var(--ui-edge);
+    border-radius: var(--ui-radius-md);
+    background: rgb(var(--ui-surface-sunken));
+    overflow: hidden;
+}
+
+.src-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--ui-edge);
+    font-size: var(--ui-text-xs);
+    color: rgb(var(--ui-fg-muted));
+}
+
+.src-body {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    max-height: 420px;
+    overflow: auto;
+    padding: 8px 0;
+    font-family: var(--ui-mono-font);
+    font-size: var(--ui-text-xs);
+    line-height: 20px;
+}
+
+.src-n {
+    padding: 0 10px 0 12px;
+    color: rgb(var(--ui-fg-subtle) / 0.7);
+    text-align: right;
+    user-select: none;
+}
+
+.src-line {
+    padding-right: 12px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: rgb(var(--ui-fg));
+}
+
+.src-more { padding: 8px 12px; border-top: 1px solid var(--ui-edge); }

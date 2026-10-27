@@ -465,15 +465,15 @@ function pythonSection(python, skip) {
 const MODE_TEXT = {
     none: {
         title: "不拆分",
-        means: "迁移者的意思是：全部剧本属于同一个章节，不再往下切。",
+        means: "迁移者的意思是：全部剧本属于同一个章节，章节里按 label 分场景。",
     },
     choices: {
         title: "按选项拆分",
-        means: "迁移者的意思是：选项（menu）引出的支线各自成为独立的故事，主线留在本章的主故事里。",
+        means: "迁移者的意思是：选项（menu）引出的支线各自成为独立的场景，主线留在本章的主场景里。",
     },
     full: {
         title: "全拆分",
-        means: "迁移者的意思是：一个剧本文件对应一个故事。",
+        means: "迁移者的意思是：一个剧本文件对应一个章节（整部游戏仍然只有一个故事）。",
     },
 };
 
@@ -484,7 +484,7 @@ function chaptersSection(flow, plan, skip) {
     const s = flow.summary;
     const h = numbering(5);
     const out = ["## 5　流程与章节", ""];
-    out.push("NarraLeaf 的层级是**章节 → 故事**：故事是一个文件，章节是装故事的分组。下面是迁移者定的分组。", "");
+    out.push("Studio 的层级是**故事 → 章节 → 场景**：整部游戏是**一个**故事，一个剧本文件做成一个章节，文件里的 label 做成章节里的场景（`scene_create {name, chapter}`）。不要为每个文件各建一个故事——存读档和「继续游戏」都认故事，拆开会出问题。下面是迁移者定的分组。", "");
 
     const mode = MODE_TEXT[plan?.mode] ?? null;
     if (mode) out.push(`**拆分方式：${mode.title}。** ${mode.means}`, "");
@@ -502,25 +502,41 @@ function chaptersSection(flow, plan, skip) {
                 c.note || "",
             ])), "");
         out.push("⚠️ **一个文件只属于一个章节，而且文件里不会跨到别的章节**——这是迁移者保证的，扫描查不了。", "");
-        const issues = chapterIssues(plan, flow.files);
-        if (issues.length) {
-            out.push("这份分组里有几处前后不一致，扫描只报出来，怎么处理由你判断：", "");
-            for (const i of issues) out.push(`- ${i.message}`);
-            out.push("");
-        }
     } else {
         out.push(h("章节与文件"), "", "迁移者还没有分组。", "");
     }
 
-    const left = flow.files.filter((f) => !assigned.has(f.file));
+    const issues = chapterIssues(plan, flow.files);
+    if (issues.length) {
+        out.push("这份分组里有几处前后不一致，扫描只报出来，怎么处理由你判断：", "");
+        for (const i of issues) out.push(`- ${i.message}`);
+        out.push("");
+    }
+
+    const excluded = new Set(plan?.excluded ?? []);
+    const left = flow.files.filter((f) => !assigned.has(f.file) && !excluded.has(f.file));
     if (planned.length && left.length) {
-        out.push("没有分进任何章节的文件（多半是配置、界面或废稿）：", "");
+        out.push("没有分进任何章节的文件：", "");
         out.push(mdTable(["文件", "台词", "label"], left.map((f) => [f.file, f.says, f.labels.length])), "");
     }
 
+    if (excluded.size) {
+        out.push(h("迁移者排除的文件"), "");
+        out.push("迁移者看过这些文件，说它们不是剧本（界面、transform、调试残留之类），没有把它们当成故事。「被跳进来」是别的文件里可达的 jump/call 指向它——那一列不为空的，先确认再排除。", "");
+        out.push(mdTable(["文件", "台词", "label", "结局", "被跳进来"],
+            [...excluded].map((f) => {
+                const row = flow.files.find((x) => x.file === f);
+                const entered = (row?.enteredFrom ?? []).filter((e) => e.reachable);
+                return [
+                    f, row?.says ?? 0, row?.labels.length ?? 0, row?.endings ?? 0,
+                    entered.length ? entered.slice(0, 3).map((e) => `${e.label} ← ${e.from.map((x) => `${x.file}:${x.line}`).join("、")}`).join("；") : "—",
+                ];
+            })), "");
+    }
+
     out.push(h("每个文件里有什么"), "");
-    out.push("「游玩顺序」是从 `start` 走出来的先后，不是文件名的顺序。被 `persistent.*` 条件挡住的路线（二周目之类）排在一周目路线之后，并在「周目」一列标出来。", "");
-    const { rows, note } = capped(flow.files.map((f) => [
+    out.push("「游玩顺序」是从 `start` 走出来的先后，不是文件名的顺序。被 `persistent.*` 条件挡住的路线（二周目之类）排在一周目路线之后，并在「周目」一列标出来。迁移者排除的文件不在这张表里。", "");
+    const { rows, note } = capped(flow.files.filter((f) => !excluded.has(f.file)).map((f) => [
         f.file, f.playOrder === null ? "走不到" : f.playOrder + 1, f.newGamePlus ? "要 persistent 条件" : "", f.says, f.labels.length, f.menus,
         f.labels.slice(0, 4).map((l) => l.name).join("、") + (f.labels.length > 4 ? "…" : ""),
     ]), MAX_ROWS, "data/inventory.json");

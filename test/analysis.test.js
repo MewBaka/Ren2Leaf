@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { diagnose } from "../server/diagnose/index.js";
-import { mergeDecisions, decisionStats, mergeDocument, readDocument } from "../server/decisions.js";
+import { mergeDecisions, decisionStats, cleanChapters, chapterIssues, mergeDocument, readDocument } from "../server/decisions.js";
 import { buildDocument, collect, folderName, planFiles, readiness, writePackage } from "../server/export.js";
 
 const SDK = process.env.RENPY_SDK || "/Applications/renpy-8.5.2-sdk";
@@ -351,6 +351,17 @@ describe("fixture game", () => {
         assert.ok(flow.warnings.some((w) => w.kind === "endingsReturnToTitle"));
     });
 
+    test("a file play jumps into is reported, so excluding it cannot pass unnoticed", () => {
+        const end = flow.files.find((f) => f.file === "end.rpy");
+        assert.equal(end.endings, 1);
+        const entry = end.enteredFrom.find((e) => e.label === "the_end");
+        assert.ok(entry.reachable);
+        assert.equal(entry.from[0].file, "script.rpy");
+        const issues = chapterIssues({ chapters: [], excluded: ["end.rpy"] }, flow.files);
+        assert.ok(issues.some((i) => i.kind === "excludedButEntered"));
+        assert.ok(issues.some((i) => i.kind === "excludedWithEnding"));
+    });
+
     test("per-file facts and the signals a chapter break could be cut at", () => {
         // No chapters are invented: the migrator groups the files themselves.
         assert.equal(flow.chapters, undefined);
@@ -692,7 +703,7 @@ describe("export package", () => {
     test("the chapter plan is handed over as the migrator drew it", () => {
         const parts = collect(game);
         const doc = buildDocument(game, parts, planFiles(game, parts));
-        assert.ok(doc.includes("章节 → 故事"));
+        assert.ok(doc.includes("故事 → 章节 → 场景"));
         assert.ok(doc.includes("不拆分"));
         assert.ok(doc.includes("第一章"));
         assert.ok(doc.includes("一个文件只属于一个章节"));
@@ -738,6 +749,36 @@ describe("export package", () => {
         assert.equal(folderName("///", "fallback"), "fallback");
     });
 
+    test("a file the migrator excluded is named as excluded, not as unassigned", () => {
+        const file = path.join(work, "decisions", "chapters.json");
+        const before = fs.readFileSync(file, "utf8");
+        fs.writeFileSync(file, JSON.stringify(cleanChapters({
+            mode: "none",
+            chapters: [{ id: "ch1", title: "第一章", files: ["script.rpy"] }],
+            excluded: ["screens.rpy"],
+        })));
+        const parts = collect(game);
+        const doc = buildDocument(game, parts, planFiles(game, parts));
+        assert.ok(doc.includes("迁移者排除的文件"));
+        assert.ok(doc.includes("不是剧本"));
+        // It is out of the per-file table and out of the "nobody put these anywhere" list.
+        const section = doc.slice(doc.indexOf("## 5"), doc.indexOf("## 6"));
+        const unassigned = section.indexOf("没有分进任何章节的文件");
+        assert.ok(unassigned < 0 || !section.slice(unassigned, unassigned + 400).includes("screens.rpy"));
+        fs.writeFileSync(file, before);
+    });
+
+    test("a file cannot be excluded and put in a chapter at once", () => {
+        assert.throws(() => cleanChapters({
+            mode: "none",
+            chapters: [{ id: "ch1", title: "第一章", files: ["script.rpy"] }],
+            excluded: ["script.rpy"],
+        }), /不能同时排除/);
+        // Excluding a file that still has dialogue is reported, not refused.
+        const issues = chapterIssues({ chapters: [{ id: "ch1", title: "第一章", files: ["a.rpy"] }], excluded: ["b.rpy"] },
+            [{ file: "a.rpy", says: 10, playOrder: 0 }, { file: "b.rpy", says: 40, playOrder: 1 }]);
+        assert.ok(issues.some((i) => i.kind === "excludedWithDialogue"));
+    });
 
     test("a step switched off says so instead of going silent", () => {
         const file = path.join(work, "decisions", "document.json");

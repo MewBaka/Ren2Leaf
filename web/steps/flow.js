@@ -1,6 +1,7 @@
-// Step ④ flow and chapters. NarraLeaf's shape is 章节 → 故事: a story is a file, a chapter is the
-// group that holds stories. So this step lists the game's script files and lets the migrator put
-// each one in a chapter. The scan only supplies facts — play order, how much dialogue a file
+// Step ④ flow and chapters. NarraLeaf Studio's shape is 故事 → 章节 → 场景: one game is one story,
+// a story holds chapters, a chapter holds scenes. A Ren'Py script file becomes a chapter and its
+// labels become that chapter's scenes. So this step lists the game's script files and lets the
+// migrator put each one in a chapter. The scan only supplies facts — play order, how much dialogue a file
 // holds, and the signals that often mark a break; it never groups anything by itself.
 
 import { expandable, fact, facts, h, itemList, mountScanStep, props, section, table, tag } from "./shared.js";
@@ -9,22 +10,25 @@ const MODES = [
     {
         id: "none",
         title: "不拆分",
-        detail: "所有剧本放进同一个章节，Agent 不再切分",
+        detail: "所有剧本文件归入同一章节，章节内按 label 划分场景",
         apply: (files) => [{ id: "ch1", title: "第一章", files: files.map((f) => f.file) }],
     },
     {
         id: "choices",
         title: "按选项拆分",
-        detail: "Agent 找出选项引出的支线，每条支线单独做成一个故事；章节还是按你下面的分组",
+        detail: "Agent 将识别选项分支引出的支线，每条支线独立为一个场景；章节划分仍按下方分组配置",
         apply: null,
     },
     {
         id: "full",
         title: "全拆分",
-        detail: "一个剧本文件一个章节，面向一章一个文件的游戏",
+        detail: "每个剧本文件独立为一个章节，适用于每章一个文件的项目（仍为同一故事）",
         apply: (files) => files.map((f, i) => ({ id: `ch${i + 1}`, title: f.file.replace(/^.*\//, "").replace(/\.rpym?$/, ""), files: [f.file] })),
     },
 ];
+
+// How much of a script is shown inline. Enough to tell what a file is; the whole file lives on disk.
+const SOURCE_LINES = 600;
 
 const BREAK = {
     opEd: "OP/ED 视频", movie: "过场视频", achievement: "成就点", stopMusic: "停止音乐",
@@ -43,6 +47,9 @@ export async function mount(host, ctx) {
     let saving = 0;
     let saveError = null;
     const openLabels = new Set();
+    const openFiles = new Set();
+    // file -> {text, bytes, truncated} once read, or "loading" / an error message.
+    const sources = new Map();
     let step = null;
 
     async function save(next) {
@@ -51,7 +58,11 @@ export async function mount(host, ctx) {
         saveError = null;
         step?.redraw();
         try {
-            const res = await api.put(`/api/games/${game.id}/chapters/decisions`, { mode: next.mode, chapters: next.chapters });
+            const res = await api.put(`/api/games/${game.id}/chapters/decisions`, {
+                mode: next.mode,
+                chapters: next.chapters,
+                excluded: next.excluded ?? [],
+            });
             plan = res.chapters;
             ctx.setStatus("chapters", plan.chapters.length ? `章节 ${plan.chapters.length} 个` : null);
         } catch (err) {
@@ -63,11 +74,53 @@ export async function mount(host, ctx) {
 
     const chapterOf = (file) => plan.chapters.find((c) => c.files.includes(file)) ?? null;
 
+    const isExcluded = (file) => (plan.excluded ?? []).includes(file);
+
     function assign(file, chapterId) {
         const chapters = plan.chapters.map((c) => ({ ...c, files: c.files.filter((f) => f !== file) }));
         const target = chapters.find((c) => c.id === chapterId);
         if (target) target.files = [...target.files, file];
-        save({ ...plan, chapters });
+        // A file in a chapter is not excluded; picking a chapter takes it back off that list.
+        save({ ...plan, chapters, excluded: (plan.excluded ?? []).filter((f) => f !== file) });
+    }
+
+    function exclude(file) {
+        const chapters = plan.chapters.map((c) => ({ ...c, files: c.files.filter((f) => f !== file) }));
+        const excluded = (plan.excluded ?? []).includes(file) ? plan.excluded : [...(plan.excluded ?? []), file];
+        save({ ...plan, chapters, excluded });
+    }
+
+    /** The file's own text, read on demand so a big script is only fetched when someone looks. */
+    async function openSource(file) {
+        if (sources.has(file)) return;
+        sources.set(file, { loading: true });
+        step?.redraw();
+        try {
+            sources.set(file, await api.get(`/api/games/${game.id}/source?path=${encodeURIComponent(file)}`));
+        } catch (err) {
+            sources.set(file, { error: err.message });
+        }
+        step?.redraw();
+    }
+
+    function sourceView(file) {
+        const got = sources.get(file);
+        if (!got || got.loading) return h("div", { class: "ch-dim" }, "正在读取…");
+        if (got.error) return h("div", { class: "an-value is-danger" }, got.error);
+        const all = got.text.split("\n");
+        const shown = all.slice(0, SOURCE_LINES);
+        const body = h("div", { class: "src-body" });
+        shown.forEach((line, i) => {
+            body.append(h("span", { class: "src-n" }, String(i + 1)), h("code", { class: "src-line" }, line || " "));
+        });
+        const more = all.length > shown.length
+            ? `仅显示前 ${SOURCE_LINES} 行，共 ${all.length} 行`
+            : got.truncated ? `文件过大，仅读取前 ${Math.round(got.bytes / 1024)} KB` : null;
+        return h("div", { class: "src" },
+            h("div", { class: "src-head" }, h("span", { class: "mono" }, file),
+                h("span", { class: "ch-dim" }, `${all.length} 行`)),
+            body,
+            more ? h("div", { class: "ch-dim src-more" }, more) : null);
     }
 
     function addChapter(title) {
@@ -138,29 +191,58 @@ export async function mount(host, ctx) {
         const tbody = h("tbody");
         for (const f of data.files) {
             const current = chapterOf(f.file);
+            const out = isExcluded(f.file);
             const select = h("select", { class: "an-select ch-select" },
-                h("option", { value: "", selected: !current }, "未分配"),
+                h("option", { value: "", selected: !current && !out }, "未分配"),
                 plan.chapters.map((c) => h("option", { value: c.id, selected: current?.id === c.id }, c.title)),
-                h("option", { value: "+" }, "新建章节…"));
+                h("option", { value: "+" }, "新建章节…"),
+                h("option", { value: "-", selected: out }, "排除（非剧本文件）"));
             select.addEventListener("change", () => {
                 if (select.value === "+") {
                     const chapter = addChapter();
                     assign(f.file, chapter.id);
+                } else if (select.value === "-") {
+                    exclude(f.file);
                 } else {
                     assign(f.file, select.value);
                 }
             });
+            // The select sits inside a row that opens on click; its own clicks stay with it.
+            const cell = h("td", {}, select);
+            cell.addEventListener("click", (e) => e.stopPropagation());
             const signals = f.breaks.filter((b) => b.score >= 3);
-            tbody.append(h("tr", {},
-                h("td", { class: "mono" }, f.file),
-                h("td", {}, f.playOrder === null ? h("span", { class: "ch-dim" }, "走不到") : String(f.playOrder + 1)),
-                h("td", {}, String(f.says)),
-                h("td", {}, String(f.labels.length)),
-                h("td", {}, signals.length ? `${signals.length} 处` : "—"),
-                h("td", {}, select)));
+            // Excluding a file play walks into loses part of the story (the credits a good ending
+            // jumps to, say), so the row says so instead of letting it ship quietly.
+            const entered = (f.enteredFrom ?? []).filter((e) => e.reachable && e.from.some((x) => !isExcluded(x.file)));
+            const warnCell = out && (entered.length || f.endings)
+                ? h("span", { class: "an-value is-danger" },
+                    f.endings ? `有 ${f.endings} 个结局` : `由 ${entered[0].from[0].file}:${entered[0].from[0].line} 跳转进入`)
+                : null;
+            expandable(tbody, {
+                key: f.file,
+                open: openFiles.has(f.file),
+                onToggle: (file) => {
+                    if (openFiles.has(file)) openFiles.delete(file);
+                    else {
+                        openFiles.add(file);
+                        openSource(file);
+                    }
+                    step?.redraw();
+                },
+                columns: 6,
+                cells: [
+                    warnCell ? h("span", {}, h("span", { class: "ch-dim" }, f.file), " ", warnCell) : out ? h("span", { class: "ch-dim" }, f.file) : f.file,
+                    f.playOrder === null ? h("span", { class: "ch-dim" }, "不可达") : String(f.playOrder + 1),
+                    String(f.says),
+                    String(f.labels.length),
+                    signals.length ? `${signals.length} 处` : "—",
+                    cell,
+                ],
+                detail: () => sourceView(f.file),
+            });
         }
         const t = table(["30%", "88px", "72px", "72px", "96px", "20%"],
-            ["文件", "游玩顺序", "台词", "label", "可能的分界", "章节"], tbody);
+            ["文件", "游玩顺序", "台词", "label", "疑似分界", "章节"], tbody);
         t.classList.add("is-wrap");
         return t;
     }
@@ -199,7 +281,7 @@ export async function mount(host, ctx) {
                     ? h("span", { class: "an-value is-danger" }, saveError)
                     : saving ? h("span", { class: "an-value" }, "正在保存")
                         : plan.updatedAt ? h("span", { class: "an-value" }, "已保存") : null,
-                note: "NarraLeaf 的层级是章节 → 故事：故事是一个文件，章节是装故事的分组",
+                note: "Studio 的层级是故事 → 章节 → 场景：整部游戏是一个故事，一个剧本文件做成一个章节，文件里的 label 做成章节里的场景",
             }));
 
             out.push(section("章节", plan.chapters.length, chapterPanel(data)));
@@ -210,7 +292,7 @@ export async function mount(host, ctx) {
                 h("p", {}, "比如 c1c2.rpy 整个算第一章，那就把它整个放进第一章；但要保证这个文件里没有混进别的章节的内容。有人会把一章拆成几个文件，那就把这几个文件都放进同一个章节"),
                 h("p", {}, "此项无法由程序自动校验，需人工确认"));
             out.push(section("文件分组", data.files.length, h("div", {}, warn, fileTable(data)), {
-                note: "「游玩顺序」是从 start 走出来的先后，不是文件名的顺序；Ren'Py 的文件号常常和游玩顺序对不上",
+                note: "点一行看文件内容；不是剧本的文件（界面、transform、调试残留）在右边选「排除」。「游玩顺序」是从 start 走出来的先后，不是文件名的顺序",
             }));
 
             const labels = data.labels.filter((l) => l.reachable);
@@ -261,7 +343,7 @@ export async function mount(host, ctx) {
                 const t = table(["22%", "18%", null, "18%", "16%"], ["菜单", "所属 label", "选项", "条件", "跳转目标"], mt);
                 t.classList.add("is-wrap");
                 out.push(section("菜单与选项", s.choices, t, {
-                    note: "选「按选项拆分」时，Agent 就是按这些支线拆故事的",
+                    note: "选择「按选项拆分」时，Agent 将依据这些分支划分场景",
                 }));
             }
 

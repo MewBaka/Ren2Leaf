@@ -155,7 +155,7 @@ export const SPLIT_MODES = new Set(["none", "choices", "full"]);
 const CHAPTER_MAX = 200;
 const FILES_MAX = 2000;
 
-const emptyChapters = () => ({ version: 1, updatedAt: null, mode: null, chapters: [] });
+const emptyChapters = () => ({ version: 1, updatedAt: null, mode: null, chapters: [], excluded: [] });
 
 export function readChapters(workDir) {
     let data;
@@ -170,12 +170,15 @@ export function readChapters(workDir) {
         updatedAt: data.updatedAt ?? null,
         mode: SPLIT_MODES.has(data.mode) ? data.mode : null,
         chapters: data.chapters,
+        // Files the migrator says are not story at all (interface, transforms, debug leftovers).
+        excluded: Array.isArray(data.excluded) ? data.excluded.filter((f) => typeof f === "string") : [],
     };
 }
 
 /**
- * Validates a whole chapter plan. A file may sit in one chapter only; everything else — how many
- * chapters there are, what they are called, which file goes where — is the migrator's call.
+ * Validates a whole chapter plan. A file may sit in one chapter only, and a file the migrator
+ * excluded is in no chapter; everything else — how many chapters there are, what they are called,
+ * which file goes where — is the migrator's call.
  */
 export function cleanChapters(patch) {
     if (!patch || typeof patch !== "object") throw new HttpError(400, "章节格式无效", "bad_chapters");
@@ -208,7 +211,16 @@ export function cleanChapters(patch) {
         }
         chapters.push({ id, title: title || id, files, note: text(c?.note, "备注") ?? undefined });
     }
-    return { version: 1, updatedAt: new Date().toISOString(), mode: patch.mode ?? null, chapters };
+    const excluded = [];
+    for (const f of patch.excluded ?? []) {
+        const file = text(f, "文件");
+        if (!file) continue;
+        if (file.includes("..") || path.isAbsolute(file)) throw new HttpError(400, `文件路径无效：${file}`, "bad_file");
+        if (seenFiles.has(file)) throw new HttpError(409, `${file} 已分配至「${seenFiles.get(file)}」，不能同时排除`, "excluded_in_chapter");
+        if (!excluded.includes(file)) excluded.push(file);
+        if (excluded.length > FILES_MAX) throw new HttpError(400, "文件过多", "too_many_files");
+    }
+    return { version: 1, updatedAt: new Date().toISOString(), mode: patch.mode ?? null, chapters, excluded };
 }
 
 /**
@@ -220,9 +232,30 @@ export function cleanChapters(patch) {
  */
 export function chapterIssues(doc, files = []) {
     const chapters = doc?.chapters ?? [];
-    if (!chapters.length) return [];
+    if (!chapters.length && !(doc?.excluded ?? []).length) return [];
     const byFile = new Map((files ?? []).map((f) => [f.file, f]));
+    const excluded = new Set(doc?.excluded ?? []);
     const issues = [];
+    for (const f of excluded) {
+        const row = byFile.get(f);
+        if (!row) continue;
+        if (row.says) {
+            issues.push({ kind: "excludedWithDialogue", chapter: null, message: `${f} 已被排除，但包含 ${row.says} 句台词` });
+        }
+        // A file play actually walks into is part of the story whatever it is called: the credits
+        // a good ending jumps to live in their own file, and dropping it loses the ending.
+        const entered = (row.enteredFrom ?? []).filter((e) => e.reachable && e.from.some((x) => !excluded.has(x.file)));
+        if (entered.length) {
+            const where = entered.slice(0, 3).map((e) => `${e.label}（${e.from.map((x) => `${x.file}:${x.line}`).join("、")}）`).join("；");
+            issues.push({
+                kind: "excludedButEntered", chapter: null,
+                message: `${f} 已被排除，但存在从其他文件跳转至该文件的入口：${where}。导出前请确认该文件不属于剧本内容（如片尾、回忆、结局等）`,
+            });
+        }
+        if (row.endings) {
+            issues.push({ kind: "excludedWithEnding", chapter: null, message: `${f} 已被排除，但包含 ${row.endings} 个结局` });
+        }
+    }
     for (const c of chapters) {
         const rows = c.files.map((f) => byFile.get(f) ?? null);
         const missing = c.files.filter((f) => !byFile.has(f));
@@ -247,6 +280,7 @@ export function chapterStats(doc) {
     return {
         chapters: doc.chapters.length,
         files: doc.chapters.reduce((n, c) => n + c.files.length, 0),
+        excluded: (doc.excluded ?? []).length,
         mode: doc.mode,
         updatedAt: doc.updatedAt,
     };

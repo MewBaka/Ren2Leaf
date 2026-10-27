@@ -14,6 +14,7 @@ import { buildPython } from "./python.js";
 import { buildFlow } from "./flow.js";
 import { buildFacts } from "./facts.js";
 import { buildAssets } from "./assets.js";
+import { HttpError } from "../http.js";
 
 export const SCHEMA_VERSION = 2;
 export const SCANNER_VERSION = "0.2.0";
@@ -368,8 +369,47 @@ function readInventory(workDir) {
     }
 }
 
+// A script the migrator can open from a table. Text only, and only what the scan itself reads.
+const SOURCE_EXT = new Set([".rpy", ".rpym", ".py", ".txt", ".json"]);
+const SOURCE_MAX = 512 * 1024;
+
+/** Reads one file under the game's `game/` folder, as text. Nothing outside it is reachable. */
+export function readSource(gamePath, rel) {
+    if (!rel || rel.includes("\0")) throw new HttpError(400, "需要文件路径", "bad_path");
+    const { game } = resolveGameDirs(gamePath);
+    const root = path.resolve(game);
+    const full = path.resolve(root, rel);
+    if (full !== root && !full.startsWith(root + path.sep)) throw new HttpError(400, "路径不在 game 目录内", "outside_game");
+    if (!SOURCE_EXT.has(path.extname(full).toLowerCase())) throw new HttpError(400, "只能打开脚本文件", "not_script");
+    let stat;
+    try {
+        stat = fs.statSync(full);
+    } catch {
+        throw new HttpError(404, "文件不存在", "no_file");
+    }
+    if (!stat.isFile()) throw new HttpError(404, "文件不存在", "no_file");
+    const fd = fs.openSync(full, "r");
+    try {
+        const buf = Buffer.alloc(Math.min(stat.size, SOURCE_MAX));
+        fs.readSync(fd, buf, 0, buf.length, 0);
+        return {
+            path: rel.split(path.sep).join("/"),
+            bytes: stat.size,
+            truncated: stat.size > SOURCE_MAX,
+            text: buf.toString("utf8"),
+        };
+    } finally {
+        fs.closeSync(fd);
+    }
+}
+
 /** Routes for the WebUI. The scan writes <work>/inventory.json; the game folder is only read. */
 export function register(router, { games }) {
+    router.get("/api/games/:id/source", ({ params, url }) => {
+        const game = games.get(params.id);
+        return readSource(game.path, url.searchParams.get("path") ?? "");
+    });
+
     router.get("/api/games/:id/diagnose", ({ params }) => {
         const game = games.get(params.id);
         return { inventory: readInventory(game.workDir) };
