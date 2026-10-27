@@ -695,6 +695,9 @@ describe("export package", () => {
         // Somebody under another name is a character of their own, in the group.
         const npcPart = doc.slice(npcAt, doc.indexOf("　配音目录与取号"));
         assert.ok(npcPart.includes('`group: "NPC / 别名"`'));
+        // Only the NPC group is a group: the leads stand on their own in the Characters panel.
+        assert.ok(doc.includes("主要角色和 POV 角色都不分组"));
+        assert.ok(doc.includes("`group: null`"));
         assert.ok(!doc.includes("没有分组"));
         assert.ok(npcPart.includes("配音取号"));
         // Merged and classified variables are settled, so they are not asked about again.

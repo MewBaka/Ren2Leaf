@@ -253,12 +253,12 @@ function speakersSection(speakers, decisions, portraits, skip) {
     }
     out.push("迁移者把每个变量分成了四类，意思如下：", "");
     out.push(mdTable(["类别", "迁移者的意思", "在 Studio 里怎么落地"], [
-        ["主要角色", "主角，和次要角色分开放", "`character_upsert` 建角色，有立绘的配立绘（分层立绘用 `character_layered_set`）"],
-        ["POV 角色", "主角，玩家视角", "同上；名字框随章节变的，按原作每段的名字写"],
+        ["主要角色", "主角，直接列在角色面板里", "`character_upsert` 建角色，**不带 `group`**；有立绘的配立绘（分层立绘用 `character_layered_set`）"],
+        ["POV 角色", "主角，玩家视角", "同上，也不带 `group`；名字框随章节变的，按原作每段的名字写"],
         [NPC_GROUP, "次要角色，收进一个分组", `\`character_upsert\` 建角色，带 \`group: "${NPC_GROUP}"\`，名字按下表`],
         ["临时角色", "迁移者认为不需要独立角色（无立绘无配音的过场人物）", "不建角色，台词写成一次性说话人"],
     ]), "");
-    out.push(`Studio 的角色面板按分组列角色，\`character_upsert\` 的 \`group\` 按名字归组，组不存在就新建。迁移者定的只有一件事：「${NPC_GROUP}」这一类收进同名分组，不和主角混在一起。主角放在哪个组、组名叫什么，按 Studio 的做法由你定。这一类的角色照建，只是不必像主角那样准备立绘和差分。`, "");
+    out.push(`Studio 的角色面板按分组列角色，\`character_upsert\` 的 \`group\` 按名字归组，组不存在就新建；不带 \`group\` 时角色**留在原来的组**，传 \`group: null\` 才把它拿出来，直接列在面板上。迁移者定的是：**主要角色和 POV 角色都不分组**，直接列在外面；只有「${NPC_GROUP}」这一类收进同名分组。不要给主角另建「主角」之类的组；复用的骨架示例角色要是已经在某个组里，建的时候传 \`group: null\`。「${NPC_GROUP}」的角色照建，只是不必像主角那样准备立绘和差分。`, "");
 
     const main = roleIs("main");
     const pov = roleIs("pov");
