@@ -28,7 +28,7 @@ there.
 6. **An `image=` tag may have no files at all** (a cut character, a leftover). Record it under
    "Needs the author" and carry on; do not invent art.
 
-Write the table into `port-log.md` before you merge anything, and let the author confirm the
+Log the table (`log_note`) before you merge anything, and let the author confirm the
 grouping. A wrong merge is expensive once voice is linked.
 
 ## 2 - Aliases: the same person under another name box
@@ -94,4 +94,4 @@ Two things to check before you do:
 Resolve the cast *before* generating story rows: a merge or a split afterwards costs a
 regeneration, and after voice is linked a regeneration orphans the takes (the port `SKILL.md`,
 step 6). Link voice last, by scene and line order from your IR, and keep the variable → character
-decision table in `port-log.md` so a successor can see why the cast looks the way it does.
+decision table in the port log (`log_note`) so a successor can see why the cast looks the way it does.

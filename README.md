@@ -5,7 +5,7 @@
 
 # Ren2Leaf
 
-Ren'Py 作品迁移至 [NarraLeaf Studio](https://www.narraleaf.com) 的前置分析工具。本工具于本地读取 Ren'Py 工程，输出一份交给 Agent 的**迁移补充包**——它不替代源码，而是补全静态分析无法获取的那部分信息。
+Ren'Py 作品迁移至 [NarraLeaf Studio](https://www.narraleaf.com) 的前置分析工具。本工具于本地读取 Ren'Py 工程，输出一份**迁移补充包**，经 Studio 插件 **Ren2Leaf Bridge** 导入项目后供 Agent 查阅——它不替代源码，而是补全静态分析无法获取的那部分信息。
 
 实际的迁移工作由 Agent 依据配套 Skill 在 Studio 中完成。本工具不修改剧本、不生成 NarraLeaf 代码、不触碰原工程目录。
 
@@ -51,7 +51,7 @@ npm start
 
 ```
 <游戏名>-ren2leaf/
-├── README.md                          交给 Agent 的迁移文档，入口
+├── README.md                          写给 Agent 的迁移文档，入口
 ├── screens/<界面>.png                 截图，以及圈选出的切图
 ├── characters/<变量>.png              角色立绘或对话截图
 └── data/
@@ -61,7 +61,17 @@ npm start
     └── chapters.json                  迁移者指定的章节分组
 ```
 
-`README.md` 是写给 Agent 读的，开篇即要求其先更新 Skills，并声明「本文件是路牌，不是方案」：文档只陈述原作事实与迁移者决定，具体如何落地由 Agent 判断。文档中被截断的长表，均可在 `data/inventory.json` 中取得全量。
+补充包不直接交给 Agent，而是导入 Studio 的 Ren2Leaf Bridge（见下节），Agent 通过插件的工具按需读取。`README.md` 是写给 Agent 读的，开篇即要求其先更新 Skills，并声明「本文件是路牌，不是方案」：文档只陈述原作事实与迁移者决定，具体如何落地由 Agent 判断。文档中被截断的长表，全量在 `data/inventory.json` 中，Agent 通过 Bridge 的 `pack_query` 按类别查询。
+
+## 导入 Studio：Ren2Leaf Bridge
+
+迁移必须借助 Studio 插件 Ren2Leaf Bridge 进行，配套 Skill 会先检查该插件，未安装或未导入补充包时，Agent 会停下并请你先完成以下步骤：
+
+1. 在 Studio 插件页的「商店」中搜索并安装 **Ren2Leaf Bridge**，然后启用。插件需要 Studio 1.8.0 及以上版本。
+2. 打开迁移目标项目，在左侧边栏打开 Ren2Leaf Bridge 面板，点击「选择补充包…」，选中导出的补充包文件夹。
+3. 导入后，补充包的文档、扫描结果、截图、切图与角色图（图片已缩小）都复制进项目，此后不再读取原文件夹。补充包重新导出后，在面板中点击「重新导入」。
+
+导入之后，**不要再把补充包文件夹交给 Agent**。Agent 通过 Bridge 的工具查阅补充包，并把功能清单、需要你决定的问题、迁移日志和发现的 Studio 问题写进项目；你在面板中回答问题、查看进度，并可将已完成的清单项退回重做。
 
 ## 实例：The Question
 
@@ -100,26 +110,27 @@ npm start
 npx skills add NarraLeaf/Skills -g
 ```
 
-Ren'Py 移植 Skill 随本工具发布，位于 `skills/narraleaf-port-renpy/`，请一并提供给 Agent。Agent 接入 Studio 的相关事宜参见 <https://www.narraleaf.com/zh/docs/studio/agent>。
+Ren'Py 移植 Skill 随本工具发布，位于 `skills/narraleaf-port-renpy/`，请一并提供给 Agent。该 Skill 要求 Studio 已安装 Ren2Leaf Bridge 并导入补充包（见上文「导入 Studio：Ren2Leaf Bridge」）。Agent 接入 Studio 的相关事宜参见 <https://www.narraleaf.com/zh/docs/studio/agent>。
 
 ## 发给 Agent 的提示词
 
-补充包生成后，与源码一并交给 Agent，并以下文作为任务说明。其中三处占位需要替换：`{游戏名称}`、`{源代码文件夹}`、`{Ren2Leaf生成的文件夹}`。
+补充包导入 Ren2Leaf Bridge 后，把源码文件夹交给 Agent，并以下文作为任务说明。补充包文件夹无需交给 Agent。其中两处占位需要替换：`{游戏名称}`、`{源代码文件夹}`。
 
 ````markdown
 # 任务：将 Ren'Py 游戏《{游戏名称}》完整迁移到 NarraLeaf Studio
 
 ## 背景与输入
 - `{源代码文件夹}`：原 Ren'Py 游戏源代码文件夹，作为唯一参照，只读，不要修改。
-- `{Ren2Leaf生成的文件夹}`：迁移文档，包含本次迁移的约定、图片、注意事项和已知问题。
+- Ren2Leaf 迁移补充包：已导入 NarraLeaf Studio 的 Ren2Leaf Bridge 插件，包含本次迁移的约定、图片、注意事项和已知问题。不提供文件夹，只通过 Ren2Leaf Bridge 的工具读取。
+- 开始任何工作之前，先确认工具列表中有 Ren2Leaf Bridge 的工具（`mewbaka_ren2leaf_bridge__port_status`），并调用 `port_status` 确认补充包已导入。任一项不满足就停下，请我在 Studio 插件页的「商店」中安装 Ren2Leaf Bridge、在其面板中导入补充包，完成前不要进行下一步。
 - 请调用 NarraLeaf 相关技能完成迁移。
 
 ## 第一步：开始前必须完成的阅读
-1. 完整阅读 `{Ren2Leaf生成的文件夹}` 下的全部文档。文档中的约定辅助于你的默认做法。
+1. 阅读 Ren2Leaf Bridge 的说明（`agent_guide {chapter: "plugin:mewbaka.ren2leaf-bridge"}`），再通过它的工具完整阅读补充包文档。文档中的约定辅助于你的默认做法。
 2. 阅读 NarraLeaf 相关技能的说明，确认可用的 API、组件和项目结构。
 3. 通读 `{源代码文件夹}` 的 `.rpy` 脚本、`screens.rpy`、`options.rpy`、`gui.rpy` 及资源目录。
 
-完成后先输出一份**功能清单**再动手迁移。清单逐项列出原游戏的所有功能并标注迁移方案，至少覆盖以下内容：
+完成后先写出一份**功能清单**再动手迁移，清单写进 Ren2Leaf Bridge（`ledger_upsert`），我会在面板中查看。清单逐项列出原游戏的所有功能并标注迁移方案，至少覆盖以下内容：
 - 剧情脚本（label、jump、call、menu 分支）
 - 变量与条件判断（含 persistent 持久化变量）
 - 角色定义、立绘、表情切换
@@ -135,14 +146,14 @@ Ren'Py 移植 Skill 随本工具发布，位于 `skills/narraleaf-port-renpy/`�
 - 按功能清单逐项迁移，保持剧情文本、分支逻辑、演出时序与原版一致。
 - NarraLeaf 没有现成对应功能的，要自行设计实现，在行为上对齐原版。不得删除、跳过该功能，不得留空壳、TODO 或占位实现。
 - 资源文件全部迁移并正确引用，不得出现缺图、缺音频或路径错误。
-- 遇到迁移文档未覆盖、且确实需要用户决定的问题，先暂停并说明选项。能自行合理判断的问题，直接做出选择并记录理由。
+- 遇到迁移文档未覆盖、且确实需要用户决定的问题，用 Ren2Leaf Bridge 提问（`decision_ask`），说明选项并给出建议，我会在面板中回答。能自行合理判断的问题，直接做出选择，并用 `log_note` 记录理由。
 
 ## 第三步：验收标准（“迁移完成即上线”）
 交付前逐项自检，全部满足才算完成：
 1. 项目可在 NarraLeaf Studio 中无报错地构建和运行。
 2. 从标题界面开始，每条分支、每个结局都能完整走通，无死路、无断档。
 3. 存档、读档、设置、历史记录、快进、自动播放等系统功能均可正常使用，存档在重启后依然有效。
-4. 功能清单中的每一项都标记为“已实现”，并注明对应的实现位置。
+4. 功能清单中的每一项都在 Ren2Leaf Bridge 中标记为完成（`done`），并注明对应的实现位置。
 5. 所有资源均被正确加载，控制台无缺失资源警告。
 
 ## 第四步：交付迁移报告
@@ -157,7 +168,7 @@ Ren'Py 移植 Skill 随本工具发布，位于 `skills/narraleaf-port-renpy/`�
 
 ## 已知限制
 
-- 迁移本身不依赖本工具：即使工程未遵循 Ren'Py 开发规范、以致扫描出现异常，Agent 仍可依据源码完成迁移。在非标准写法上出问题的是扫描这一环，而非移植本身。
+- 补充包是证据，不是迁移的依据本身：即使工程未遵循 Ren'Py 开发规范、以致扫描出现异常，Agent 仍以源码为准完成迁移。在非标准写法上出问题的是扫描这一环，而非移植本身。
 - `.rpa` 归档与仅存字节码的 `.rpyc` 不作解包，其中的脚本与界面不在补充包内。
 - 素材只核对存在性、格式与重复，不读取内容：图像尺寸与透明边、音频时长与响度、视频帧率均不在检查范围。
 - ATL 动画只统计用在何处，不解析其内容。

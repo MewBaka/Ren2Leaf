@@ -694,7 +694,8 @@ describe("export package", () => {
         assert.ok(mainPart.includes("同一个人的另一套立绘"));
         // Somebody under another name is a character of their own, in the group.
         const npcPart = doc.slice(npcAt, doc.indexOf("　配音目录与取号"));
-        assert.ok(npcPart.includes("需放入「NPC / 别名」分组"));
+        assert.ok(npcPart.includes('`group: "NPC / 别名"`'));
+        assert.ok(!doc.includes("没有分组"));
         assert.ok(npcPart.includes("配音取号"));
         // Merged and classified variables are settled, so they are not asked about again.
         assert.ok(!doc.includes("迁移者没分类的"));

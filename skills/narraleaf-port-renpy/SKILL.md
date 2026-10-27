@@ -15,10 +15,11 @@ the porting method. It sits on top of **`narraleaf-make-game`**, which explains 
 formats and the order of work for any game - read its `SKILL.md` first (or `agent_guide
 {chapter:"workflow"}`), and read its chapters when a step below sends you there. That skill is a
 separate install, from [NarraLeaf/Skills](https://github.com/NarraLeaf/Skills); this one ships with
-the Ren2Leaf wizard. When the author hands you a Ren2Leaf pack - a folder with a `README.md` and
-`screens/` - read that `README.md` before step 1: it carries the facts scanned from this game and
-the decisions the author already made, and the rows it marks as the author's (`迁移者`) are settled,
-while the scanned ones are evidence you still check.
+the Ren2Leaf wizard, and it needs the wizard's Studio plugin, **Ren2Leaf Bridge** - step 0 checks
+for it before anything else. The Ren2Leaf pack (the facts scanned from this game, the screenshots of
+its screens and the decisions the author already made) reaches you only through that plugin's tools,
+never as a folder: read it with them before step 1. Rows the pack marks as the author's (`迁移者`)
+are settled; the scanned ones are evidence you still check.
 
 | Chapter | Read it before | File |
 |---|---|---|
@@ -58,12 +59,17 @@ network like any program they install. Reading the scripts as text is safe; runn
    an intermediate representation (IR) once, then generate `.story` text per scene from it. When a
    mapping turns out wrong you fix the converter and regenerate, instead of editing hundreds of rows.
    Keep it deterministic: the same source gives the same output.
-3. **Keep two files from the first minute** in your working folder and update them after every step:
-   - `port-log.md` - the plan, the phase you are in, counts of what is done, every mapping decision
-     and why, how to regenerate each part, and "Needs the author" items. A long port outlives one
-     context window; this is how you (or a successor) resume.
-   - `issues.md` - every problem: the tool and arguments, the exact error text, what you expected,
-     the workaround, severity. The author uses it to improve Studio; do not soften it.
+3. **Keep the port's state in Ren2Leaf Bridge from the first minute**, and update it after every
+   step. It lives in the project, the author follows it in the Bridge panel, and a long port that
+   outlives one context window resumes from `port_status` - you or a successor.
+   - The checklist (`ledger_upsert`): every feature of the original, how it is ported, and its state.
+   - The port log (`log_note`): the phase you are in, every mapping decision and why, how to
+     regenerate each part. "Log it" below means a `log_note`.
+   - Questions (`decision_ask`): what only the author can decide - "Needs the author" below. Ask with
+     options and a recommendation, then carry on with other work; the answer comes back at the top
+     of a later Bridge answer.
+   - Issues (`issue_add`): every problem - the tool and arguments, the exact error text, what you
+     expected, the workaround, severity. The author uses them to improve Studio; do not soften them.
 4. **Measure, do not assume.** Before mapping a whole category (positions, transitions, video),
    try one case in a scratch scene and look at it with `playtest_screenshot`. Delete the scratch
    scene at the end.
@@ -72,6 +78,13 @@ network like any program they install. Reading the scripts as text is safe; runn
 
 ## Step 0 - Access and the project
 
+- **Ren2Leaf Bridge first.** Look for `mewbaka_ren2leaf_bridge__port_status` in your tool list. If it
+  is not there, **stop**: tell the author to install **Ren2Leaf Bridge** from Studio's plugin store
+  (and enable it), then import the Ren2Leaf pack in the Ren2Leaf Bridge panel in Studio's left
+  sidebar. Do nothing else until they say it is done, then check again. With the tools there, read
+  `agent_guide {chapter:"plugin:mewbaka.ren2leaf-bridge"}` and call `port_status`; if it reports no
+  pack imported, stop the same way and ask the author to import it. Do not ask for the pack folder
+  or read one from disk instead.
 - `agent_status`. Writes must be on. Call `request_folder_access` once for the Ren'Py `game` folder
   and your working folder (converted media lands there), with a one-line reason. "Pending" means the
   author has not answered yet: carry on with work that needs no import and retry every minute.
@@ -89,7 +102,7 @@ network like any program they install. Reading the scripts as text is safe; runn
 
 ## Step 1 - Survey
 
-Read, in this order, and write the facts into `port-log.md`:
+Read, in this order, and log the facts:
 
 1. `options.rpy` (name, version, window/menu config, `config.*`), `gui.rpy` (every `gui.*` value),
    `screens.rpy` and any other file that defines `screen` blocks.
@@ -169,7 +182,7 @@ that byte-identical files are imported once (the second name points at the first
   as separate poses, with an `/if` where the game switches.
 - One character's sprite sets usually live on several tags (an outfit, a chibi, a later arc), named
   with no relation to each other or to the speaker variable. Collect them all under the one Studio
-  character, one pose per resolved image, and keep a tag → pose map in `port-log.md`.
+  character, one pose per resolved image, and log the tag → pose map.
 - Flattened full-body images per expression → one preset character with a pose per image. Part
   images (base, eyes, mouth) or a PSD → a layered character (`narraleaf-make-game` chapter
   *layered sprites*).
@@ -214,7 +227,9 @@ Studio against the picture - once the author has agreed to the run and to any SD
 *Safety* above). The full method, how to write the capture script and the Ren'Py layout rules for the
 parts you still compute are in `references/interface.md`. Per screen:
 
-1. Capture it in Ren'Py at the project's resolution.
+1. Capture it in Ren'Py at the project's resolution - unless the pack already has it:
+   `pack_screen` lists the captures Ren2Leaf took, with every element's rectangle, and
+   `pack_image` shows a capture's crops.
 2. Write the element table (rectangles, fonts, colours, states) in your working folder.
 3. Build or restyle the Studio page / game UI, using the game's own images for frames and buttons.
 4. `ui_screenshot` it and compare side by side; then check it **in the running game**
@@ -265,4 +280,5 @@ is never dropped silently, and none is left looking live but doing nothing.
   Ren'Py vs Studio, screenshot against screenshot.
 - Hand over: coverage numbers (scenes, lines, characters, poses, assets by type, screens, voice
   lines, gallery entries, endings), what was not ported and why, the visible differences that remain,
-  "Needs the author", and the paths to `port-log.md` and `issues.md`.
+  "Needs the author" still open, and that the checklist, log and issues are in the Ren2Leaf Bridge
+  panel.

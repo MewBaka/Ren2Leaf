@@ -1,18 +1,18 @@
 # The Question → NarraLeaf 迁移补充包
 
-这份文件由 Ren2Leaf 生成，和 Ren'Py 游戏源码一起交给 Agent。它记录原作里有什么、迁移者定了什么，
-是源码里看不出来、或者要人来定的那部分。
+这份文件由 Ren2Leaf 生成。迁移者把它导入 NarraLeaf Studio 的 Ren2Leaf Bridge 插件，Agent 通过插件的工具读它；
+Ren'Py 游戏源码另外交给 Agent。它记录原作里有什么、迁移者定了什么，是源码里看不出来、或者要人来定的那部分。
 
 ## 0　硬性要求
 
-1. 动手之前先更新 Skills：
+1. 这份补充包只通过 Ren2Leaf Bridge 读，不要另找补充包文件夹：
 
-```bash
-npx skills add NarraLeaf/Skills -g
-```
+   - `pack_section` 读本文的一节；
+   - `pack_query` 查完整扫描结果，文中写「其余见 `data/inventory.json`」的长表从这里查；
+   - `pack_screen` 读一张截图的元素坐标，`pack_image` 看文中引用的图片（截图、切图、角色图）。
 
-   以及本工具附带的 Ren'Py 移植 skill `narraleaf-port-renpy`，它在 Ren2Leaf 仓库的
-   `skills/narraleaf-port-renpy/` 下，复制到你的 agent 读取 skill 的目录即可。Agent 接入说明见 https://www.narraleaf.com/zh/docs/studio/agent。
+   迁移方法见 Ren'Py 移植 skill `narraleaf-port-renpy`（Ren2Leaf 仓库 `skills/narraleaf-port-renpy/`），
+   它建立在 NarraLeaf Skills（`npx skills add NarraLeaf/Skills -g`）之上。两者有一个没装，先请迁移者装好再动手。
 
 2. **这份文件是路牌，不是方案。** 它只说明原作的事实和迁移者的决定；具体怎么迁移由你判断，
    不要被本文的措辞带着走。文中出现的任何 NarraLeaf 写法都只是参考，以 skill 和 Studio 的
@@ -52,8 +52,8 @@ npx skills add NarraLeaf/Skills -g
 | 建议 SDK | Ren'Py 8（把握：medium） |
 | 源码状态 | 源码完整 |
 | 脚本文件 | .rpy 52，.py 0，.rpyc 53，.rpa 0 |
-| 扫描时间 | 2026-10-19T14:59:10.041Z |
-| 扫描器版本 | ren2leaf-diagnose 0.2.0（inventory v2） |
+| 扫描时间 | 2026-10-27T08:08:18.906Z |
+| 扫描器版本 | ren2leaf-diagnose 0.3.0（inventory v2） |
 | 源码指纹 | sha256:585e2393d74bd507（53 个脚本，747 KB） |
 
 源码指纹是生成这份包时 `game/` 下所有 `.rpy`/`.rpym`/`.py` 的内容摘要。手上的源码和它对不上，说明这份包和源码不是同一个版本。
@@ -66,12 +66,12 @@ npx skills add NarraLeaf/Skills -g
 
 | 类别 | 迁移者的意思 | 在 Studio 里怎么落地 |
 | --- | --- | --- |
-| 主要角色 | 角色栏顶层 | `character_upsert` 建角色，有立绘的配立绘（分层立绘用 `character_layered_set`） |
-| POV 角色 | 角色栏顶层，玩家视角 | 同上；名字框随章节变的，按原作每段的名字写 |
-| NPC / 别名 | 次要角色 | 照样 `character_upsert` 建角色，名字按下表 |
+| 主要角色 | 主角，和次要角色分开放 | `character_upsert` 建角色，有立绘的配立绘（分层立绘用 `character_layered_set`） |
+| POV 角色 | 主角，玩家视角 | 同上；名字框随章节变的，按原作每段的名字写 |
+| NPC / 别名 | 次要角色，收进一个分组 | `character_upsert` 建角色，带 `group: "NPC / 别名"`，名字按下表 |
 | 临时角色 | 迁移者认为不需要独立角色（无立绘无配音的过场人物） | 不建角色，台词写成一次性说话人 |
 
-⚠️ **「NPC / 别名」只是这份报告里的说法，Studio 没有角色分组这个东西**（`character_upsert` 没有分组字段）。不要去找分组入口：这一类的意思只是「次要角色，照建，但不必按主角那样准备立绘和差分」。
+Studio 的角色面板按分组列角色，`character_upsert` 的 `group` 按名字归组，组不存在就新建。迁移者定的只有一件事：「NPC / 别名」这一类收进同名分组，不和主角混在一起。主角放在哪个组、组名叫什么，按 Studio 的做法由你定。这一类的角色照建，只是不必像主角那样准备立绘和差分。
 
 ### 3.1　主要角色
 
@@ -739,9 +739,9 @@ Ren'Py 找文件的办法是：先按脚本里写的路径找，找不到再在 
 | data/speakers.json | 迁移者确认过的说话人身份 |
 | data/chapters.json | 迁移者定的章节分组 |
 
-`data/inventory.json` 是完整的扫描结果，本文件里被截断的表都能在它里面找到全量。
+`data/inventory.json` 是完整的扫描结果，本文件里被截断的表都能在它里面找到全量，用 `pack_query` 按类别查。图片的路径就是 `pack_image` 要的路径。
 
 
 ---
 
-由 Ren2Leaf 生成于 2026-10-19T15:23:34.917Z（补充包格式 v1）
+由 Ren2Leaf 生成于 2026-10-27T08:08:18.961Z（补充包格式 v1）

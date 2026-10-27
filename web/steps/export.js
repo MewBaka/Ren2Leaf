@@ -135,9 +135,11 @@ export async function mount(host, ctx) {
 
         scroll.append(section("发送给 Agent 之前", undefined,
             h("div", { class: "an-steps" },
-                h("p", {}, "先安装或更新 NarraLeaf Skills："),
+                h("p", {}, "1. 安装或更新 NarraLeaf Skills，并把本工具附带的 narraleaf-port-renpy 提供给 Agent："),
                 h("pre", { class: "an-code" }, data.skillsCommand),
-                h("p", {}, "然后将游戏源码与补充包一并发送给 Agent。补充包开头已注明需先更新 Skills"),
+                h("p", {}, "2. 在 Studio 的插件页安装并启用 Ren2Leaf Bridge"),
+                h("p", {}, "3. 打开迁移目标项目，在左侧栏的 Ren2Leaf Bridge 面板中点击「选择补充包…」，选中生成的补充包文件夹"),
+                h("p", {}, "4. 只把游戏源码文件夹和提示词发给 Agent，补充包文件夹不用发送，Agent 通过 Bridge 读取"),
                 h("p", {}, h("a", { class: "an-link", href: data.agentDocs, target: "_blank", rel: "noreferrer" }, "Agent 接入文档")))));
 
         scroll.append(section("准备情况", undefined, readinessList(), {
@@ -169,9 +171,9 @@ export async function mount(host, ctx) {
                 }
             },
         }, copied ? "已复制" : "复制全文");
-        scroll.append(section("发送给 Agent 的文档", undefined, documentView(), {
+        scroll.append(section("补充包文档", undefined, documentView(), {
             actions: copyBtn,
-            note: "此即补充包中的 README.md，Agent 将以此为主要参考",
+            note: "此即补充包中的 README.md，Agent 通过 Ren2Leaf Bridge 逐节读取",
         }));
 
         const tbody = h("tbody");

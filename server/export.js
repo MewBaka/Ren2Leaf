@@ -1,4 +1,5 @@
-// Step ⑥ export: the supplement package handed to the agent together with the game's source.
+// Step ⑥ export: the supplement package the migrator imports into Studio's Ren2Leaf Bridge plugin.
+// The agent gets the game's source and reads this package only through the plugin's tools.
 //
 // One folder:
 //   README.md                      the document the agent reads, first thing
@@ -129,19 +130,19 @@ function headerSection(game, inventory, fingerprint, skip = {}) {
     return [
         `# ${info.name || game.name} → NarraLeaf 迁移补充包`,
         "",
-        "这份文件由 Ren2Leaf 生成，和 Ren'Py 游戏源码一起交给 Agent。它记录原作里有什么、迁移者定了什么，",
-        "是源码里看不出来、或者要人来定的那部分。",
+        "这份文件由 Ren2Leaf 生成。迁移者把它导入 NarraLeaf Studio 的 Ren2Leaf Bridge 插件，Agent 通过插件的工具读它；",
+        "Ren'Py 游戏源码另外交给 Agent。它记录原作里有什么、迁移者定了什么，是源码里看不出来、或者要人来定的那部分。",
         "",
         "## 0　硬性要求",
         "",
-        "1. 动手之前先更新 Skills：",
+        "1. 这份补充包只通过 Ren2Leaf Bridge 读，不要另找补充包文件夹：",
         "",
-        "```bash",
-        SKILLS_COMMAND,
-        "```",
+        "   - `pack_section` 读本文的一节；",
+        "   - `pack_query` 查完整扫描结果，文中写「其余见 `data/inventory.json`」的长表从这里查；",
+        "   - `pack_screen` 读一张截图的元素坐标，`pack_image` 看文中引用的图片（截图、切图、角色图）。",
         "",
-        `   以及本工具附带的 Ren'Py 移植 skill \`narraleaf-port-renpy\`，它在 Ren2Leaf 仓库的`,
-        `   \`${PORT_SKILL_DIR}\` 下，复制到你的 agent 读取 skill 的目录即可。Agent 接入说明见 ${AGENT_DOCS}。`,
+        `   迁移方法见 Ren'Py 移植 skill \`narraleaf-port-renpy\`（Ren2Leaf 仓库 \`${PORT_SKILL_DIR}\`），`,
+        `   它建立在 NarraLeaf Skills（\`${SKILLS_COMMAND}\`）之上。两者有一个没装，先请迁移者装好再动手。`,
         "",
         "2. **这份文件是路牌，不是方案。** 它只说明原作的事实和迁移者的决定；具体怎么迁移由你判断，",
         "   不要被本文的措辞带着走。文中出现的任何 NarraLeaf 写法都只是参考，以 skill 和 Studio 的",
@@ -251,12 +252,13 @@ function speakersSection(speakers, decisions, portraits, skip) {
         }
     }
     out.push("迁移者把每个变量分成了四类，意思如下：", "");
-    out.push(mdTable(["类别", "迁移者的意思"], [
-        ["主要角色", "角色栏顶层"],
-        ["POV 角色", "角色栏顶层，玩家视角"],
-        [NPC_GROUP, `放进「${NPC_GROUP}」分组`],
-        ["临时角色", "迁移者认为不需要独立角色（无立绘无配音的过场人物）"],
+    out.push(mdTable(["类别", "迁移者的意思", "在 Studio 里怎么落地"], [
+        ["主要角色", "主角，和次要角色分开放", "`character_upsert` 建角色，有立绘的配立绘（分层立绘用 `character_layered_set`）"],
+        ["POV 角色", "主角，玩家视角", "同上；名字框随章节变的，按原作每段的名字写"],
+        [NPC_GROUP, "次要角色，收进一个分组", `\`character_upsert\` 建角色，带 \`group: "${NPC_GROUP}"\`，名字按下表`],
+        ["临时角色", "迁移者认为不需要独立角色（无立绘无配音的过场人物）", "不建角色，台词写成一次性说话人"],
     ]), "");
+    out.push(`Studio 的角色面板按分组列角色，\`character_upsert\` 的 \`group\` 按名字归组，组不存在就新建。迁移者定的只有一件事：「${NPC_GROUP}」这一类收进同名分组，不和主角混在一起。主角放在哪个组、组名叫什么，按 Studio 的做法由你定。这一类的角色照建，只是不必像主角那样准备立绘和差分。`, "");
 
     const main = roleIs("main");
     const pov = roleIs("pov");
@@ -281,7 +283,7 @@ function speakersSection(speakers, decisions, portraits, skip) {
     const npc = roleIs("npc");
     if (npc.length) {
         out.push(h(NPC_GROUP), "");
-        out.push(`需放入「${NPC_GROUP}」分组。`, "");
+        out.push(`次要角色：照 \`character_upsert\` 建出来，带 \`group: "${NPC_GROUP}"\`。`, "");
         out.push(mdTable(["角色（迁移者）", "变量", "原名字框（扫描）", "台词", "配音（扫描）", "合并进来的变量", "备注"],
             npc.map((x) => {
                 const a = answers[x.variable];
@@ -963,7 +965,7 @@ function reviewSection(inventory) {
 function filesSection(files) {
     const out = ["## 10　这份包里的文件", ""];
     out.push(mdTable(["文件", "是什么"], files.map((f) => [f.path, f.what])), "");
-    out.push("`data/inventory.json` 是完整的扫描结果，本文件里被截断的表都能在它里面找到全量。", "");
+    out.push("`data/inventory.json` 是完整的扫描结果，本文件里被截断的表都能在它里面找到全量，用 `pack_query` 按类别查。图片的路径就是 `pack_image` 要的路径。", "");
     return `${out.join("\n")}\n`;
 }
 

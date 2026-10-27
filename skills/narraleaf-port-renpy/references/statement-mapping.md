@@ -28,15 +28,15 @@ Measure anything visual once in a scratch scene before you generate thousands of
 |---|---|---|
 | `e "Hello."` | `Eileen: Hello.` (dialogue row) | speaker = the merged Studio character |
 | `"Narration."` | narration row | |
-| `extend " more"` | append to the previous line's text | the click between the two parts is lost - `.story` has no wait inside a line; count them and log it in `port-log.md` |
-| `e "…" (multiple=2)` | the lines one after another, as separate rows | Ren'Py shows the speakers side by side at once; `.story` has no such form - log each in `port-log.md` |
+| `extend " more"` | append to the previous line's text | the click between the two parts is lost - `.story` has no wait inside a line; count them and log it (`log_note`) |
+| `e "…" (multiple=2)` | the lines one after another, as separate rows | Ren'Py shows the speakers side by side at once; `.story` has no such form - log each (`log_note`) |
 | `nvl` mode | `/nvl` block | check `story_command /nvl` |
 | `"???" "…"` before a name is known | `/rename` the character, then dialogue | not a second character - but prove which character it is from the voice takes first, and check it is not several (`characters-and-voice.md`) |
 | a speaker variable whose display name is empty | narration rows in that mode's dialogue look | not a character (`characters-and-voice.md`) |
-| text tags `{w}`, `{p}`, `{nw}` | drop `{w}` and `{nw}`; write `{p}` as a line break, `\n` | `.story` has no inline pause (Studio sets those in its editor): the waits are lost, and a `{nw}` line now waits for a click - log each line in `port-log.md` |
+| text tags `{w}`, `{p}`, `{nw}` | drop `{w}` and `{nw}`; write `{p}` as a line break, `\n` | `.story` has no inline pause (Studio sets those in its editor): the waits are lost, and a `{nw}` line now waits for a click - log each line (`log_note`) |
 | `{color=#f00}`, `{b}`, `{i}` | the same tags in `.story` text: `{color=#f00}…{/color}` is read as written (`story_show` prints it back as `{color #f00}`), `{b}…{/b}`, `{i}…{/i}` | close each tag on the same line; `{/color}` etc. as in Ren'Py |
 | `{size}`, `{font}`, `{u}`, `{s}`, `{a=…}` | not expressible in `.story` text | strip them; log what styling was lost |
-| `[var]` interpolation | not expressible in `.story` text: an inline variable is inserted in Studio's editor | write the line without it and log scene, line and variable in `port-log.md` for the author |
+| `[var]` interpolation | not expressible in `.story` text: an inline variable is inserted in Studio's editor | write the line without it and log scene, line and variable (`log_note`) for the author |
 
 Keep the speaker's Ren'Py `Character` arguments (`who_color`, `window_background`, `what_prefix`
 quotes, `ctc`) for the interface step; they are not story rows.
@@ -100,7 +100,7 @@ wrong or no image. Record unresolvable statements with their line numbers.
 | `label x:` | a scene, or a `/label` inside one | |
 | `jump x` | `/jump 'Scene'` or `/goto label` | |
 | `call x` | `/jump 'Scene' return` | the called label is its own scene; play continues after the row when that scene ends |
-| `menu:` with options | `/menu` with indented options | an option's `if` has no `.story` spelling (Studio sets option conditions in its editor): put two `/menu` rows, with and without the option, under `/if` / `? else`, or log it in `port-log.md` under "Needs the author" |
+| `menu:` with options | `/menu` with indented options | an option's `if` has no `.story` spelling (Studio sets option conditions in its editor): put two `/menu` rows, with and without the option, under `/if` / `? else`, or ask the author (`decision_ask`) |
 | `if / elif / else` | `/if` blocks | port the expression; the story expression language is documented in `narraleaf-make-game` |
 | `$ x = True`, `$ x += 1` | `/set`, `/inc`, `/dec`, `/toggle` | |
 | `$ persistent.x = True` | `/set` on the persistent variable | |
