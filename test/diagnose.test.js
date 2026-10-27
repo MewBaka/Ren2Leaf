@@ -360,3 +360,88 @@ describe("synthetic game", () => {
         await assert.rejects(diagnose(tmp), /game/);
     });
 });
+
+describe("config.auto_voice", () => {
+    let dir;
+    let inv;
+    before(async () => {
+        dir = fs.mkdtempSync(path.join(os.tmpdir(), "ren2leaf-autovoice-"));
+        const game = path.join(dir, "game");
+        const write = (rel, text) => {
+            fs.mkdirSync(path.dirname(path.join(game, rel)), { recursive: true });
+            fs.writeFileSync(path.join(game, rel), text);
+        };
+        write("options.rpy", 'define config.auto_voice = "voice/{id}.ogg"\n');
+        write("script.rpy", [
+            'define a = Character("A")',
+            "",
+            "label start:",
+            "",
+            '    a "First."',
+            '    a "First."',
+            '    a "She said \\"hi\\"." with dissolve',
+            "    menu:",
+            '        "Bare caption."',
+            '        "Go":',
+            "            pass",
+            "    menu pick:",
+            '        a "Which one?"',
+            '        "Left":',
+            "            pass",
+            '    "Narration after the menu."',
+            '    a "Fixed." id custom_line',
+            "    return",
+        ].join("\n"));
+        // Identifiers as Ren'Py writes them, with one that is not in the script any more.
+        write("tl/schinese/script.rpy", [
+            "translate schinese start_2222d3ae:",
+            '    a "第一句。"',
+            "translate schinese pick_267af3a3:",
+            '    a "哪个？"',
+            "translate schinese start_00000000:",
+            '    a "删掉的一句。"',
+            "translate schinese strings:",
+            '    old "Go"',
+            '    new "走"',
+        ].join("\n"));
+        write("voice/start_2222d3ae.ogg", "");
+        write("voice/custom_line.ogg", "");
+        inv = await diagnose(dir);
+    });
+    after(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+    test("each line's voice file is named after the identifier Ren'Py gives it", () => {
+        const sp = inv.extensions.speakers;
+        assert.equal(sp.summary.voicedLines, 0);
+        assert.equal(sp.summary.autoVoicedLines, 2);
+        assert.equal(sp.autoVoice.pattern, "voice/{id}.ogg");
+        assert.equal(sp.autoVoice.file, "options.rpy");
+        // Expected identifiers computed apart from the scanner, with Python's hashlib.
+        assert.deepEqual(sp.autoVoice.entries.map((x) => [x.line, x.id, x.exists]), [
+            [5, "start_2222d3ae", true],
+            [6, "start_2222d3ae_1", false],
+            [7, "start_aa0fff06", false],
+            // Line 9, the bare caption, is part of the menu and has no identifier.
+            [13, "pick_267af3a3", false],
+            [16, "pick_61323630", false],
+            [17, "custom_line", true],
+        ]);
+        assert.deepEqual(sp.autoVoice.checked, { language: "schinese", folder: "tl/schinese", identifiers: 3, found: 2 });
+        assertCamelCase(inv);
+    });
+});
+
+describe("config.auto_voice on the_question", sdkOpts, () => {
+    let dir;
+    after(() => dir && fs.rmSync(dir, { recursive: true, force: true }));
+
+    test("every identifier computed for The Question is one its translations use", async () => {
+        // A copy, so the setting can be added without touching the SDK.
+        dir = fs.mkdtempSync(path.join(os.tmpdir(), "ren2leaf-tq-voice-"));
+        fs.cpSync(path.join(QUESTION, "game"), path.join(dir, "game"), { recursive: true, filter: (f) => !/[/\\](cache|saves)$/.test(f) });
+        fs.appendFileSync(path.join(dir, "game", "options.rpy"), '\ndefine config.auto_voice = "voice/{id}.ogg"\n');
+        const av = (await diagnose(dir)).extensions.speakers.autoVoice;
+        assert.equal(av.lines, 70);
+        assert.equal(av.checked.found, 70);
+    });
+});

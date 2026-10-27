@@ -26,7 +26,7 @@ export class Collector {
         this.hooks = [];
         // `define bgm_title = "audio/bgm/title.ogg"`: a name for a file, not a story variable.
         this.assetConstants = [];
-        this.info = { name: [], version: [], guiInit: [], screenWidth: [], screenHeight: [], saveDirectory: [], gameMenuScreen: [] };
+        this.info = { name: [], version: [], guiInit: [], screenWidth: [], screenHeight: [], saveDirectory: [], gameMenuScreen: [], autoVoice: [] };
         this.py2 = [];
         this.py3 = [];
         this.directives = [];
@@ -134,6 +134,9 @@ export function scanFile(col, file, source, { pythonFile = false } = {}) {
     for (const e of errors) col.lexErrors.push({ file, line: e.line, message: e.message });
     const stack = []; // {indent, type, name}
     let lastGlobalLabel = null;
+    // The label translation identifiers are named after: the last one seen in this file, skipping
+    // `hide` labels and names that start with "_" (renpy/translation Restructurer).
+    col.tlLabel = null;
     // What the stage shows and which voice line is pending, carried line by line through the file.
     const stage = { shown: [], background: null, voice: null, voiceSustain: false, lastSay: null, nvl: false };
     const inTl = file.startsWith("tl/");
@@ -186,6 +189,7 @@ export function scanFile(col, file, source, { pythonFile = false } = {}) {
             const after = hm.index + hm[0].length + (ln.masked.length - ln.masked.trimStart().length);
             const close = ln.masked[after] === "(" ? matchBracket(ln.masked, after) : -1;
             if (!inTl) {
+                if (!name.startsWith("_") && !/\bhide\s*:?\s*$/.test(m)) col.tlLabel = name;
                 col.labels.push({
                     name, file, line: ln.line, indent: ln.indent, global: name.split(".")[0],
                     parameters: close > 0 ? ln.text.slice(after, close + 1) : null,
@@ -383,6 +387,9 @@ function scanStatement(col, ctx, ln, m) {
         scanCallSites(col, ctx, ln, {});
         return;
     }
+    // `menu name:` is a label as well, and the lines after it take their identifiers from it.
+    const named = /^menu\s+([A-Za-z_]\w*)\s*[(:]/.exec(m);
+    if (named && !ctx.file.startsWith("tl/") && !named[1].startsWith("_")) col.tlLabel = named[1];
     if (/^menu\b/.test(m) && m.endsWith(":") && ctx.label) {
         let screen = "choice";
         const sm = /\bscreen\s*=\s*/.exec(ln.masked);
@@ -660,6 +667,7 @@ function configAssignment(col, ctx, ln, name, a, b) {
         "config.screen_width": "screenWidth",
         "config.screen_height": "screenHeight",
         "config.save_directory": "saveDirectory",
+        "config.auto_voice": "autoVoice",
         _game_menu_screen: "gameMenuScreen",
     };
     const key = map[name];

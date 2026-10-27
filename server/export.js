@@ -222,6 +222,34 @@ function speakersSection(speakers, decisions, portraits, skip) {
     const voiceCell = (x) => x.voiceDirs.map((v) => `${v.dir} ${v.from ?? "?"}–${v.to ?? "?"}×${v.lines}`).join("，") || "无";
     const out = ["## 3　说话人", ""];
     out.push(`共 ${s.speakers} 个 Character 变量，${s.withLines} 个有台词；台词 ${s.spokenLines} 句，旁白 ${s.narratorLines} 句，带配音 ${s.voicedLines} 句。`, "");
+    const av = speakers.autoVoice;
+    if (av) {
+        const setting = av.pattern ? `\`config.auto_voice = "${av.pattern}"\`` : `\`config.auto_voice\`（值不是字面量：\`${av.expression ?? "?"}\`）`;
+        out.push(`⚠️ 原作设了 ${setting}（${av.file}:${av.line}）：台词上不写 \`voice\` 语句，Ren'Py 按每句的翻译标识自动找配音文件，所以上面「带配音」只数了写明 \`voice\` 的句子，不是全部。`, "");
+        if (av.pattern?.includes("{id}")) {
+            out.push(`扫描照 Ren'Py 8 的规则算了每句的标识（所在 label 加 \`_\` 加 \`Say.get_code()\` 的 md5 前 8 位，重复的再加 \`_1\`、\`_2\`）：${av.lines} 句里 **${av.voiced} 句找得到配音文件**。菜单里不带说话人的那句提示是菜单的一部分，不算台词，没有配音。`, "");
+            if (av.checked) {
+                const off = av.lines - av.checked.found;
+                out.push(`拿游戏自带的 \`${av.checked.folder}/\` 核对：算出的标识有 ${av.checked.found} 个在里面（它一共 ${av.checked.identifiers} 个）。${off
+                    ? `另外 ${off} 句对不上，多半是台词前面紧挨着 \`nvl clear\` 这类语句，而游戏是用旧版 Ren'Py 做的：旧版把这些语句也算进标识。`
+                    : "全部对得上。"}`, "");
+            }
+            const missing = av.entries.filter((x) => !x.exists);
+            if (!av.voiced && missing.length) {
+                out.push(`一个配音文件都找不到：先看 \`${av.pattern}\` 指的文件夹在不在、是不是打进了 .rpa。按规则该有的文件名是这样的：`, "");
+                out.push(mdTable(["原句", "算出的标识", "该有的配音文件"], missing.slice(0, 5).map((x) => [`${x.file}:${x.line}`, x.id, x.voice])), "");
+            } else if (missing.length) {
+                const { rows, note } = capped(missing.map((x) => [`${x.file}:${x.line}`, x.id, x.voice]), MAX_ROWS, "data/inventory.json");
+                out.push(`找不到配音文件的 ${missing.length} 句（可能本来就没录，也可能是上面说的旧版标识）：`, "");
+                out.push(mdTable(["原句", "算出的标识", "该有的配音文件"], rows), note);
+            } else {
+                out.push("前几句是这样对上的：", "");
+                out.push(mdTable(["原句", "标识", "配音文件"], av.entries.slice(0, 5).map((x) => [`${x.file}:${x.line}`, x.id, x.voice])), "");
+            }
+        } else {
+            out.push("值不是带 `{id}` 的字面量，配音文件名要按源码里的规则自己算。", "");
+        }
+    }
     out.push("迁移者把每个变量分成了四类，意思如下：", "");
     out.push(mdTable(["类别", "迁移者的意思"], [
         ["主要角色", "角色栏顶层"],

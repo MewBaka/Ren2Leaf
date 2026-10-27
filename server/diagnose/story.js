@@ -2,7 +2,7 @@
 // label and menu structure, jump/call edges, and the stage changes that hint where a chapter ends.
 // Nothing here evaluates code; a say's text is kept in memory for samples only.
 
-import { depthMap, matchBracket } from "./lexer.js";
+import { depthMap, matchBracket, splitArgs } from "./lexer.js";
 import { isPropertyName } from "./vocab.js";
 import { assetPath, literalAt, parseCall, snippet } from "./scan.js";
 
@@ -74,6 +74,69 @@ function textFeatures(text) {
     return { interpolations: [...vars], textTags: [...tags] };
 }
 
+/** A string literal's text as Ren'Py's lexer returns it (renpy/lexer.py `string()`). */
+function renpyString(ln, s) {
+    const q = ln.text.startsWith('"""', s.start) || ln.text.startsWith("'''", s.start) ? null : ln.text[s.start];
+    if (!q) return null;
+    let body = ln.text.slice(s.start + 1, s.end - 1);
+    if (/r/i.test(s.prefix)) return body;
+    body = body.replace(/[ \n]+/g, " ");
+    return body.replace(/\\(u([0-9a-fA-F]{1,4})|.)/g, (all, c, hex) => {
+        if (c === "{") return "{{";
+        if (c === "[") return "[[";
+        if (c === "%") return "%%";
+        if (c === "n") return "\n";
+        if (c[0] === "u") return hex ? String.fromCharCode(parseInt(hex, 16)) : "";
+        return c;
+    });
+}
+
+/** renpy/translation `encode_say_string`. */
+function encodeSayString(s) {
+    return `"${s.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/"/g, '\\"').replace(/(?<= ) /g, "\\ ")}"`;
+}
+
+/**
+ * The say statement as Ren'Py's `Say.get_code()` writes it: the text its translation identifier
+ * is hashed from, and with `config.auto_voice` the name of its voice file. Null for a
+ * triple-quoted line, which Ren'Py splits into several says.
+ */
+function sayCode(ctx, ln, who, tokens, what) {
+    const text = renpyString(ln, what);
+    if (text == null) return null;
+    const rv = who ? [who] : [];
+    const at = tokens.indexOf("@");
+    rv.push(...(at < 0 ? tokens : tokens.slice(0, at)));
+    if (at >= 0 && at < tokens.length - 1) rv.push("@", ...tokens.slice(at + 1));
+    rv.push(encodeSayString(text));
+    // After the text, in source order: `nointeract`, `id x`, `(arguments)`, `with x`.
+    let rest = ln.text.slice(what.end).trim();
+    let interact = !(ctx.menu && !ctx.choice);
+    if (/^nointeract\b/.test(rest)) {
+        interact = false;
+        rest = rest.slice("nointeract".length).trim();
+    }
+    const id = /^id\s+(\w+)/.exec(rest);
+    if (id) rest = rest.slice(id[0].length).trim();
+    let args = null;
+    const open = ln.text.length - rest.length;
+    if (rest.startsWith("(")) {
+        const close = matchBracket(ln.masked, open);
+        if (close > 0) {
+            args = `(${splitArgs(ln.masked, open + 1, close)
+                .map(([a, b]) => ln.text.slice(a, b).trim().replace(/^(\w+)\s*=(?!=)\s*/, "$1="))
+                .join(", ")})`;
+            rest = ln.text.slice(close + 1).trim();
+        }
+    }
+    const withExpr = /^with\s+(.+)$/.exec(rest)?.[1].trim() ?? null;
+    if (!interact) rv.push("nointeract");
+    if (id) rv.push("id", id[1]);
+    if (args) rv.push(args);
+    if (withExpr) rv.push("with", withExpr);
+    return { code: rv.join(" "), explicitId: id ? id[1] : null };
+}
+
 /**
  * A say statement: `e "…"`, `e happy "…"`, `"Name" "…"`, `"…"` or `extend "…"`.
  * @returns {object|null} the record, or null when the line is not a say
@@ -93,15 +156,19 @@ function parseSay(ctx, ln, m) {
         // `"Name" "text"` is a one-off speaker; a lone string is narration.
         const second = strs[1];
         if (second && !ln.masked.slice(first.end, second.start).trim()) {
-            return { ...base, kind: "inline", inlineName: first.value, text: second.value };
+            return { ...base, kind: "inline", inlineName: first.value, text: second.value, tl: sayCode(ctx, ln, ln.text.slice(first.start, first.end), [], second) };
         }
-        return { ...base, kind: "narrator", text: first.value };
+        // A bare string in a menu is its caption, a menu item translated as a string: it is not a
+        // say statement and has no identifier. With a speaker, it is a say that does not wait.
+        const caption = ctx.menu && !ctx.choice;
+        return { ...base, kind: "narrator", text: first.value, tl: caption ? null : sayCode(ctx, ln, null, [], first) };
     }
-    if (/^extend\b/.test(prefix)) return { ...base, kind: "extend", text: first.value };
+    if (/^extend\b/.test(prefix)) return { ...base, kind: "extend", text: first.value, tl: sayCode(ctx, ln, "extend", [], first) };
     const pm = /^([A-Za-z_]\w*)((?:\s+(?:@|[-+]?[\w.]+))*)$/.exec(prefix);
     if (!pm || STATEMENTS.has(pm[1])) return null;
-    const attributes = pm[2].trim().split(/\s+/).filter((a) => a && a !== "@");
-    return { ...base, kind: "say", speaker: pm[1], attributes, text: first.value };
+    const tokens = pm[2].trim().split(/\s+/).filter(Boolean);
+    const attributes = tokens.filter((a) => a !== "@");
+    return { ...base, kind: "say", speaker: pm[1], attributes, text: first.value, tl: sayCode(ctx, ln, pm[1], tokens, first) };
 }
 
 function recordSay(col, ctx, say) {
@@ -116,6 +183,7 @@ function recordSay(col, ctx, say) {
     say.shown = stage.shown.map((s) => s.tag);
     say.background = stage.background;
     say.nvl = stage.nvl;
+    if (say.tl) say.tl.label = col.tlLabel ?? null;
     Object.assign(say, textFeatures(say.text ?? ""));
     col.says.push(say);
     if (say.kind !== "extend") stage.lastSay = say;

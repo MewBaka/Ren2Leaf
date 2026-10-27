@@ -6,6 +6,7 @@
 // output is not a flat variable → person map: each speaker also carries line ranges, split where
 // the voice folder changes, and a decision can be made per range.
 
+import crypto from "node:crypto";
 import { byLocation } from "./screens.js";
 
 const SAMPLE_COUNT = 3;
@@ -276,5 +277,101 @@ export function buildSpeakers(col, characters) {
             files: counted(narratorFiles).map(([file, lines]) => ({ file, lines })),
             samples: narratorSays.slice(0, SAMPLE_COUNT).map((s) => ({ file: s.file, line: s.line, text: (s.text ?? "").slice(0, SAMPLE_CHARS) })),
         },
+    };
+}
+
+const TL_BLOCK = /^translate\s+(\S+)\s+(\w+)\s*:/;
+
+/**
+ * Each say line's translation identifier, as Ren'Py names it when it loads the script
+ * (renpy/translation `Restructurer`): `<label>_<first 8 hex of md5(get_code + "\r\n")>`, dots in the
+ * label written as underscores, `_1`, `_2` … on a repeat, and an `id` clause winning outright.
+ * Files are taken in path order, the order Ren'Py loads them in.
+ *
+ * @param {Array} says the collector's say records, each with `tl: {code, label, explicitId}`
+ * @returns {Map<object, string>} say record -> identifier
+ */
+export function translationIds(says) {
+    const byFile = new Map();
+    for (const s of says) {
+        if (!s.tl || s.file.startsWith("tl/")) continue;
+        if (!byFile.has(s.file)) byFile.set(s.file, []);
+        byFile.get(s.file).push(s);
+    }
+    const ids = new Map();
+    const loaded = new Set();
+    for (const file of [...byFile.keys()].sort()) {
+        const list = byFile.get(file).sort((a, b) => a.line - b.line);
+        const explicit = new Set(list.map((s) => s.tl.explicitId).filter(Boolean));
+        const here = new Set();
+        for (const s of list) {
+            const digest = crypto.createHash("md5").update(`${s.tl.code}\r\n`, "utf8").digest("hex").slice(0, 8);
+            const base = s.tl.label ? `${s.tl.label.replace(/\./g, "_")}_${digest}` : digest;
+            let id = base;
+            const taken = (x) => here.has(x) || explicit.has(x) || (!file.endsWith(".rpym") && loaded.has(x));
+            for (let i = 1; taken(id); i++) id = `${base}_${i}`;
+            here.add(id);
+            if (s.tl.explicitId) here.add(s.tl.explicitId);
+            ids.set(s, s.tl.explicitId ?? id);
+        }
+        // A module (.rpym) is loaded on demand, not with the game's scripts, so it neither takes
+        // their identifiers nor gives its own to the files after it.
+        if (!file.endsWith(".rpym")) for (const id of here) loaded.add(id);
+    }
+    return ids;
+}
+
+/**
+ * `config.auto_voice = "voice/{id}.ogg"`: no line names its voice file, so the `voice` count above
+ * is 0 although every line may be voiced. Ren'Py finds each line's file from its translation
+ * identifier, computed here. A game that ships a translation also wrote every identifier into
+ * `tl/` with the Ren'Py it was made with: those are the check that the computed ones are right.
+ *
+ * @param {object|null} setting the picked `config.auto_voice` entry (file, line, ok, value, expr)
+ * @param {Array} says the collector's say records
+ * @param {Array<{file: string, text: string}>} tlFiles the `.rpy` files under tl/
+ * @param {string[]} files every file under game/, relative
+ */
+export function autoVoice(setting, says, tlFiles, files) {
+    if (!setting) return null;
+    const pattern = setting.ok && typeof setting.value === "string" ? setting.value : null;
+    const onDisk = new Set(files.map((f) => f.toLowerCase()));
+    const lines = [...translationIds(says)]
+        .map(([s, id]) => {
+            const voice = pattern?.includes("{id}") ? pattern.split("{id}").join(id) : null;
+            return { file: s.file, line: s.line, id, voice, exists: voice ? onDisk.has(voice.toLowerCase()) : false };
+        })
+        .sort(byLocation);
+
+    // `translate <language> <id>:` blocks. Their `# game/file:line` comments go stale when the
+    // script is edited after the translation was generated, so the check is by identifier alone.
+    const byLanguage = new Map();
+    for (const { file, text } of tlFiles) {
+        for (const raw of text.split(/\r?\n/)) {
+            const t = TL_BLOCK.exec(raw);
+            if (!t || t[2] === "strings") continue;
+            if (!byLanguage.has(t[1])) byLanguage.set(t[1], { file, ids: new Set() });
+            byLanguage.get(t[1]).ids.add(t[2]);
+        }
+    }
+    // Every language keys the same lines; the fullest one is the one least out of date.
+    const [language, best] = [...byLanguage.entries()].sort((a, b) => b[1].ids.size - a[1].ids.size)[0] ?? [null, null];
+    const checked = best
+        ? {
+            language,
+            folder: best.file.split("/").slice(0, 2).join("/"),
+            identifiers: best.ids.size,
+            found: lines.filter((x) => best.ids.has(x.id)).length,
+        }
+        : null;
+    return {
+        file: setting.file,
+        line: setting.line,
+        pattern,
+        expression: pattern ? null : setting.expr ?? null,
+        lines: lines.length,
+        voiced: lines.filter((x) => x.exists).length,
+        checked,
+        entries: lines,
     };
 }

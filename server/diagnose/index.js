@@ -9,7 +9,7 @@ import fsp from "node:fs/promises";
 import path from "node:path";
 import { Collector, scanFile } from "./scan.js";
 import { buildScreens, byLocation } from "./screens.js";
-import { buildSpeakers } from "./speakers.js";
+import { autoVoice, buildSpeakers } from "./speakers.js";
 import { buildPython } from "./python.js";
 import { buildFlow } from "./flow.js";
 import { buildFacts } from "./facts.js";
@@ -306,6 +306,17 @@ export async function diagnose(gameDir) {
         }
     }
     const characters = resolveCharacterKinds(col);
+    const speakers = buildSpeakers(col, characters);
+    const voiceSetting = pickInfo(col.info.autoVoice, col, "config.auto_voice");
+    if (voiceSetting) {
+        const tlFiles = [];
+        for (const f of scripts.filter((x) => x.startsWith("tl/"))) {
+            const text = await readText(path.join(game, f));
+            if (text != null) tlFiles.push({ file: f, text });
+        }
+        speakers.autoVoice = autoVoice(voiceSetting, col.says, tlFiles, files);
+        speakers.summary.autoVoicedLines = speakers.autoVoice.voiced;
+    }
 
     const needsReview = col.review.sort((a, b) => (a.file ?? "").localeCompare(b.file ?? "") || (a.line ?? 0) - (b.line ?? 0));
     const cap = (list) => list.slice(0, HIT_LIMIT);
@@ -350,7 +361,7 @@ export async function diagnose(gameDir) {
         },
         // One key per later scan step. Each is built from the same pass over the sources.
         extensions: {
-            speakers: buildSpeakers(col, characters),
+            speakers,
             python: buildPython(col),
             flow: buildFlow(col),
             facts: buildFacts(col),
