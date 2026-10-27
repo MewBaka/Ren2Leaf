@@ -42,7 +42,7 @@
 
 .an-facts {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 12px;
     margin-bottom: 20px;
 }
@@ -428,7 +428,7 @@ tr[aria-expanded="true"] .an-chevron { transform: rotate(90deg); }
 /* One card per row on a normal window: the lines are long and should not fold. */
 .sp-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(560px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(560px, 1fr));
     gap: 1px;
     background: var(--ui-edge-subtle);
 }
