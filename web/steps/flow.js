@@ -470,7 +470,7 @@ export async function mount(host, ctx) {
             }));
 
             out.push(section("剧本逻辑", s.reachable, logicPanel(data), {
-                note: "从 start 走得到的每个 label 一个框，按游玩顺序从上往下排；框里列出它的菜单选项，箭头指向选完去的 label。点框看入口，点 label 名跳过去",
+                note: "从 start 走得到的每个 label 一个框，按游玩顺序从左往右排；框里列出它的菜单选项，箭头指向选完去的 label。点框看入口，点 label 名跳过去",
             }));
 
             if (data.menus.length) {

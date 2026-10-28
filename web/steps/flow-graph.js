@@ -2,9 +2,9 @@
 // menus inside the box they belong to and an arrow from each option to where it goes. It is there so
 // the migrator can see the branches before deciding where a chapter or a scene starts.
 //
-// Layout is the plain layered kind: a label sits one row below the lowest label that leads into it,
-// counting only arrows that go forward in play order. Arrows that go back (a loop, a route that
-// rejoins an earlier label) are drawn dashed down the right-hand side instead of ranking anything.
+// Layout is the plain layered kind, read left to right: a label sits one column to the right of the
+// furthest label that leads into it. Only arrows that close a loop are left out of that; they are
+// drawn dashed underneath instead of placing anything.
 
 import { h } from "./shared.js";
 import { ENGINE_LABELS, isLocal } from "../shared/outline.js";
@@ -14,8 +14,8 @@ const CALLS = new Set(["call", "callExpression", "Call()", "renpy.call", "renpy.
 
 // Box geometry. The CSS gives each part exactly these heights, so the layout can be done up front.
 const W = 220;
-const GAP_X = 32;
-const GAP_Y = 56;
+const GAP_X = 72;
+const GAP_Y = 20;
 const PAD = 24;
 const HEAD = 48;
 const TAGS = 22;
@@ -73,7 +73,7 @@ function build(data) {
         });
     }
     // An option's jump is drawn from the option itself, so the same jump is not drawn again from the
-    // bottom of the box. The scan records it as a plain jump; the option's target is what tells them apart.
+    // box's head. The scan records it as a plain jump; the option's target is what tells them apart.
     for (const n of nodes.values()) {
         const chosen = new Set(n.menus.flatMap((m) => m.choices.map((c) => c.to)).filter(Boolean));
         n.edges = n.edges.filter((e) => e.kind !== "jump" || !chosen.has(e.to));
@@ -126,7 +126,7 @@ export function flowGraph(data, { scope, chapterOf, state, onSelect }) {
             + n.stubs.length * STUB + FOOT;
     }
 
-    // Rows: a box goes one below the lowest box that leads forward into it.
+    // Columns: a box goes one right of the furthest box that leads forward into it.
     const byName = new Map(nodes.map((n) => [n.name, n]));
     const order = new Map(nodes.map((n, i) => [n.name, i]));
     const targets = (n) => [
@@ -158,33 +158,35 @@ export function flowGraph(data, { scope, chapterOf, state, onSelect }) {
             preds.get(to).push(name);
         }
     }
-    const rows = [];
-    for (const n of nodes) (rows[rank.get(n.name)] ??= []).push(n);
+    const columns = [];
+    for (const n of nodes) (columns[rank.get(n.name)] ??= []).push(n);
 
-    // Columns: under the boxes that lead in, pushed right only as far as the row needs.
-    const x = new Map();
-    let y = PAD;
-    for (const row of rows) {
-        if (!row) continue;
+    // Within a column: level with the boxes that lead in, pushed down only as far as the column needs.
+    const mid = new Map();
+    let x = PAD;
+    for (const column of columns) {
+        if (!column) continue;
         const want = (n) => {
-            const p = preds.get(n.name).filter((name) => x.has(name));
-            return p.length ? p.reduce((s, name) => s + x.get(name), 0) / p.length : PAD;
+            const p = preds.get(n.name).filter((name) => mid.has(name));
+            return p.length ? p.reduce((s, name) => s + mid.get(name), 0) / p.length : PAD;
         };
-        const placed = row.map((n) => ({ n, want: want(n) })).sort((a, b) => a.want - b.want || order.get(a.n.name) - order.get(b.n.name));
-        let right = -Infinity;
+        const placed = column.map((n) => ({ n, want: want(n) })).sort((a, b) => a.want - b.want || order.get(a.n.name) - order.get(b.n.name));
+        let bottom = -Infinity;
         for (const p of placed) {
-            const at = Math.max(p.want, right + GAP_X);
-            x.set(p.n.name, at);
-            p.n.x = at;
-            p.n.y = y;
-            right = at + W;
+            const at = Math.max(p.want - HEAD / 2, bottom + GAP_Y);
+            p.n.x = x;
+            p.n.y = at;
+            mid.set(p.n.name, at + HEAD / 2);
+            bottom = at + p.n.height;
         }
-        y += Math.max(...row.map((n) => n.height)) + GAP_Y;
+        x += W + GAP_X;
     }
-    const minX = Math.min(...nodes.map((n) => n.x));
-    for (const n of nodes) n.x += PAD - minX;
-    const width = Math.max(...nodes.map((n) => n.x + W)) + PAD + 120;
-    const height = y - GAP_Y + PAD;
+    const minY = Math.min(...nodes.map((n) => n.y));
+    for (const n of nodes) n.y += PAD - minY;
+    // Room underneath for the loops, which run below the boxes.
+    const loops = nodes.some((n) => targets(n).some((to) => !forward(n.name, to)));
+    const width = x - GAP_X + PAD;
+    const height = Math.max(...nodes.map((n) => n.y + n.height)) + PAD + (loops ? 60 : 0);
 
     // Arrows.
     const paper = svg("svg", { class: "fg-edges", width, height, viewBox: `0 0 ${width} ${height}` });
@@ -195,24 +197,24 @@ export function flowGraph(data, { scope, chapterOf, state, onSelect }) {
         defs.append(marker);
     }
     paper.append(defs);
-    const edge = (from, to, kind, x1, y1, fromRow) => {
+    const edge = (from, to, kind, x1, y1) => {
         const t = byName.get(to);
         const back = !forward(from, to);
         let d;
         if (back) {
-            const x2 = t.x + W;
-            const y2 = t.y + HEAD / 2;
-            const sx = fromRow ? x1 : byName.get(from).x + W;
-            const sy = fromRow ? y1 : byName.get(from).y + byName.get(from).height / 2;
-            const bulge = Math.max(sx, x2) + 60;
-            d = `M${sx},${sy} C${bulge},${sy} ${bulge},${y2} ${x2},${y2}`;
-        } else {
+            // A loop leaves from under the box and comes back in under the box it returns to.
+            const src = byName.get(from);
+            const sx = src.x + W / 2;
+            const sy = src.y + src.height;
             const x2 = t.x + W / 2;
-            const y2 = t.y;
-            const dy = Math.max(GAP_Y, y2 - y1) / 2;
-            d = fromRow
-                ? `M${x1},${y1} C${x1 + 20},${y1 + 10} ${x2},${y2 - dy} ${x2},${y2}`
-                : `M${x1},${y1} C${x1},${y1 + dy} ${x2},${y2 - dy} ${x2},${y2}`;
+            const y2 = t.y + t.height;
+            const below = Math.max(sy, y2) + 48;
+            d = `M${sx},${sy} C${sx},${below} ${x2},${below} ${x2},${y2}`;
+        } else {
+            const x2 = t.x;
+            const y2 = t.y + HEAD / 2;
+            const dx = Math.max(GAP_X, x2 - x1) / 2;
+            d = `M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`;
         }
         const cls = back ? "back" : kind;
         paper.append(svg("path", { d, class: `fg-edge is-${cls}`, "data-from": from, "data-to": to, "marker-end": `url(#fg-arrow-${cls})` }));
@@ -255,7 +257,7 @@ export function flowGraph(data, { scope, chapterOf, state, onSelect }) {
                             : drawn ? h("span", { class: "fg-choice-to" }, "→")
                                 : h("span", { class: "fg-choice-to" }, target(c.to), t ? ` ${where(c.to)}` : "")
                         : h("span", { class: "fg-choice-to is-dim" }, "继续")));
-                if (drawn) edge(n.name, c.to, "choice", n.x + W, rowY + ROW / 2, true);
+                if (drawn) edge(n.name, c.to, "choice", n.x + W, rowY + ROW / 2);
                 rowY += ROW;
             }
             el.append(menu);
@@ -264,7 +266,7 @@ export function flowGraph(data, { scope, chapterOf, state, onSelect }) {
             el.append(h("div", { class: "fg-stub" },
                 h("span", {}, `${KIND_TEXT[s.kind]} → `), target(s.to), s.where ? h("span", { class: "fg-dim" }, ` ${s.where}`) : null));
         }
-        for (const e of n.lines) edge(n.name, e.to, e.kind, n.x + W / 2, n.y + n.height, false);
+        for (const e of n.lines) edge(n.name, e.to, e.kind, n.x + W, n.y + HEAD / 2);
         // Hovering a box lights up what goes in and out of it.
         el.addEventListener("mouseenter", () => light(n.name, true));
         el.addEventListener("mouseleave", () => light(n.name, false));
@@ -285,7 +287,7 @@ export function flowGraph(data, { scope, chapterOf, state, onSelect }) {
         if (sel && state.reveal) {
             state.reveal = false;
             scroller.scrollTop = Math.max(0, sel.y - 80);
-            scroller.scrollLeft = Math.max(0, sel.x - 80);
+            scroller.scrollLeft = Math.max(0, sel.x - 160);
         } else {
             scroller.scrollTop = state.top ?? 0;
             scroller.scrollLeft = state.left ?? 0;
