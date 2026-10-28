@@ -549,6 +549,25 @@ tr[aria-expanded="true"] .an-chevron { transform: rotate(90deg); }
 .ch-axis-title { width: 32px; flex: none; padding-top: 6px; font-size: var(--ui-text-sm); font-weight: var(--ui-weight-semibold); color: rgb(var(--ui-fg)); }
 .ch-axis-body { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; }
 .ch-axis-detail { font-size: var(--ui-text-xs); color: rgb(var(--ui-fg-muted)); }
+.ch-axis.is-off { opacity: 0.45; }
+.ch-axis.is-off .tab { cursor: not-allowed; }
+
+/* Handing the structure to the agent: a row of its own under the two choices. */
+.ch-delegate {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--ui-edge);
+    border-radius: var(--ui-radius-md);
+    cursor: pointer;
+}
+
+.ch-delegate:hover { border-color: var(--ui-control-border-hover); }
+.ch-delegate.is-on { border-color: rgb(var(--ui-primary) / 0.5); background: rgb(var(--ui-primary-soft)); }
+.ch-delegate input { margin: 3px 0 0; flex: none; }
+.ch-delegate-text { display: flex; flex-direction: column; gap: 2px; }
+.ch-delegate-title { font-size: var(--ui-text-sm); font-weight: var(--ui-weight-semibold); color: rgb(var(--ui-fg)); }
 
 .ch-result {
     padding: 10px 12px;

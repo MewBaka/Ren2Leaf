@@ -22,7 +22,8 @@ export function sceneLabels(file) {
 /**
  * @param {object} plan  the chapter plan: `{ split: {chapters, scenes}, chapters: [...] }`
  * @param {Array} files  `flow.files` from the inventory
- * @returns {{ready: boolean, chapters: Array}} `ready` is false until both axes are picked
+ * @returns {{ready: boolean, chapters: Array}} `ready` is false until both axes are picked, and
+ *   while the structure is handed to the agent
  */
 export function outline(plan, files = []) {
     const split = plan?.split ?? {};
@@ -41,7 +42,8 @@ export function outline(plan, files = []) {
             }];
         return { id: c.id, index: i, name: c.title || "New Chapter", untitled: !c.title, files: c.files, says, scenes };
     });
-    return { ready: split.chapters !== null && split.chapters !== undefined && split.scenes !== null && split.scenes !== undefined, chapters };
+    // Handed to the agent, there is no outline to draw: the agent works it out.
+    return { ready: !split.agent && split.chapters !== null && split.chapters !== undefined && split.scenes !== null && split.scenes !== undefined, chapters };
 }
 
 /** The dialogue in a label's local labels, which is written into that label's scene. */

@@ -29,8 +29,16 @@ const AXES = [
     },
 ];
 
+// The row under the two choices: the migrator hands the whole structure to the agent.
+const DELEGATE = {
+    title: "委托 Agent 判断",
+    detail: "我自己都不知道当时怎么配置的分支，帮帮我理解并优化吧，Agent先生！",
+    result: "章节和场景都交给 Agent：它读 .rpy 和剧本逻辑自己推断，移植时可以调整结构，并在每个场景描述里写明对应哪个 .rpy 文件、结构是怎么改的",
+};
+
 /** The four combinations, said the way the migrator reads them. */
 function splitText(split) {
+    if (split.agent) return DELEGATE.result;
     if (split.chapters === null || split.scenes === null) return null;
     if (!split.chapters && !split.scenes) return "只建一个章节，所有剧本合并成这一章里的一个场景";
     if (split.chapters && !split.scenes) return "按分组建多个章节，每个章节的剧本合并成一个场景";
@@ -76,7 +84,7 @@ export async function mount(host, ctx) {
                 excluded: next.excluded ?? [],
             });
             plan = res.chapters;
-            ctx.setStatus("chapters", plan.chapters.length ? `章节 ${plan.chapters.length} 个` : null);
+            ctx.setStatus("chapters", status());
         } catch (err) {
             saveError = err.message;
         }
@@ -86,7 +94,9 @@ export async function mount(host, ctx) {
 
     // A chapter's title is the migrator's to give; one without is shown by its place in the list.
     const chapterLabel = (c) => c.title || `章节 ${plan.chapters.indexOf(c) + 1}（未命名）`;
-    const split = () => plan.split ?? { chapters: null, scenes: null };
+    const split = () => plan.split ?? { chapters: null, scenes: null, agent: false };
+    const delegated = () => split().agent === true;
+    const status = () => (delegated() ? "章节交给 Agent" : plan.chapters.length ? `章节 ${plan.chapters.length} 个` : null);
 
     const chapterOf = (file) => plan.chapters.find((c) => c.files.includes(file)) ?? null;
 
@@ -253,22 +263,33 @@ export async function mount(host, ctx) {
 
     function splitPanel(data) {
         const now = split();
+        const off = now.agent;
         const axes = AXES.map((a) => {
             const chosen = a.options.find((o) => o.value === now[a.key]);
-            return h("div", { class: "ch-axis" },
+            return h("div", { class: `ch-axis${off ? " is-off" : ""}` },
                 h("span", { class: "ch-axis-title" }, a.title),
                 h("div", { class: "ch-axis-body" },
                     h("div", { class: "tabstrip", role: "tablist" }, a.options.map((o) => h("button", {
                         type: "button", class: "tab", role: "tab",
-                        "aria-selected": now[a.key] === o.value ? "true" : "false",
-                        onclick: () => pick(a.key, o.value, data),
+                        "aria-selected": !off && now[a.key] === o.value ? "true" : "false",
+                        "aria-disabled": off ? "true" : null,
+                        onclick: () => (off ? null : pick(a.key, o.value, data)),
                     }, o.label))),
-                    h("span", { class: "ch-axis-detail" }, chosen ? chosen.detail : "未选")));
+                    h("span", { class: "ch-axis-detail" }, off ? "交给 Agent" : chosen ? chosen.detail : "未选")));
         });
+        // The grouping stays saved underneath, so taking the structure back brings it back as it was.
+        const box = h("input", { type: "checkbox", checked: off });
+        box.addEventListener("change", () => save({ ...plan, split: { ...now, agent: box.checked } }));
+        const delegate = h("label", { class: `ch-delegate${off ? " is-on" : ""}` },
+            box,
+            h("span", { class: "ch-delegate-text" },
+                h("span", { class: "ch-delegate-title" }, DELEGATE.title),
+                h("span", { class: "ch-axis-detail" }, DELEGATE.detail)));
         const said = splitText(now);
         return h("div", { class: "ch-split" },
             h("div", { class: "ch-axes" },
                 axes,
+                delegate,
                 h("div", { class: `ch-result${said ? "" : " is-empty"}` }, said ?? "两项都选好后，右边会画出导入 Studio 后的样子")),
             preview(data));
     }
@@ -278,6 +299,10 @@ export async function mount(host, ctx) {
         const tree = outline(plan, data.files);
         const panel = h("div", { class: "st-tree" });
         panel.append(h("div", { class: "st-caption" }, "Studio 预览"));
+        if (delegated()) {
+            panel.append(h("div", { class: "st-empty" }, "章节和场景由 Agent 移植时决定"));
+            return panel;
+        }
         if (!tree.ready) {
             panel.append(h("div", { class: "st-empty" }, "选好章节和场景的拆分方式后显示"));
             return panel;
@@ -326,7 +351,7 @@ export async function mount(host, ctx) {
     }
 
     function logicPanel(data) {
-        const many = split().chapters && plan.chapters.length > 1;
+        const many = !delegated() && split().chapters && plan.chapters.length > 1;
         const scope = many ? plan.chapters.find((c) => c.id === graph.scope) ?? null : null;
         const tabs = many
             ? h("div", { class: "tabstrip fg-scope", role: "tablist" },
@@ -359,13 +384,21 @@ export async function mount(host, ctx) {
         for (const f of data.files) {
             const current = chapterOf(f.file);
             const out = isExcluded(f.file);
-            const select = h("select", { class: "an-select ch-select" },
-                h("option", { value: "", selected: !current && !out }, "未分配"),
-                plan.chapters.map((c) => h("option", { value: c.id, selected: current?.id === c.id }, chapterLabel(c))),
-                split().chapters === false ? null : h("option", { value: "+" }, "新建章节…"),
-                h("option", { value: "-", selected: out }, "排除（非剧本文件）"));
+            // Handed to the agent, a file is either story for it to place or excluded.
+            const select = delegated()
+                ? h("select", { class: "an-select ch-select" },
+                    h("option", { value: "", selected: !out }, "交给 Agent"),
+                    h("option", { value: "-", selected: out }, "排除（非剧本文件）"))
+                : h("select", { class: "an-select ch-select" },
+                    h("option", { value: "", selected: !current && !out }, "未分配"),
+                    plan.chapters.map((c) => h("option", { value: c.id, selected: current?.id === c.id }, chapterLabel(c))),
+                    split().chapters === false ? null : h("option", { value: "+" }, "新建章节…"),
+                    h("option", { value: "-", selected: out }, "排除（非剧本文件）"));
             select.addEventListener("change", () => {
-                if (select.value === "+") {
+                if (delegated()) {
+                    if (select.value === "-") exclude(f.file);
+                    else save({ ...plan, excluded: (plan.excluded ?? []).filter((x) => x !== f.file) });
+                } else if (select.value === "+") {
                     const chapter = addChapter();
                     assign(f.file, chapter.id);
                 } else if (select.value === "-") {
@@ -420,7 +453,7 @@ export async function mount(host, ctx) {
         async onLoaded() {
             const res = await api.get(`/api/games/${game.id}/chapters/decisions`);
             plan = res.chapters;
-            ctx.setStatus("chapters", plan.chapters.length ? `章节 ${plan.chapters.length} 个` : null);
+            ctx.setStatus("chapters", status());
         },
         render(data) {
             // `files` arrived with this step; an older scan result has to be re-run first.
@@ -439,9 +472,13 @@ export async function mount(host, ctx) {
             const out = [];
             out.push(facts([
                 fact("剧本文件", data.files.length, null, `${withStory} 个有台词`),
-                fact("已分组", `${assigned} / ${withStory}`, assigned >= withStory && withStory ? "success" : "warning"),
-                fact("章节", plan.chapters.length, plan.chapters.length ? "success" : "warning"),
-                fact("场景", tree.ready ? scenes : "—", tree.ready ? null : "warning", tree.ready ? (now.scenes ? "一个 label 一个场景" : "一章一个场景") : "拆分方式未选"),
+                now.agent
+                    ? fact("已分组", "交给 Agent", null, `排除 ${(plan.excluded ?? []).length} 个文件`)
+                    : fact("已分组", `${assigned} / ${withStory}`, assigned >= withStory && withStory ? "success" : "warning"),
+                fact("章节", now.agent ? "—" : plan.chapters.length, now.agent ? null : plan.chapters.length ? "success" : "warning", now.agent ? "Agent 决定" : null),
+                now.agent
+                    ? fact("场景", "—", null, "Agent 决定")
+                    : fact("场景", tree.ready ? scenes : "—", tree.ready ? null : "warning", tree.ready ? (now.scenes ? "一个 label 一个场景" : "一章一个场景") : "拆分方式未选"),
                 fact("label", s.labels, null, `不可达 ${s.unreachable} 个`),
                 fact("菜单", s.menus, null, `${s.choices} 个选项`),
             ]));
@@ -454,19 +491,21 @@ export async function mount(host, ctx) {
                 note: "整部游戏是 Studio 里的一个故事。章节和场景都是 Studio 的：章节把场景分组，场景是写剧本的地方",
             }));
 
-            out.push(section("章节", plan.chapters.length, chapterPanel(data), {
+            if (!now.agent) out.push(section("章节", plan.chapters.length, chapterPanel(data), {
                 note: now.scenes
                     ? "章节名就是 Studio 里的章节名，可以不填；不填的 Agent 不会替你起，用 Studio 默认的 New Chapter"
                     : "章节名是 Studio 里的章节名，场景名和场景描述给这一章合成的那个场景，都可以不填；不填的 Agent 不会替你写，用 Studio 默认的 New Chapter、New Scene，描述留空",
             }));
 
-            const warn = now.chapters === false ? null : h("div", { class: "ch-warn" },
+            const warn = now.chapters === false || now.agent ? null : h("div", { class: "ch-warn" },
                 h("p", {}, "分组前请确认以下事项：",
                     h("b", {}, "同一章节内不应包含属于不同章节的内容")),
                 h("p", {}, "比如 c1c2.rpy 整个算第一章，那就把它整个放进第一章；但要保证这个文件里没有混进别的章节的内容。有人会把一章拆成几个文件，那就把这几个文件都放进同一个章节"),
                 h("p", {}, "此项无法由程序自动校验，需人工确认"));
-            out.push(section("文件分组", data.files.length, h("div", {}, warn, fileTable(data)), {
-                note: "点一行看文件内容；不是剧本的文件（界面、transform、调试残留）在右边选「排除」。「游玩顺序」是从 start 走出来的先后，不是文件名的顺序",
+            out.push(section(now.agent ? "剧本文件" : "文件分组", data.files.length, h("div", {}, warn, fileTable(data)), {
+                note: now.agent
+                    ? "章节交给 Agent 后这里只管排除：不是剧本的文件（界面、transform、调试残留）选「排除」，其余都交给 Agent。点一行看文件内容"
+                    : "点一行看文件内容；不是剧本的文件（界面、transform、调试残留）在右边选「排除」。「游玩顺序」是从 start 走出来的先后，不是文件名的顺序",
             }));
 
             out.push(section("剧本逻辑", s.reachable, logicPanel(data), {

@@ -153,7 +153,11 @@ Decide, and write down with reasons (`references/statement-mapping.md` has the d
   chapter's whole script is one scene, named and described as written (`New Scene` and no
   `#description` when missing), with the labels inside as `/label`s; or every label is a scene of
   its own, named with the label's name and with no `#description`. Do not make a name or a
-  description up. Without a grouping: one Studio scene per Ren'Py label that is a unit of story; split
+  description up. When section 5 says the author handed the structure to you, work the branches
+  out from the source and its label table, then choose the chapters and scenes yourself; reshaping
+  is allowed as long as every route plays the same. Then every scene's `#description` says which
+  `.rpy` files and labels it came from and what you changed in the structure, and why.
+  Without a grouping: one Studio scene per Ren'Py label that is a unit of story; split
   very long labels at `scene` statements (never inside a `menu`) and chain the parts with `/jump`.
   A scene of a few hundred rows is comfortable to review and to re-apply.
 - **Characters.** Studio characters are people, and a Ren'Py game's speaker variables are not: one

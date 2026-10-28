@@ -181,11 +181,12 @@ export function mergeDecisions(doc, patch) {
 
 // How the migrator splits the game, on two axes. `chapters`: false is one Studio chapter holding
 // everything, true is the grouping below. `scenes`: false merges each chapter into one scene, true
-// makes every label its own scene. null on either is "not picked yet".
+// makes every label its own scene. null on either is "not picked yet". `agent` hands both to the
+// agent, which works the structure out from the source and may reshape it.
 const CHAPTER_MAX = 200;
 const FILES_MAX = 2000;
 
-const emptySplit = () => ({ chapters: null, scenes: null });
+const emptySplit = () => ({ chapters: null, scenes: null, agent: false });
 const emptyChapters = () => ({ version: 2, updatedAt: null, split: emptySplit(), chapters: [], excluded: [] });
 
 // Version 1 had one `mode` (none / choices / full), and a chapter's `title` was the name of the one
@@ -198,7 +199,7 @@ const OLD_MODES = {
 
 function cleanSplit(split) {
     const flag = (v) => (v === true || v === false ? v : null);
-    return { chapters: flag(split?.chapters), scenes: flag(split?.scenes) };
+    return { chapters: flag(split?.chapters), scenes: flag(split?.scenes), agent: split?.agent === true };
 }
 
 export function readChapters(workDir) {
@@ -213,7 +214,7 @@ export function readChapters(workDir) {
     return {
         version: 2,
         updatedAt: data.updatedAt ?? null,
-        split: old ? { ...(OLD_MODES[data.mode] ?? emptySplit()) } : cleanSplit(data.split),
+        split: old ? { ...emptySplit(), ...OLD_MODES[data.mode] } : cleanSplit(data.split),
         chapters: old
             ? data.chapters.map(({ title, ...c }) => ({ ...c, title: "", sceneTitle: title ?? "" }))
             : data.chapters,
@@ -316,6 +317,8 @@ export function chapterIssues(doc, files = []) {
             issues.push({ kind: "excludedWithEnding", chapter: null, message: `${f} 已被排除，但包含 ${row.endings} 个结局` });
         }
     }
+    // Handed to the agent, the grouping is not used, so nothing in it can contradict anything.
+    if (doc.split?.agent) return issues;
     for (const [i, c] of chapters.entries()) {
         const name = chapterLabel(c, i);
         const rows = c.files.map((f) => byFile.get(f) ?? null);

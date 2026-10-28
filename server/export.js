@@ -15,6 +15,7 @@ import path from "node:path";
 import { HttpError, readJson } from "./http.js";
 import { readDecisions, decisionStats, readChapters, chapterStats, chapterIssues, readDocument } from "./decisions.js";
 import { outline } from "../web/shared/outline.js";
+import { KIND_TEXT, labelGraph } from "../web/shared/logic.js";
 import { resolveGameDirs } from "./diagnose/index.js";
 import { resolvePortraits } from "./portraits.js";
 import { pickFolder } from "./capture.js";
@@ -555,6 +556,26 @@ const SPLIT_TEXT = {
     },
 };
 
+/** Section 5 when the migrator hands the chapters and scenes to the agent. */
+function delegated() {
+    return [
+        "**章节和场景：迁移者委托你判断。** 迁移者的原话是「我自己都不知道当时怎么配置的分支，帮帮我理解并优化吧，Agent先生！」——原作的分支是怎么搭的，迁移者自己也说不清，所以这一节没有分组，结构由你来定。",
+        "",
+        "1. **先读懂。** 从 `.rpy` 源码和下面的「剧本逻辑」表（就是 Ren2Leaf 里给迁移者看的那张逻辑图，同一份数据）推断游戏是怎么走的：主线在哪，分支在哪里分开、在哪里汇合，结局在哪，哪些 label 是被 `call` 进来又回去的子流程，哪些路线要二周目才走得到。表里只有静态看得出的跳转，`jump expression` 这类动态跳转要回源码看。",
+        "2. **再定结构。** Studio 的章节、场景怎么分由你决定，移植时可以调整原作的结构：把只是互相跳来跳去的碎 label 合进一个场景，把太长的 label 在 `scene` 处拆开（不要拆在 `menu` 里），把散在几个文件里的同一段剧情放到一起，去掉只为中转而存在的空 label。前提是**玩家玩到的东西不变**：每条路线的台词顺序、选项和条件、变量赋值、结局都和原作一致。",
+        "3. **名字由你起。** 章节名、场景名按内容起短名；一个场景正好对应原作一个 label 时，用 label 名，方便对照。",
+        "4. **每个场景的 `#description` 必须写两件事**（多行用 JSON 字符串）：",
+        "   - 来源：这个场景来自哪个（些）`.rpy` 文件，带 label 名和行号范围；",
+        "   - 改了什么：结构上做了什么调整、为什么（和哪些 label 合并、从哪里拆开、去掉了哪个中转 label）。原样搬过来没动的，写「结构未调整」。",
+        "",
+        "   比如 `#description \"来源：a.rpy 的 day1（12–240）、day1_after（241–260）\\n结构：day1_after 只是 day1 结尾的中转，合进同一场景\"`。",
+        "5. `#background` **每个场景都要写**：原作这一段开场时屏幕上的背景，一般是第一句 `scene` 的图；开场是黑屏或纯色就写 `#background none`。不写的话，复用骨架的示例场景会闪出示例图。",
+        "6. 含 `start` 的那段剧情所在的场景是入口，用 `scene_set_entry` 设好。故事里已有的那一章做第一章（`chapter_rename` 改名），后面的章节用 `scene_create` 的 `chapter` 和 `after` 新建。",
+        "7. 定下结构后、动手写场景前，先把推断出的分支结构和打算做的调整讲给迁移者听；交付时再说一次实际改了什么。",
+        "",
+    ];
+}
+
 function chaptersSection(flow, plan, skip) {
     if (skip) return omitted("## 5　流程与章节", "剧本怎么分章、label 怎么跳、哪里是结局，");
     // `files` arrived with the chapter step; an inventory from before it is too old to use here.
@@ -562,52 +583,56 @@ function chaptersSection(flow, plan, skip) {
     const s = flow.summary;
     const h = numbering(5);
     const out = ["## 5　流程与章节", ""];
-    const split = plan?.split ?? { chapters: null, scenes: null };
+    const split = plan?.split ?? { chapters: null, scenes: null, agent: false };
     const tree = outline(plan, flow.files);
     out.push("Studio 的层级是**故事 → 章节 → 场景**，整部游戏是**一个**故事：不要为每个文件各建一个故事——存读档和「继续游戏」都认故事，拆开会出问题。下面说的章节、场景都是 Studio 里的。", "");
-    out.push(SPLIT_TEXT.chapters[split.chapters], "", SPLIT_TEXT.scenes[split.scenes], "");
-    out.push("名字和描述是迁移者的话，照抄，不改写；没填的不要按内容自己起：", "");
-    out.push("- 章节名：「章节名」一列。故事里已有的那一章做第一章（`chapter_rename` 改成这里的名字）；后面的章节用 `scene_create` 的 `chapter` 和 `after`（上一章最后一个场景）新建。没填的用 Studio 新建章节的默认名 `New Chapter`。`scene_create` 按名字认章节，同名的会被认成已有那一章，所以几章都叫 `New Chapter` 时，先用临时名建出来，再按 id `chapter_rename` 成 `New Chapter`。");
-    if (split.scenes !== true) {
-        out.push("- 场景名：「场景名」一列。没填的用 Studio 默认的 `New Scene`；有几个都叫 `New Scene` 时，之后按 `scene_create` 返回的 id 指认场景，不靠名字。");
-    }
-    out.push("- 每个场景的表头（`story_apply` 的 `#background` 和 `#description`，写法看 NarraLeaf Studio 的 Skill）：");
-    out.push("  - `#background` **每个场景都要写**：原作这一段开场时屏幕上的背景，一般是第一句 `scene` 的图；开场是黑屏或纯色就写 `#background none`。不写的话，复用骨架的示例场景会闪出示例图。");
-    out.push(split.scenes === true
-        ? "  - `#description` 不写：按 label 拆的场景迁移者没有写描述。"
-        : "  - `#description` **只写迁移者填的「场景描述」**，原样照抄。没填就不写这一行，不要自己总结剧情补上。", "");
-    out.push("带 ★ 的是入口场景（含 `start` 的那个），用 `scene_set_entry` 设好。", "");
-
     const planned = plan?.chapters ?? [];
     const assigned = new Set(planned.flatMap((c) => c.files));
-    if (planned.length) {
-        out.push(h("章节与场景"), "");
-        if (split.scenes === true) {
-            out.push(mdTable(["章节", "章节名", "文件", "场景", "台词", "备注"],
-                tree.chapters.map((c, i) => [
-                    i + 1, c.untitled ? "（没填，用 `New Chapter`）" : c.name, c.files.join("、") || "（空）",
-                    c.scenes.length, c.says, planned[i].note || "",
-                ])), "");
-            const scenes = tree.chapters.flatMap((c, i) => c.scenes.map((sc) => [
-                i + 1, `${sc.entry ? "★ " : ""}${sc.name}`, `${sc.file}:${sc.line}`, sc.says, sc.reachable === false ? "走不到" : "",
-            ]));
-            const { rows, note } = capped(scenes, MAX_ROWS * 3, "data/chapters.json 的 outline");
-            out.push(mdTable(["章节", "场景（label 名）", "位置", "台词", "说明"], rows), note, "");
-        } else {
-            out.push(mdTable(["章节", "章节名", "场景名", "场景描述", "文件", "台词", "备注"],
-                tree.chapters.map((c, i) => [
-                    i + 1,
-                    c.untitled ? "（没填，用 `New Chapter`）" : c.name,
-                    `${c.scenes[0].entry ? "★ " : ""}${c.scenes[0].untitled ? "（没填，用 `New Scene`）" : c.scenes[0].name}`,
-                    c.scenes[0].description || "（没填，不写）",
-                    c.files.join("、") || "（空）",
-                    c.says,
-                    planned[i].note || "",
-                ])), "");
-        }
-        out.push("⚠️ **一个文件只属于一个章节，而且文件里不会跨到别的章节**——这是迁移者保证的，扫描查不了。", "");
+    if (split.agent) {
+        out.push(...delegated());
     } else {
-        out.push(h("章节与场景"), "", "迁移者还没有分组。", "");
+        out.push(SPLIT_TEXT.chapters[split.chapters], "", SPLIT_TEXT.scenes[split.scenes], "");
+        out.push("名字和描述是迁移者的话，照抄，不改写；没填的不要按内容自己起：", "");
+        out.push("- 章节名：「章节名」一列。故事里已有的那一章做第一章（`chapter_rename` 改成这里的名字）；后面的章节用 `scene_create` 的 `chapter` 和 `after`（上一章最后一个场景）新建。没填的用 Studio 新建章节的默认名 `New Chapter`。`scene_create` 按名字认章节，同名的会被认成已有那一章，所以几章都叫 `New Chapter` 时，先用临时名建出来，再按 id `chapter_rename` 成 `New Chapter`。");
+        if (split.scenes !== true) {
+            out.push("- 场景名：「场景名」一列。没填的用 Studio 默认的 `New Scene`；有几个都叫 `New Scene` 时，之后按 `scene_create` 返回的 id 指认场景，不靠名字。");
+        }
+        out.push("- 每个场景的表头（`story_apply` 的 `#background` 和 `#description`，写法看 NarraLeaf Studio 的 Skill）：");
+        out.push("  - `#background` **每个场景都要写**：原作这一段开场时屏幕上的背景，一般是第一句 `scene` 的图；开场是黑屏或纯色就写 `#background none`。不写的话，复用骨架的示例场景会闪出示例图。");
+        out.push(split.scenes === true
+            ? "  - `#description` 不写：按 label 拆的场景迁移者没有写描述。"
+            : "  - `#description` **只写迁移者填的「场景描述」**，原样照抄。没填就不写这一行，不要自己总结剧情补上。", "");
+        out.push("带 ★ 的是入口场景（含 `start` 的那个），用 `scene_set_entry` 设好。", "");
+
+        if (planned.length) {
+            out.push(h("章节与场景"), "");
+            if (split.scenes === true) {
+                out.push(mdTable(["章节", "章节名", "文件", "场景", "台词", "备注"],
+                    tree.chapters.map((c, i) => [
+                        i + 1, c.untitled ? "（没填，用 `New Chapter`）" : c.name, c.files.join("、") || "（空）",
+                        c.scenes.length, c.says, planned[i].note || "",
+                    ])), "");
+                const scenes = tree.chapters.flatMap((c, i) => c.scenes.map((sc) => [
+                    i + 1, `${sc.entry ? "★ " : ""}${sc.name}`, `${sc.file}:${sc.line}`, sc.says, sc.reachable === false ? "走不到" : "",
+                ]));
+                const { rows, note } = capped(scenes, MAX_ROWS * 3, "data/chapters.json 的 outline");
+                out.push(mdTable(["章节", "场景（label 名）", "位置", "台词", "说明"], rows), note, "");
+            } else {
+                out.push(mdTable(["章节", "章节名", "场景名", "场景描述", "文件", "台词", "备注"],
+                    tree.chapters.map((c, i) => [
+                        i + 1,
+                        c.untitled ? "（没填，用 `New Chapter`）" : c.name,
+                        `${c.scenes[0].entry ? "★ " : ""}${c.scenes[0].untitled ? "（没填，用 `New Scene`）" : c.scenes[0].name}`,
+                        c.scenes[0].description || "（没填，不写）",
+                        c.files.join("、") || "（空）",
+                        c.says,
+                        planned[i].note || "",
+                    ])), "");
+            }
+            out.push("⚠️ **一个文件只属于一个章节，而且文件里不会跨到别的章节**——这是迁移者保证的，扫描查不了。", "");
+        } else {
+            out.push(h("章节与场景"), "", "迁移者还没有分组。", "");
+        }
     }
 
     const issues = chapterIssues(plan, flow.files);
@@ -619,7 +644,7 @@ function chaptersSection(flow, plan, skip) {
 
     const excluded = new Set(plan?.excluded ?? []);
     const left = flow.files.filter((f) => !assigned.has(f.file) && !excluded.has(f.file));
-    if (planned.length && left.length) {
+    if (!split.agent && planned.length && left.length) {
         out.push("没有分进任何章节的文件：", "");
         out.push(mdTable(["文件", "台词", "label"], left.map((f) => [f.file, f.says, f.labels.length])), "");
     }
@@ -650,6 +675,20 @@ function chaptersSection(flow, plan, skip) {
     out.push(`${s.labels} 个 label，可达 ${s.reachable} 个，走不到 ${s.unreachable} 个；菜单 ${s.menus} 个（${s.choices} 个选项），结局 ${s.endings} 个。`, "");
     for (const w of flow.warnings) out.push(`- ${w.message}`);
     out.push("");
+
+    out.push("#### 剧本逻辑", "");
+    out.push("Ren2Leaf 给迁移者画的逻辑图，这里写成表：从入口走得到的每个剧情 label 一行，按游玩顺序排；局部 label 并进所属的 label。「去向」是它走出去的路：`jump`、`call`（跑完回到调用处）、顺序进入下一个 label，菜单的每个选项去哪，以及在这里结束的路线。", "");
+    const graph = [...labelGraph(flow).values()].sort((a, b) => (a.playOrder ?? Infinity) - (b.playOrder ?? Infinity));
+    const ways = (n) => [
+        ...n.edges.map((e) => `${KIND_TEXT[e.kind]} → ${e.to}`),
+        ...n.menus.flatMap((m) => m.choices.map((c) =>
+            `选项「${c.text}」${c.condition ? `（条件 ${c.condition}）` : ""}${c.to ? ` → ${c.to}` : " 继续往下"}`)),
+        n.ending,
+        n.dynamic ? `${n.dynamic} 处动态跳转` : null,
+    ].filter(Boolean).join("；") || "—";
+    const { rows: logic, note: logicNote } = capped(graph.map((n) => [n.name, `${n.file}:${n.line}`, n.says, ways(n)]),
+        MAX_ROWS * 2, "data/inventory.json 的 flow.labels");
+    out.push(mdTable(["label", "位置", "台词", "去向"], logic), logicNote, "");
 
     if (flow.menus.length) {
         out.push("#### 菜单与选项", "");
@@ -1113,8 +1152,9 @@ export function readiness(game, parts) {
             required: false,
         },
         {
-            id: "flow", label: "流程与章节", done: plan.chapters > 0,
-            detail: plan.chapters ? `${plan.chapters} 个章节，${plan.files} 个文件` : "还没分章，Agent 只能自己猜怎么切",
+            id: "flow", label: "流程与章节", done: plan.chapters > 0 || plan.split?.agent === true,
+            detail: plan.split?.agent ? "章节和场景委托 Agent 判断"
+                : plan.chapters ? `${plan.chapters} 个章节，${plan.files} 个文件` : "还没分章，Agent 只能自己猜怎么切",
             required: false,
         },
     ];

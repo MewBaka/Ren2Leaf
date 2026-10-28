@@ -717,7 +717,7 @@ describe("export package", () => {
     test("a plan saved before chapters and scenes were told apart is read as both", () => {
         // The fixture is a version 1 plan: mode "none", and its title named the one scene.
         const plan = readChapters(work);
-        assert.deepEqual(plan.split, { chapters: false, scenes: false });
+        assert.deepEqual(plan.split, { chapters: false, scenes: false, agent: false });
         assert.equal(plan.chapters[0].title, "");
         assert.equal(plan.chapters[0].sceneTitle, "第一章");
         const parts = collect(game);
@@ -772,6 +772,36 @@ describe("export package", () => {
         assert.ok(!section.includes("「场景名」一列"));
         const pack = JSON.parse(files.find((f) => f.path === "data/chapters.json").content);
         assert.deepEqual(pack.outline[0].scenes.map((sc) => sc.name), ["start"]);
+        fs.writeFileSync(file, before);
+    });
+
+    test("handed to the agent, the structure is the agent's to work out and to explain", () => {
+        const file = path.join(work, "decisions", "chapters.json");
+        const before = fs.readFileSync(file, "utf8");
+        // The grouping drawn before stays saved, but nothing reads it while the agent decides.
+        const plan = cleanChapters({
+            split: { chapters: true, scenes: false, agent: true },
+            chapters: [{ id: "ch1", title: "第一章", files: ["script.rpy"] }, { id: "ch2", title: "", files: [] }],
+        });
+        assert.equal(plan.split.agent, true);
+        assert.deepEqual(chapterIssues(plan, [{ file: "script.rpy", says: 3, playOrder: 0 }]), []);
+        fs.writeFileSync(file, JSON.stringify(plan));
+        const parts = collect(game);
+        const files = planFiles(game, parts);
+        const doc = buildDocument(game, parts, files);
+        const section = doc.slice(doc.indexOf("## 5"), doc.indexOf("## 6"));
+        assert.ok(section.includes("**章节和场景：迁移者委托你判断。**"));
+        assert.ok(section.includes("帮帮我理解并优化吧，Agent先生！"));
+        assert.ok(section.includes("**每个场景的 `#description` 必须写两件事**"));
+        assert.ok(!section.includes("章节与场景"));
+        assert.ok(!section.includes("| 第一章 |"));
+        // The logic the agent is told to read is in the package.
+        assert.ok(section.includes("#### 剧本逻辑"));
+        assert.ok(section.includes("| start | script.rpy:4 | 3 | 结局 |"));
+        assert.equal(JSON.parse(files.find((f) => f.path === "data/chapters.json").content).outline, null);
+        const flow = readiness(game, parts).steps.find((x) => x.id === "flow");
+        assert.equal(flow.done, true);
+        assert.ok(flow.detail.includes("委托 Agent"));
         fs.writeFileSync(file, before);
     });
 

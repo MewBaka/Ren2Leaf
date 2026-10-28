@@ -7,10 +7,7 @@
 // drawn dashed underneath instead of placing anything.
 
 import { h } from "./shared.js";
-import { ENGINE_LABELS, isLocal } from "../shared/outline.js";
-
-const TITLE = new Set(["splashscreen", "main_menu", "_main_menu", "before_main_menu"]);
-const CALLS = new Set(["call", "callExpression", "Call()", "renpy.call", "renpy.call_in_new_context", "renpy.invoke_in_new_context", "renpy.call_replay", "Replay()"]);
+import { KIND_TEXT, TITLE_LABELS as TITLE, kindOf, labelGraph } from "../shared/logic.js";
 
 // Box geometry. The CSS gives each part exactly these heights, so the layout can be done up front.
 const W = 220;
@@ -31,60 +28,6 @@ const svg = (tag, attrs = {}) => {
     return el;
 };
 
-const owner = (name) => (isLocal(name) ? name.slice(0, name.indexOf(".")) : name);
-const kindOf = (k) => (k === "fallthrough" ? "fall" : CALLS.has(k) ? "call" : "jump");
-const KIND_TEXT = { jump: "jump", call: "call", fall: "顺序进入", choice: "选项" };
-
-/** Every reachable story label, with its local labels folded in, keyed by name. */
-function build(data) {
-    const nodes = new Map();
-    for (const l of data.labels) {
-        if (!l.reachable) continue;
-        const name = owner(l.name);
-        if (ENGINE_LABELS.has(name)) continue;
-        let n = nodes.get(name);
-        if (!n) {
-            n = { name, file: l.file, line: l.line, says: 0, playOrder: l.playOrder, edges: [], menus: [], dynamic: 0, ending: null, called: 0, raw: null };
-            nodes.set(name, n);
-        }
-        if (l.name === name) {
-            Object.assign(n, { file: l.file, line: l.line, raw: l });
-            n.called = l.in.filter((e) => CALLS.has(e.kind)).length;
-        }
-        n.says += l.says;
-        if (l.playOrder !== null && (n.playOrder === null || l.playOrder < n.playOrder)) n.playOrder = l.playOrder;
-        for (const e of l.out) {
-            if (!e.to) {
-                n.dynamic++;
-                continue;
-            }
-            const to = owner(e.to);
-            if (to === name) continue;
-            const kind = kindOf(e.kind);
-            if (!n.edges.some((x) => x.to === to && x.kind === kind)) n.edges.push({ to, kind });
-        }
-    }
-    for (const m of data.menus) {
-        const n = m.label ? nodes.get(owner(m.label)) : null;
-        if (!n) continue;
-        n.menus.push({
-            file: m.file, line: m.line,
-            choices: m.choices.map((c) => ({ text: c.text, condition: c.condition, to: c.target ? owner(c.target) : null })),
-        });
-    }
-    // An option's jump is drawn from the option itself, so the same jump is not drawn again from the
-    // box's head. The scan records it as a plain jump; the option's target is what tells them apart.
-    for (const n of nodes.values()) {
-        const chosen = new Set(n.menus.flatMap((m) => m.choices.map((c) => c.to)).filter(Boolean));
-        n.edges = n.edges.filter((e) => e.kind !== "jump" || !chosen.has(e.to));
-    }
-    for (const e of data.endings) {
-        const n = nodes.get(owner(e.name));
-        if (n) n.ending = e.kind === "toTitle" || e.kind === "restart" ? "回到标题" : "结局";
-    }
-    return nodes;
-}
-
 /**
  * @param {object} data   the flow slice of the inventory
  * @param {object} opts
@@ -94,7 +37,7 @@ function build(data) {
  * @param {Function} opts.onSelect      (name, widen) when a box or a target is clicked
  */
 export function flowGraph(data, { scope, chapterOf, state, onSelect }) {
-    const all = build(data);
+    const all = labelGraph(data);
     const inScope = (n) => n && (!scope || scope.has(n.file));
     const nodes = [...all.values()].filter(inScope)
         .sort((a, b) => (a.playOrder ?? Infinity) - (b.playOrder ?? Infinity) || a.file.localeCompare(b.file) || a.line - b.line);
