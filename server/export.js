@@ -335,7 +335,7 @@ function speakersSection(speakers, decisions, portraits, skip) {
         ]), MAX_ROWS, "data/speakers.json");
         out.push(mdTable(["名字", "变量", "台词", "配音（扫描）", "备注"], rows), note, "");
         if (temp.some((x) => x.voiced)) {
-            out.push("其中有带配音的：一次性说话人的台词照样能链接配音（Studio 1.8.0 起），配音表和录音文件名用的就是这个名字，链接方法和其他台词一样。只是它没有角色，所以没有自己的配音音量、声优信息，`voice_status` 的按角色覆盖率里也没有它；交接时把这几个名字和句数单独报给迁移者。", "");
+            out.push("其中有带配音的：一次性说话人的台词照样能链接配音（Studio 1.8.0 起），配音表、录音文件名和 `voice_status` 的统计用的都是这个名字，`voice_list {character}` 也认这个名字，链接方法和其他台词一样。只是它没有角色，所以没有自己的配音音量和声优信息；需要这两样的话，请迁移者决定要不要建角色（不需要立绘）。", "");
         }
     }
 

@@ -4,8 +4,8 @@
 //
 // An alias is not a special case here: a variable that is somebody under another name becomes its
 // own character too, kept in the NPC / 别名 group. Since Studio 1.8.0 a take can be linked to a
-// line under a bare name as well, but only a character gets its own voice volume, voice actor and
-// coverage count, and most games do not write their aliases cleanly enough for a `/rename`.
+// line under a bare name as well, but only a character gets its own voice volume and voice actor,
+// and most games do not write their aliases cleanly enough for a `/rename`.
 //
 // Variables that share a display name are shown as one card. Ren'Py has no way to give a Character
 // a second side image, so authors clone the Character per sprite set and one person ends up as
@@ -23,7 +23,7 @@ const SAMPLE = 2;
 const ROLES = [
     { id: "main", label: "主要角色", hint: "推动剧情发展的角色，无论是否有立绘；显示于角色列表顶层" },
     { id: "npc", label: "NPC / 别名", hint: "仍创建角色条目，但归入「NPC / 别名」分组，以保持角色列表整洁" },
-    { id: "temp", label: "临时角色", hint: "不创建角色条目，名称直接写入台词；适用于无立绘的过场人物。台词仍可绑定配音，但没有独立的配音音量、声优信息和覆盖率统计" },
+    { id: "temp", label: "临时角色", hint: "不创建角色条目，名称直接写入台词；适用于无立绘的过场人物。台词仍可绑定配音，但没有独立的配音音量和声优信息" },
     { id: "pov", label: "POV 角色", hint: "视角角色，显示于顶层，仅作标记" },
     { id: "agent", label: "需 Agent 判断", hint: "证据不足以确定归类时选择；需填写备注，说明看到了什么、哪里无法确定，Agent 阅读源码后归入以上四类之一" },
 ];
@@ -235,7 +235,7 @@ export async function mount(host, ctx) {
                     ? h("div", { class: "sp-card-flags" }, sp.flags.map((f) => h("span", {}, `· ${f.message}`)))
                     : null,
                 role === "temp" && sp.voiced
-                    ? h("div", { class: "sp-card-flags" }, h("span", {}, `· 该变量关联 ${sp.voiced} 句配音。临时角色的台词仍可绑定配音，但没有独立的配音音量、声优信息和覆盖率统计，需要这些请创建角色条目`))
+                    ? h("div", { class: "sp-card-flags" }, h("span", {}, `· 该变量关联 ${sp.voiced} 句配音。临时角色的台词仍可绑定配音，但没有独立的配音音量和声优信息，需要这些请创建角色条目`))
                     : null,
                 agentNote(sp.variable),
                 roleButtons(role, (next) => choose(next, (r) => ({ [sp.variable]: { role: r } }), { current: answer(sp.variable)?.note }),
@@ -348,7 +348,7 @@ export async function mount(host, ctx) {
                 h("span", { class: "sp-legend-hint" }, r.hint))),
             h("div", { class: "sp-legend-row" },
                 h("span", { class: "sp-legend-name" }, "配音"),
-                h("span", { class: "sp-legend-hint" }, "临时角色的台词同样可以绑定配音，配音表按名称列出；独立的配音音量、声优信息和覆盖率统计只有已创建的角色条目才有")),
+                h("span", { class: "sp-legend-hint" }, "临时角色的台词同样可以绑定配音，配音表按名称列出；独立的配音音量和声优信息只有已创建的角色条目才有")),
             h("div", { class: "sp-legend-row" },
                 h("span", { class: "sp-legend-name" }, "别名"),
                 h("span", { class: "sp-legend-hint" }, "同一角色使用不同名称框（如「？？？」）时，应分别创建角色条目并归入「NPC / 别名」分组")));

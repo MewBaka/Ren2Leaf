@@ -15,7 +15,7 @@ export const DECISIONS_VERSION = 1;
  * What a speaker becomes in NarraLeaf. An alias is its own character here (in a group, to keep the
  * character list readable) rather than a `/rename` on somebody else. Since Studio 1.8.0 a take can
  * be linked to a line under a bare name too, so `temp` may be voiced, but only a character gets its
- * own voice volume, voice actor and coverage count.
+ * own voice volume and voice actor.
  *   main     角色栏顶层
  *   npc      角色栏的 NPC / 别名分组
  *   temp     不建角色，名字直接写在台词里

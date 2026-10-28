@@ -87,17 +87,17 @@ A speaker the author chose not to make a character (the supplement's 临时角�
 is written as `Name: text` with a name no character answers to. That is a valid line, and **it can
 carry voice**: since Studio 1.8.0 the voice table, the recording script and the file-name rule name
 such a line by its own name, and `voice_list` / `voice_link` treat it like any other line. Link its
-takes the same way.
+takes the same way. `voice_status` counts its lines under that name, and `voice_list {character}`
+takes the name.
 
 What it does not get, because these hang off a character:
 
 - its own voice volume - its takes play on the plain voice track;
-- a voice actor entry (the casting list is per character);
-- a row in `voice_status`'s per-character coverage.
+- a voice actor entry (the casting list is per character).
 
 So a bare name is not a reason to drop a voice take, and a take is not by itself a reason to create
-a character. Create one only when the speaker needs one of the three above, or the author asks; list
-the voiced bare names with their line counts in the hand-over.
+a character. Create one (no sprite needed) only when the speaker needs either of the two above, or
+the author asks.
 
 ## 5 - What needs the author
 
