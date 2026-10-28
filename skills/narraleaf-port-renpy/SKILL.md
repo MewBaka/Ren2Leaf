@@ -147,11 +147,13 @@ working folder.
 
 Decide, and write down with reasons (`references/statement-mapping.md` has the defaults):
 
-- **Scenes.** When the pack's section 5 groups the scripts, that grouping is the author's and wins:
-  each of its chapters is one Studio scene, named with its title and described with its description
-  exactly as written. A chapter without a title is `New Scene`, Studio's default; one without a
-  description gets no `#description`. Do not make either up. The labels inside become `/label`s in
-  that scene. Without a grouping: one Studio scene per Ren'Py label that is a unit of story; split
+- **Chapters and scenes.** When the pack's section 5 groups the scripts, that grouping is the
+  author's and wins. Its chapters are Studio chapters, in its order, named as written (`New Chapter`,
+  Studio's default, when a name is missing). Its scene split says what goes in each: either the
+  chapter's whole script is one scene, named and described as written (`New Scene` and no
+  `#description` when missing), with the labels inside as `/label`s; or every label is a scene of
+  its own, named with the label's name and with no `#description`. Do not make a name or a
+  description up. Without a grouping: one Studio scene per Ren'Py label that is a unit of story; split
   very long labels at `scene` statements (never inside a `menu`) and chain the parts with `/jump`.
   A scene of a few hundred rows is comfortable to review and to re-apply.
 - **Characters.** Studio characters are people, and a Ren'Py game's speaker variables are not: one

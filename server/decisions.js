@@ -179,11 +179,27 @@ export function mergeDecisions(doc, patch) {
 
 // ------------------------------------------------------------------ chapters
 
-export const SPLIT_MODES = new Set(["none", "choices", "full"]);
+// How the migrator splits the game, on two axes. `chapters`: false is one Studio chapter holding
+// everything, true is the grouping below. `scenes`: false merges each chapter into one scene, true
+// makes every label its own scene. null on either is "not picked yet".
 const CHAPTER_MAX = 200;
 const FILES_MAX = 2000;
 
-const emptyChapters = () => ({ version: 1, updatedAt: null, mode: null, chapters: [], excluded: [] });
+const emptySplit = () => ({ chapters: null, scenes: null });
+const emptyChapters = () => ({ version: 2, updatedAt: null, split: emptySplit(), chapters: [], excluded: [] });
+
+// Version 1 had one `mode` (none / choices / full), and a chapter's `title` was the name of the one
+// scene it became. Read as the two axes, with that title moved to the scene it named.
+const OLD_MODES = {
+    none: { chapters: false, scenes: false },
+    full: { chapters: true, scenes: false },
+    choices: { chapters: true, scenes: null },
+};
+
+function cleanSplit(split) {
+    const flag = (v) => (v === true || v === false ? v : null);
+    return { chapters: flag(split?.chapters), scenes: flag(split?.scenes) };
+}
 
 export function readChapters(workDir) {
     let data;
@@ -193,11 +209,14 @@ export function readChapters(workDir) {
         return emptyChapters();
     }
     if (!data || typeof data !== "object" || !Array.isArray(data.chapters)) return emptyChapters();
+    const old = !data.split;
     return {
-        version: data.version ?? 1,
+        version: 2,
         updatedAt: data.updatedAt ?? null,
-        mode: SPLIT_MODES.has(data.mode) ? data.mode : null,
-        chapters: data.chapters,
+        split: old ? { ...(OLD_MODES[data.mode] ?? emptySplit()) } : cleanSplit(data.split),
+        chapters: old
+            ? data.chapters.map(({ title, ...c }) => ({ ...c, title: "", sceneTitle: title ?? "" }))
+            : data.chapters,
         // Files the migrator says are not story at all (interface, transforms, debug leftovers).
         excluded: Array.isArray(data.excluded) ? data.excluded.filter((f) => typeof f === "string") : [],
     };
@@ -210,8 +229,8 @@ export function readChapters(workDir) {
  */
 export function cleanChapters(patch) {
     if (!patch || typeof patch !== "object") throw new HttpError(400, "章节格式无效", "bad_chapters");
-    if (patch.mode !== null && patch.mode !== undefined && !SPLIT_MODES.has(patch.mode)) {
-        throw new HttpError(400, "拆分方式无效", "bad_mode");
+    if (patch.split !== undefined && (patch.split === null || typeof patch.split !== "object")) {
+        throw new HttpError(400, "拆分方式无效", "bad_split");
     }
     const list = patch.chapters ?? [];
     if (!Array.isArray(list)) throw new HttpError(400, "章节格式无效", "bad_chapters");
@@ -238,10 +257,12 @@ export function cleanChapters(patch) {
             total++;
             if (total > FILES_MAX) throw new HttpError(400, "文件过多", "too_many_files");
         }
-        // Title and description are the migrator's words for the Studio scene this chapter becomes.
-        // Left empty they stay empty: the agent is told not to make them up.
+        // The title names the Studio chapter; the scene title and description are for the one scene
+        // the chapter becomes when scenes are not split. Left empty they stay empty: the agent is told
+        // not to make them up.
         chapters.push({
-            id, title: title ?? "", description: text(c?.description, "描述") ?? undefined, files,
+            id, title: title ?? "", sceneTitle: text(c?.sceneTitle, "场景名") ?? "",
+            description: text(c?.description, "描述") ?? undefined, files,
             note: text(c?.note, "备注") ?? undefined,
         });
     }
@@ -254,7 +275,7 @@ export function cleanChapters(patch) {
         if (!excluded.includes(file)) excluded.push(file);
         if (excluded.length > FILES_MAX) throw new HttpError(400, "文件过多", "too_many_files");
     }
-    return { version: 1, updatedAt: new Date().toISOString(), mode: patch.mode ?? null, chapters, excluded };
+    return { version: 2, updatedAt: new Date().toISOString(), split: cleanSplit(patch.split), chapters, excluded };
 }
 
 /**
@@ -306,12 +327,8 @@ export function chapterIssues(doc, files = []) {
         if (missing.length) issues.push({ kind: "fileNotInScan", chapter: name, message: `章节「${name}」中的 ${missing.join("、")} 未出现在扫描结果中，可能是重新扫描后文件已重命名` });
         if (unreachable.length) issues.push({ kind: "unreachableFile", chapter: name, message: `章节「${name}」中的 ${unreachable.join("、")} 从入口不可达，可能是测试稿或废弃内容` });
     }
-    if (doc.mode === "none" && chapters.length > 1) {
-        issues.push({ kind: "modeConflict", chapter: null, message: `拆分方式为「不拆分」，但实际划分了 ${chapters.length} 个章节` });
-    }
-    if (doc.mode === "full") {
-        const many = chapters.filter((c) => c.files.length > 1);
-        if (many.length) issues.push({ kind: "modeNote", chapter: null, message: `拆分方式为「全拆分」，但有 ${many.length} 个章节包含多个文件（全拆分是一个文件做成一个场景，请确认不是漏拆）` });
+    if (doc.split?.chapters === false && chapters.length > 1) {
+        issues.push({ kind: "splitConflict", chapter: null, message: `章节选了「不拆分」，但实际划分了 ${chapters.length} 个章节` });
     }
     return issues;
 }
@@ -321,7 +338,7 @@ export function chapterStats(doc) {
         chapters: doc.chapters.length,
         files: doc.chapters.reduce((n, c) => n + c.files.length, 0),
         excluded: (doc.excluded ?? []).length,
-        mode: doc.mode,
+        split: doc.split ?? emptySplit(),
         updatedAt: doc.updatedAt,
     };
 }

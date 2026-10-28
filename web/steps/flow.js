@@ -1,31 +1,45 @@
 // Step ④ flow and chapters. NarraLeaf Studio's shape is 故事 → 章节 → 场景: one game is one story,
-// a story holds chapters, a chapter holds scenes. A Ren'Py script file becomes a chapter and its
-// labels become that chapter's scenes. So this step lists the game's script files and lets the
-// migrator put each one in a chapter. The scan only supplies facts — play order, how much dialogue a file
-// holds, and the signals that often mark a break; it never groups anything by itself.
+// a story holds chapters, a chapter holds scenes. The migrator decides two things: whether the game
+// is split into chapters (and which script files go in each), and whether a chapter's script is one
+// scene or one scene per label. A preview draws the Studio outline that comes out of it, and a graph
+// draws the script's branches so the split can be decided with the logic in view. The scan only
+// supplies facts — play order, how much dialogue a file holds, the signals that often mark a break;
+// it never groups anything by itself.
 
-import { expandable, fact, facts, h, itemList, mountScanStep, props, section, table, tag } from "./shared.js";
+import { expandable, fact, facts, h, itemList, mountScanStep, section, table, tag } from "./shared.js";
+import { outline } from "../shared/outline.js";
+import { flowGraph } from "./flow-graph.js";
 
-const MODES = [
+const AXES = [
     {
-        id: "none",
-        title: "不拆分",
-        detail: "所有剧本文件归入同一章节，在 Studio 里做成一个场景",
-        apply: (files) => [{ id: "ch1", title: "", files: files.map((f) => f.file) }],
+        key: "chapters",
+        title: "章节",
+        options: [
+            { value: false, label: "不拆分", detail: "只建一个章节，所有场景都在这一章里" },
+            { value: true, label: "拆分", detail: "按下面的分组建多个章节，一个剧本文件只属于一个章节" },
+        ],
     },
     {
-        id: "choices",
-        title: "按选项拆分",
-        detail: "Agent 将识别选项分支引出的支线，每条支线独立为一个场景；章节划分仍按下方分组配置",
-        apply: null,
-    },
-    {
-        id: "full",
-        title: "全拆分",
-        detail: "每个剧本文件独立为一个章节，在 Studio 里各成一个场景（仍为同一故事）",
-        apply: (files) => files.map((f, i) => ({ id: `ch${i + 1}`, title: "", files: [f.file] })),
+        key: "scenes",
+        title: "场景",
+        options: [
+            { value: false, label: "不拆分", detail: "每个章节的剧本合并成一个场景，label 留在场景里" },
+            { value: true, label: "按 label 拆分", detail: "每个 label 一个场景，场景名就是 label 名" },
+        ],
     },
 ];
+
+/** The four combinations, said the way the migrator reads them. */
+function splitText(split) {
+    if (split.chapters === null || split.scenes === null) return null;
+    if (!split.chapters && !split.scenes) return "只建一个章节，所有剧本合并成这一章里的一个场景";
+    if (split.chapters && !split.scenes) return "按分组建多个章节，每个章节的剧本合并成一个场景";
+    if (split.chapters && split.scenes) return "按分组建多个章节，每个章节里一个 label 一个场景";
+    return "只建一个章节，章节里一个 label 一个场景";
+}
+
+const STAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>';
+const PAGE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M14 3.5H7a1.5 1.5 0 0 0-1.5 1.5v14A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3.5V8h4.5M9 12.5h6M9 16h6"/></svg>';
 
 // How much of a script is shown inline. Enough to tell what a file is; the whole file lives on disk.
 const SOURCE_LINES = 600;
@@ -35,23 +49,19 @@ const BREAK = {
     blackout: "黑场", music: "换音乐",
 };
 
-const EDGE = {
-    jump: "jump", call: "call", fallthrough: "顺序进入下一个 label", jumpExpression: "jump expression",
-    callExpression: "call expression", "Jump()": "Jump 动作", "Call()": "Call 动作",
-    "Start()": "Start 动作", "Replay()": "Replay 动作", "renpy.jump": "renpy.jump", "renpy.call": "renpy.call",
-};
-
 export async function mount(host, ctx) {
     const { api, game } = ctx;
-    let plan = { mode: null, chapters: [] };
+    let plan = { split: { chapters: null, scenes: null }, chapters: [], excluded: [] };
     let saving = 0;
     let saveError = null;
     // A chapter just made, whose title box takes the focus once the list is drawn and saved.
     let focusChapter = null;
-    const openLabels = new Set();
     const openFiles = new Set();
     // file -> {text, bytes, truncated} once read, or "loading" / an error message.
     const sources = new Map();
+    // Chapters folded shut in the preview, and where the logic graph is looking.
+    const folded = new Set();
+    const graph = { scope: null, selected: null, top: 0, left: 0, reveal: false };
     let step = null;
 
     async function save(next) {
@@ -61,7 +71,7 @@ export async function mount(host, ctx) {
         step?.redraw();
         try {
             const res = await api.put(`/api/games/${game.id}/chapters/decisions`, {
-                mode: next.mode,
+                split: next.split,
                 chapters: next.chapters,
                 excluded: next.excluded ?? [],
             });
@@ -75,7 +85,8 @@ export async function mount(host, ctx) {
     }
 
     // A chapter's title is the migrator's to give; one without is shown by its place in the list.
-    const chapterLabel = (c) => c.title || `未命名 ${plan.chapters.indexOf(c) + 1}`;
+    const chapterLabel = (c) => c.title || `章节 ${plan.chapters.indexOf(c) + 1}（未命名）`;
+    const split = () => plan.split ?? { chapters: null, scenes: null };
 
     const chapterOf = (file) => plan.chapters.find((c) => c.files.includes(file)) ?? null;
 
@@ -139,6 +150,7 @@ export async function mount(host, ctx) {
     }
 
     function chapterPanel(data) {
+        const { chapters: many, scenes: byLabel } = split();
         const box = h("div", { class: "ch-list" });
         for (const c of plan.chapters) {
             const field = (key, placeholder, cls) => {
@@ -154,27 +166,48 @@ export async function mount(host, ctx) {
                 }));
                 return input;
             };
-            const title = field("title", `标题（${chapterLabel(c)}）`, "ch-title");
-            const description = field("description", "描述", "ch-desc");
+            const title = field("title", "章节名（不填用 New Chapter）", "ch-title");
             if (focusChapter === c.id && !saving) {
                 focusChapter = null;
                 queueMicrotask(() => title.focus());
             }
             const says = c.files.reduce((n, f) => n + (data.files.find((x) => x.file === f)?.says ?? 0), 0);
             box.append(h("div", { class: "ch-row" },
+                h("span", { class: "ch-index" }, String(plan.chapters.indexOf(c) + 1)),
                 title,
-                description,
+                // A scene name and description only mean something when the chapter is one scene.
+                byLabel ? null : field("sceneTitle", "场景名（不填用 New Scene）", "ch-scene"),
+                byLabel ? null : field("description", "场景描述", "ch-desc"),
+                byLabel ? h("span", { class: "ch-desc ch-dim" }, "场景名用 label 名，不写描述") : null,
                 h("span", { class: "ch-meta" }, `${c.files.length} 个文件 · ${says} 句`),
-                h("button", {
+                many === false ? null : h("button", {
                     type: "button",
                     class: "btn btn-quiet btn-sm",
                     onclick: () => save({ ...plan, chapters: plan.chapters.filter((x) => x.id !== c.id) }),
                 }, "删除")));
         }
-        if (!plan.chapters.length) box.append(h("div", { class: "ch-empty" }, "暂无章节。请选择一种拆分方式，或直接新建章节，然后在下方分配文件"));
+        if (!plan.chapters.length) {
+            box.append(h("div", { class: "ch-empty" }, many === false
+                ? "还没有章节。点「收入全部剧本」把有台词的文件放进这一章"
+                : "暂无章节。新建章节后在下方分配文件，或者点「每个文件各建一章」从这里开始改"));
+        }
+        const withStory = data.files.filter((f) => f.says && !isExcluded(f.file));
         box.append(h("div", { class: "ch-row" },
-            h("button", { type: "button", class: "btn btn-quiet btn-sm", onclick: () => addChapter() }, "新建章节"),
-            plan.chapters.length
+            many === false
+                ? plan.chapters.length ? null : h("button", { type: "button", class: "btn btn-quiet btn-sm", onclick: () => save({ ...plan, chapters: [oneChapter(data)] }) }, "收入全部剧本")
+                : h("button", { type: "button", class: "btn btn-quiet btn-sm", onclick: () => addChapter() }, "新建章节"),
+            many === false ? null : h("button", {
+                type: "button",
+                class: "btn btn-quiet btn-sm",
+                onclick: async () => {
+                    if (plan.chapters.length) {
+                        const ok = await ctx.confirm({ title: "每个文件各建一章", message: `将按游玩顺序为 ${withStory.length} 个有台词的文件各建一个章节，当前分组将被替换`, confirmText: "替换" });
+                        if (!ok) return;
+                    }
+                    save({ ...plan, chapters: withStory.map((f, i) => ({ id: `ch${i + 1}`, title: "", files: [f.file] })) });
+                },
+            }, "每个文件各建一章"),
+            plan.chapters.length && many !== false
                 ? h("button", {
                     type: "button",
                     class: "btn btn-quiet btn-sm",
@@ -187,25 +220,138 @@ export async function mount(host, ctx) {
         return box;
     }
 
-    function modePanel(data) {
-        const cards = MODES.map((m) => h("button", {
-            type: "button",
-            class: `ch-mode${plan.mode === m.id ? " is-on" : ""}`,
-            onclick: async () => {
-                if (m.apply && plan.chapters.length) {
-                    const ok = await ctx.confirm({
-                        title: m.title,
-                        message: "将按所选方式重新分组，当前章节配置将被替换",
-                        confirmText: "确认分组",
-                    });
-                    if (!ok) return;
-                }
-                save({ ...plan, mode: m.id, chapters: m.apply ? m.apply(data.files.filter((f) => f.says)) : plan.chapters });
+    /**
+     * Everything in one chapter: what is already grouped keeps its place and names, and every other
+     * file with dialogue joins it, in play order.
+     */
+    function oneChapter(data) {
+        const first = plan.chapters[0] ?? { id: "ch1", title: "" };
+        const grouped = new Set(plan.chapters.flatMap((c) => c.files));
+        const files = data.files
+            .filter((f) => !isExcluded(f.file) && (grouped.has(f.file) || f.says))
+            .map((f) => f.file);
+        return { ...first, files };
+    }
+
+    async function pick(axis, value, data) {
+        const now = split();
+        if (now[axis] === value) return;
+        let chapters = plan.chapters;
+        if (axis === "chapters" && value === false && (chapters.length !== 1 || data.files.some((f) => f.says && !isExcluded(f.file) && !chapterOf(f.file)))) {
+            if (chapters.length > 1) {
+                const ok = await ctx.confirm({
+                    title: "章节不拆分",
+                    message: `将把 ${chapters.length} 个章节合并成一章，章节名和场景名保留第一章的`,
+                    confirmText: "合并",
+                });
+                if (!ok) return;
+            }
+            chapters = [oneChapter(data)];
+        }
+        save({ ...plan, split: { ...now, [axis]: value }, chapters });
+    }
+
+    function splitPanel(data) {
+        const now = split();
+        const axes = AXES.map((a) => {
+            const chosen = a.options.find((o) => o.value === now[a.key]);
+            return h("div", { class: "ch-axis" },
+                h("span", { class: "ch-axis-title" }, a.title),
+                h("div", { class: "ch-axis-body" },
+                    h("div", { class: "tabstrip", role: "tablist" }, a.options.map((o) => h("button", {
+                        type: "button", class: "tab", role: "tab",
+                        "aria-selected": now[a.key] === o.value ? "true" : "false",
+                        onclick: () => pick(a.key, o.value, data),
+                    }, o.label))),
+                    h("span", { class: "ch-axis-detail" }, chosen ? chosen.detail : "未选")));
+        });
+        const said = splitText(now);
+        return h("div", { class: "ch-split" },
+            h("div", { class: "ch-axes" },
+                axes,
+                h("div", { class: `ch-result${said ? "" : " is-empty"}` }, said ?? "两项都选好后，右边会画出导入 Studio 后的样子")),
+            preview(data));
+    }
+
+    /** The story outline as Studio's story panel shows it. */
+    function preview(data) {
+        const tree = outline(plan, data.files);
+        const panel = h("div", { class: "st-tree" });
+        panel.append(h("div", { class: "st-caption" }, "Studio 预览"));
+        if (!tree.ready) {
+            panel.append(h("div", { class: "st-empty" }, "选好章节和场景的拆分方式后显示"));
+            return panel;
+        }
+        if (!tree.chapters.length) {
+            panel.append(h("div", { class: "st-empty" }, "还没有章节"));
+            return panel;
+        }
+        for (const c of tree.chapters) {
+            const shut = folded.has(c.id);
+            panel.append(h("button", {
+                type: "button", class: "st-chapter", "aria-expanded": shut ? "false" : "true",
+                onclick: () => {
+                    if (shut) folded.delete(c.id);
+                    else folded.add(c.id);
+                    step?.redraw();
+                },
             },
-        },
-        h("span", { class: "ch-mode-title" }, m.title),
-        h("span", { class: "ch-mode-detail" }, m.detail)));
-        return h("div", { class: "ch-modes" }, cards);
+            h("span", { class: "st-chevron" }, "›"),
+            h("span", { class: c.untitled ? "st-untitled" : null }, c.name),
+            h("span", { class: "st-count" }, `（${c.scenes.length}）`)));
+            if (shut) continue;
+            if (!c.scenes.length) panel.append(h("div", { class: "st-none" }, "没有场景：这一章的文件里没有 label"));
+            for (const sc of c.scenes) {
+                panel.append(h("div", {
+                    class: `st-scene${sc.label ? " is-link" : ""}${sc.reachable === false ? " is-dim" : ""}`,
+                    title: sc.label ? `${sc.file}:${sc.line}${sc.reachable === false ? "，从入口走不到" : ""}` : sc.description || null,
+                    onclick: sc.label ? () => showLabel(sc.label) : null,
+                },
+                h("span", { class: "st-icon", html: sc.entry ? STAR : PAGE }),
+                h("span", { class: "st-text" },
+                    h("span", { class: `st-name${sc.untitled ? " st-untitled" : ""}` }, sc.name),
+                    h("span", { class: "st-sub" }, `${sc.says} 句台词${sc.reachable === false ? " · 走不到" : ""}`))));
+            }
+        }
+        return panel;
+    }
+
+    /** Opens the logic graph on a label. */
+    function showLabel(name) {
+        graph.selected = name;
+        graph.scope = null;
+        graph.reveal = true;
+        step?.redraw();
+        queueMicrotask(() => document.querySelector(".fg")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    }
+
+    function logicPanel(data) {
+        const many = split().chapters && plan.chapters.length > 1;
+        const scope = many ? plan.chapters.find((c) => c.id === graph.scope) ?? null : null;
+        const tabs = many
+            ? h("div", { class: "tabstrip fg-scope", role: "tablist" },
+                h("button", { type: "button", class: "tab", role: "tab", "aria-selected": scope ? "false" : "true", onclick: () => { graph.scope = null; step.redraw(); } }, "全部"),
+                plan.chapters.map((c) => h("button", {
+                    type: "button", class: "tab", role: "tab", "aria-selected": scope?.id === c.id ? "true" : "false",
+                    onclick: () => { graph.scope = c.id; graph.top = 0; graph.left = 0; step.redraw(); },
+                }, chapterLabel(c))))
+            : null;
+        return h("div", {}, tabs, flowGraph(data, {
+            scope: scope ? new Set(scope.files) : null,
+            chapterOf: (file) => {
+                const c = chapterOf(file);
+                return c ? chapterLabel(c) : isExcluded(file) ? "已排除" : "未分配";
+            },
+            state: graph,
+            onSelect: (name, widen) => {
+                graph.selected = name;
+                if (widen && name) {
+                    graph.scope = null;
+                    graph.reveal = true;
+                }
+                step.redraw();
+            },
+        }));
     }
 
     function fileTable(data) {
@@ -216,7 +362,7 @@ export async function mount(host, ctx) {
             const select = h("select", { class: "an-select ch-select" },
                 h("option", { value: "", selected: !current && !out }, "未分配"),
                 plan.chapters.map((c) => h("option", { value: c.id, selected: current?.id === c.id }, chapterLabel(c))),
-                h("option", { value: "+" }, "新建章节…"),
+                split().chapters === false ? null : h("option", { value: "+" }, "新建章节…"),
                 h("option", { value: "-", selected: out }, "排除（非剧本文件）"));
             select.addEventListener("change", () => {
                 if (select.value === "+") {
@@ -287,29 +433,34 @@ export async function mount(host, ctx) {
             const s = data.summary;
             const assigned = plan.chapters.reduce((n, c) => n + c.files.length, 0);
             const withStory = data.files.filter((f) => f.says).length;
+            const tree = outline(plan, data.files);
+            const scenes = tree.chapters.reduce((n, c) => n + c.scenes.length, 0);
+            const now = split();
             const out = [];
             out.push(facts([
                 fact("剧本文件", data.files.length, null, `${withStory} 个有台词`),
                 fact("已分组", `${assigned} / ${withStory}`, assigned >= withStory && withStory ? "success" : "warning"),
                 fact("章节", plan.chapters.length, plan.chapters.length ? "success" : "warning"),
-                fact("拆分方式", MODES.find((m) => m.id === plan.mode)?.title ?? "未选", plan.mode ? null : "warning"),
+                fact("场景", tree.ready ? scenes : "—", tree.ready ? null : "warning", tree.ready ? (now.scenes ? "一个 label 一个场景" : "一章一个场景") : "拆分方式未选"),
                 fact("label", s.labels, null, `不可达 ${s.unreachable} 个`),
                 fact("菜单", s.menus, null, `${s.choices} 个选项`),
             ]));
 
-            out.push(section("拆分方式", undefined, modePanel(data), {
+            out.push(section("拆分方式", undefined, splitPanel(data), {
                 actions: saveError
                     ? h("span", { class: "an-value is-danger" }, saveError)
                     : saving ? h("span", { class: "an-value" }, "正在保存")
                         : plan.updatedAt ? h("span", { class: "an-value" }, "已保存") : null,
-                note: "这里的一个章节在 Studio 里做成一个场景，整部游戏是一个故事",
+                note: "整部游戏是 Studio 里的一个故事。章节和场景都是 Studio 的：章节把场景分组，场景是写剧本的地方",
             }));
 
             out.push(section("章节", plan.chapters.length, chapterPanel(data), {
-                note: "标题是 Studio 里的场景名，描述是场景描述，都可以不填；不填的 Agent 不会替你写，场景名用 Studio 默认的 New Scene，描述留空",
+                note: now.scenes
+                    ? "章节名就是 Studio 里的章节名，可以不填；不填的 Agent 不会替你起，用 Studio 默认的 New Chapter"
+                    : "章节名是 Studio 里的章节名，场景名和场景描述给这一章合成的那个场景，都可以不填；不填的 Agent 不会替你写，用 Studio 默认的 New Chapter、New Scene，描述留空",
             }));
 
-            const warn = h("div", { class: "ch-warn" },
+            const warn = now.chapters === false ? null : h("div", { class: "ch-warn" },
                 h("p", {}, "分组前请确认以下事项：",
                     h("b", {}, "同一章节内不应包含属于不同章节的内容")),
                 h("p", {}, "比如 c1c2.rpy 整个算第一章，那就把它整个放进第一章；但要保证这个文件里没有混进别的章节的内容。有人会把一章拆成几个文件，那就把这几个文件都放进同一个章节"),
@@ -318,38 +469,9 @@ export async function mount(host, ctx) {
                 note: "点一行看文件内容；不是剧本的文件（界面、transform、调试残留）在右边选「排除」。「游玩顺序」是从 start 走出来的先后，不是文件名的顺序",
             }));
 
-            const labels = data.labels.filter((l) => l.reachable);
-            const tbody = h("tbody");
-            for (const l of labels) {
-                expandable(tbody, {
-                    key: l.name,
-                    open: openLabels.has(l.name),
-                    onToggle: (k) => {
-                        if (openLabels.has(k)) openLabels.delete(k);
-                        else openLabels.add(k);
-                        step.redraw();
-                    },
-                    columns: 5,
-                    cells: [
-                        l.name,
-                        String(l.playOrder + 1),
-                        h("span", { class: "mono" }, `${l.file}:${l.line}`),
-                        String(l.says),
-                        h("span", {},
-                            l.menus ? tag(`${l.menus} 个菜单`, "primary") : null,
-                            l.terminal === "return" ? tag("以 return 结束") : null,
-                            l.fallsThroughTo ? tag("顺序进入下一个") : null),
-                    ],
-                    detail: () => props([
-                        ["位置", `${l.file}:${l.line}–${l.endLine}`],
-                        ["台词", l.says ? `${l.says} 句` : "无台词"],
-                        ["出口", l.out.filter((e) => e.to).map((e) => `${EDGE[e.kind] ?? e.kind} → ${e.to}`).join("；") || null],
-                        ["入口", l.in.map((e) => `${EDGE[e.kind] ?? e.kind} ← ${e.from ?? e.screen ?? "入口"}`).join("；") || null],
-                    ]),
-                });
-            }
-            out.push(section("label 执行顺序", labels.length,
-                table(["28%", "88px", "26%", "72px", null], ["label", "游玩顺序", "位置", "台词", "说明"], tbody)));
+            out.push(section("剧本逻辑", s.reachable, logicPanel(data), {
+                note: "从 start 走得到的每个 label 一个框，按游玩顺序从上往下排；框里列出它的菜单选项，箭头指向选完去的 label。点框看入口，点 label 名跳过去",
+            }));
 
             if (data.menus.length) {
                 const mt = h("tbody");
@@ -365,9 +487,7 @@ export async function mount(host, ctx) {
                 }
                 const t = table(["22%", "18%", null, "18%", "16%"], ["菜单", "所属 label", "选项", "条件", "跳转目标"], mt);
                 t.classList.add("is-wrap");
-                out.push(section("菜单与选项", s.choices, t, {
-                    note: "选择「按选项拆分」时，Agent 将依据这些分支划分场景",
-                }));
+                out.push(section("菜单与选项", s.choices, t));
             }
 
             if (data.breaks.length) {

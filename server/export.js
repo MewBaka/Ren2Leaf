@@ -14,6 +14,7 @@ import fsp from "node:fs/promises";
 import path from "node:path";
 import { HttpError, readJson } from "./http.js";
 import { readDecisions, decisionStats, readChapters, chapterStats, chapterIssues, readDocument } from "./decisions.js";
+import { outline } from "../web/shared/outline.js";
 import { resolveGameDirs } from "./diagnose/index.js";
 import { resolvePortraits } from "./portraits.js";
 import { pickFolder } from "./capture.js";
@@ -189,7 +190,7 @@ function headerSection(game, inventory, fingerprint, skip = {}) {
             ["2", "游戏规格：分辨率、引擎版本、源码完整度"],
             ["3", left("speakers", "说话人：每个 Character 变量的证据，和迁移者的分类")],
             ["4", left("diagnose", "Python 逻辑：每一处 `$`、python 块、非字面量的 define/default")],
-            ["5", left("flow", "流程与章节：迁移者定的章节分组，以及 label 图、菜单、结局")],
+            ["5", left("flow", "流程与章节：迁移者定的 Studio 章节与场景，以及 label 图、菜单、结局")],
             ["6", left("capture", "界面截图：游戏实际跑出来的画面和元素坐标")],
             ["7", left("diagnose", "文本与演出：文字标签、插值、转场、transform、成就、persistent")],
             ["8", left("diagnose", "资产：引用不到的文件、格式不符、重复素材、要离线处理的素材")],
@@ -540,18 +541,17 @@ function pythonSection(python, skip) {
     return `${out.join("\n")}\n`;
 }
 
-const MODE_TEXT = {
-    none: {
-        title: "不拆分",
-        means: "迁移者的意思是：全部剧本属于同一个章节，做成一个场景。",
+/** What the migrator's split means, said to the agent. */
+const SPLIT_TEXT = {
+    chapters: {
+        false: "**章节：不拆分。** 只有一个章节，全部场景都放在这一章里。",
+        true: "**章节：拆分。** 按下表一行一个章节，顺序就是表里的顺序。",
+        null: "**章节：迁移者没有选。** 下表是迁移者分好的组，照它建章节。",
     },
-    choices: {
-        title: "按选项拆分",
-        means: "迁移者的意思是：选项（menu）引出的支线各自成为独立的场景，主线留在这一章做成的场景里。支线场景迁移者没有起名，用原作 label 的名字，不写描述。",
-    },
-    full: {
-        title: "全拆分",
-        means: "迁移者的意思是：一个剧本文件对应一个章节，也就是一个场景（整部游戏仍然只有一个故事）。",
+    scenes: {
+        false: "**场景：不拆分。** 一个章节的剧本合并成**一个**场景：这一章的文件按表里的顺序写进这一个场景，原作的 label 在场景里写成 `/label`，不再各自成场景。",
+        true: "**场景：按 label 拆分。** 一个 label 一个场景，按文件顺序、文件里的行号顺序排；场景名就是原作的 label 名，原样照抄（不翻译、不改写），不写 `#description`。局部 label（名字里带 `.` 的）留在所属 label 的场景里写成 `/label`；引擎自己进的 label（`splashscreen`、`main_menu`、`after_load` 之类）不建场景。label 之间的 `jump` 和顺序进入下一个 label，改成跳到对应的场景。",
+        null: "**场景：迁移者没有选。** 按 Skill 的默认做法分场景。",
     },
 };
 
@@ -562,35 +562,52 @@ function chaptersSection(flow, plan, skip) {
     const s = flow.summary;
     const h = numbering(5);
     const out = ["## 5　流程与章节", ""];
-    out.push("Studio 的层级是**故事 → 章节 → 场景**，整部游戏是**一个**故事：不要为每个文件各建一个故事——存读档和「继续游戏」都认故事，拆开会出问题。", "");
-    out.push("**迁移者在这里分的「章节」，在 Studio 里是场景**：下表一行做成一个场景（`scene_create {name}`），这一行的文件按顺序写进这一个场景，文件里的 label 不再各自成场景。场景都放进故事已有的那一章，不要自己起 Studio 的章节名。", "");
-    out.push("场景名和描述是迁移者的话，照抄，不改写：", "");
-    out.push("- 场景名：「标题」一列。迁移者没填的，用 Studio 默认的场景名 `New Scene`，不要按内容自己起名；有几个都叫 `New Scene` 时，之后按 `scene_create` 返回的 id 指认场景，不靠名字。", "");
-    out.push("- 每个场景的表头（`story_apply` 的 `#background` 和 `#description`，写法看 NarraLeaf Studio 的 Skill）：", "");
-    out.push("  - `#background` **每个场景都要写**：原作这一段开场时屏幕上的背景，一般是第一句 `scene` 的图；开场是黑屏或纯色就写 `#background none`。不写的话，复用骨架的示例场景会闪出示例图。", "");
-    out.push("  - `#description` **只写迁移者填的「描述」**，原样照抄。没填就不写这一行，不要自己总结剧情补上。", "");
-    out.push("下面是迁移者定的分组。", "");
-
-    const mode = MODE_TEXT[plan?.mode] ?? null;
-    if (mode) out.push(`**拆分方式：${mode.title}。** ${mode.means}`, "");
-    else out.push("迁移者没有选拆分方式。", "");
+    const split = plan?.split ?? { chapters: null, scenes: null };
+    const tree = outline(plan, flow.files);
+    out.push("Studio 的层级是**故事 → 章节 → 场景**，整部游戏是**一个**故事：不要为每个文件各建一个故事——存读档和「继续游戏」都认故事，拆开会出问题。下面说的章节、场景都是 Studio 里的。", "");
+    out.push(SPLIT_TEXT.chapters[split.chapters], "", SPLIT_TEXT.scenes[split.scenes], "");
+    out.push("名字和描述是迁移者的话，照抄，不改写；没填的不要按内容自己起：", "");
+    out.push("- 章节名：「章节名」一列。故事里已有的那一章做第一章（`chapter_rename` 改成这里的名字）；后面的章节用 `scene_create` 的 `chapter` 和 `after`（上一章最后一个场景）新建。没填的用 Studio 新建章节的默认名 `New Chapter`。`scene_create` 按名字认章节，同名的会被认成已有那一章，所以几章都叫 `New Chapter` 时，先用临时名建出来，再按 id `chapter_rename` 成 `New Chapter`。");
+    if (split.scenes !== true) {
+        out.push("- 场景名：「场景名」一列。没填的用 Studio 默认的 `New Scene`；有几个都叫 `New Scene` 时，之后按 `scene_create` 返回的 id 指认场景，不靠名字。");
+    }
+    out.push("- 每个场景的表头（`story_apply` 的 `#background` 和 `#description`，写法看 NarraLeaf Studio 的 Skill）：");
+    out.push("  - `#background` **每个场景都要写**：原作这一段开场时屏幕上的背景，一般是第一句 `scene` 的图；开场是黑屏或纯色就写 `#background none`。不写的话，复用骨架的示例场景会闪出示例图。");
+    out.push(split.scenes === true
+        ? "  - `#description` 不写：按 label 拆的场景迁移者没有写描述。"
+        : "  - `#description` **只写迁移者填的「场景描述」**，原样照抄。没填就不写这一行，不要自己总结剧情补上。", "");
+    out.push("带 ★ 的是入口场景（含 `start` 的那个），用 `scene_set_entry` 设好。", "");
 
     const planned = plan?.chapters ?? [];
     const assigned = new Set(planned.flatMap((c) => c.files));
     if (planned.length) {
-        out.push(h("章节与文件"), "");
-        out.push(mdTable(["章节", "标题（场景名）", "描述（场景描述）", "文件", "台词", "备注"],
-            planned.map((c, i) => [
-                i + 1,
-                c.title || "（没填，用 `New Scene`）",
-                c.description || "（没填，不写）",
-                c.files.join("、") || "（空）",
-                c.files.reduce((n, f) => n + (flow.files.find((x) => x.file === f)?.says ?? 0), 0),
-                c.note || "",
-            ])), "");
+        out.push(h("章节与场景"), "");
+        if (split.scenes === true) {
+            out.push(mdTable(["章节", "章节名", "文件", "场景", "台词", "备注"],
+                tree.chapters.map((c, i) => [
+                    i + 1, c.untitled ? "（没填，用 `New Chapter`）" : c.name, c.files.join("、") || "（空）",
+                    c.scenes.length, c.says, planned[i].note || "",
+                ])), "");
+            const scenes = tree.chapters.flatMap((c, i) => c.scenes.map((sc) => [
+                i + 1, `${sc.entry ? "★ " : ""}${sc.name}`, `${sc.file}:${sc.line}`, sc.says, sc.reachable === false ? "走不到" : "",
+            ]));
+            const { rows, note } = capped(scenes, MAX_ROWS * 3, "data/chapters.json 的 outline");
+            out.push(mdTable(["章节", "场景（label 名）", "位置", "台词", "说明"], rows), note, "");
+        } else {
+            out.push(mdTable(["章节", "章节名", "场景名", "场景描述", "文件", "台词", "备注"],
+                tree.chapters.map((c, i) => [
+                    i + 1,
+                    c.untitled ? "（没填，用 `New Chapter`）" : c.name,
+                    `${c.scenes[0].entry ? "★ " : ""}${c.scenes[0].untitled ? "（没填，用 `New Scene`）" : c.scenes[0].name}`,
+                    c.scenes[0].description || "（没填，不写）",
+                    c.files.join("、") || "（空）",
+                    c.says,
+                    planned[i].note || "",
+                ])), "");
+        }
         out.push("⚠️ **一个文件只属于一个章节，而且文件里不会跨到别的章节**——这是迁移者保证的，扫描查不了。", "");
     } else {
-        out.push(h("章节与文件"), "", "迁移者还没有分组。", "");
+        out.push(h("章节与场景"), "", "迁移者还没有分组。", "");
     }
 
     const issues = chapterIssues(plan, flow.files);
@@ -1082,7 +1099,7 @@ export function readiness(game, parts) {
     const skip = parts.document?.skip ?? {};
     const issues = chapterIssues(chapters ?? { chapters: [] }, inventory?.extensions?.flow?.files ?? []);
     const stats = decisionStats(decisions);
-    const plan = chapterStats(chapters ?? { chapters: [], mode: null, updatedAt: null });
+    const plan = chapterStats(chapters ?? { chapters: [], split: null, updatedAt: null });
     const roles = Object.values(decisions.speakers ?? {});
     const main = roles.filter((r) => r.role === "main" || r.role === "pov").length;
     const steps = [
@@ -1154,7 +1171,12 @@ export function planFiles(game, parts) {
         files.push({ path: "data/speakers.json", what: "迁移者确认过的说话人身份", content: JSON.stringify(decisions, null, 2) });
     }
     if (chapters?.chapters?.length) {
-        files.push({ path: "data/chapters.json", what: "迁移者定的章节分组", content: JSON.stringify(chapters, null, 2) });
+        // `outline` is the Studio chapters and scenes the split comes to, as the preview drew them.
+        const tree = outline(chapters, inventory?.extensions?.flow?.files ?? []);
+        files.push({
+            path: "data/chapters.json", what: "迁移者定的章节与场景",
+            content: JSON.stringify({ ...chapters, outline: tree.ready ? tree.chapters : null }, null, 2),
+        });
     }
     for (const f of files) if (f.content !== undefined) f.bytes = Buffer.byteLength(f.content);
     return files;

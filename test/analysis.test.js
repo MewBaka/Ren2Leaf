@@ -4,7 +4,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { diagnose } from "../server/diagnose/index.js";
-import { mergeDecisions, decisionStats, cleanChapters, chapterIssues, mergeDocument, readDocument } from "../server/decisions.js";
+import { mergeDecisions, decisionStats, cleanChapters, chapterIssues, mergeDocument, readDocument, readChapters } from "../server/decisions.js";
+import { outline } from "../web/shared/outline.js";
 import { buildDocument, collect, folderName, planFiles, readiness, writePackage } from "../server/export.js";
 
 const SDK = process.env.RENPY_SDK || "/Applications/renpy-8.5.2-sdk";
@@ -713,39 +714,86 @@ describe("export package", () => {
         assert.ok(!doc.includes("迁移者没分类的"));
     });
 
-    test("the chapter plan is handed over as the migrator drew it", () => {
+    test("a plan saved before chapters and scenes were told apart is read as both", () => {
+        // The fixture is a version 1 plan: mode "none", and its title named the one scene.
+        const plan = readChapters(work);
+        assert.deepEqual(plan.split, { chapters: false, scenes: false });
+        assert.equal(plan.chapters[0].title, "");
+        assert.equal(plan.chapters[0].sceneTitle, "第一章");
         const parts = collect(game);
         const doc = buildDocument(game, parts, planFiles(game, parts));
         assert.ok(doc.includes("故事 → 章节 → 场景"));
-        assert.ok(doc.includes("不拆分"));
-        assert.ok(doc.includes("第一章"));
+        assert.ok(doc.includes("**章节：不拆分。**"));
+        assert.ok(doc.includes("**场景：不拆分。**"));
+        assert.ok(doc.includes("| 1 | （没填，用 `New Chapter`） | ★ 第一章 |"));
         assert.ok(doc.includes("一个文件只属于一个章节"));
-        assert.ok(doc.includes("在 Studio 里是场景"));
         assert.ok(doc.includes("`#background` **每个场景都要写**"));
     });
 
-    test("a chapter's title and description go over as written, and only when given", () => {
+    test("names and the description go over as written, and only when given", () => {
         const file = path.join(work, "decisions", "chapters.json");
         const before = fs.readFileSync(file, "utf8");
         const plan = cleanChapters({
-            mode: "full",
+            split: { chapters: true, scenes: false },
             chapters: [
-                { id: "ch1", title: "  开场  ", description: "主角醒来", files: ["script.rpy"] },
+                { id: "ch1", title: "  序章  ", sceneTitle: "开场", description: "主角醒来", files: ["script.rpy"] },
                 { id: "ch2", title: "", files: [] },
             ],
         });
-        // Nothing is filled in for the migrator: no id or file name stands in for a missing title.
-        assert.equal(plan.chapters[0].title, "开场");
+        // Nothing is filled in for the migrator: no id or file name stands in for a missing name.
+        assert.equal(plan.chapters[0].title, "序章");
         assert.equal(plan.chapters[1].title, "");
+        assert.equal(plan.chapters[1].sceneTitle, "");
         assert.equal(plan.chapters[1].description, undefined);
         assert.ok(chapterIssues(plan, [{ file: "script.rpy", says: 3, playOrder: 0 }]).some((i) => i.message.includes("「未命名 2」")));
         fs.writeFileSync(file, JSON.stringify(plan));
         const parts = collect(game);
         const doc = buildDocument(game, parts, planFiles(game, parts));
         const section = doc.slice(doc.indexOf("## 5"), doc.indexOf("## 6"));
-        assert.ok(section.includes("| 1 | 开场 | 主角醒来 | script.rpy |"));
-        assert.ok(section.includes("| 2 | （没填，用 `New Scene`） | （没填，不写） |"));
+        assert.ok(section.includes("| 1 | 序章 | ★ 开场 | 主角醒来 | script.rpy |"));
+        assert.ok(section.includes("| 2 | （没填，用 `New Chapter`） | （没填，用 `New Scene`） | （没填，不写） |"));
         fs.writeFileSync(file, before);
+    });
+
+    test("split by label, each label is a scene named after it", () => {
+        const file = path.join(work, "decisions", "chapters.json");
+        const before = fs.readFileSync(file, "utf8");
+        fs.writeFileSync(file, JSON.stringify(cleanChapters({
+            split: { chapters: false, scenes: true },
+            chapters: [{ id: "ch1", title: "", sceneTitle: "不会用到", files: ["script.rpy"] }],
+        })));
+        const parts = collect(game);
+        const files = planFiles(game, parts);
+        const doc = buildDocument(game, parts, files);
+        const section = doc.slice(doc.indexOf("## 5"), doc.indexOf("## 6"));
+        assert.ok(section.includes("**场景：按 label 拆分。**"));
+        assert.ok(section.includes("| 1 | ★ start | script.rpy:4 | 3 |"));
+        assert.ok(!section.includes("不会用到"));
+        assert.ok(!section.includes("「场景名」一列"));
+        const pack = JSON.parse(files.find((f) => f.path === "data/chapters.json").content);
+        assert.deepEqual(pack.outline[0].scenes.map((sc) => sc.name), ["start"]);
+        fs.writeFileSync(file, before);
+    });
+
+    test("the four splits come to the Studio outline they say", () => {
+        const files = [
+            { file: "a.rpy", says: 10, labels: [{ name: "start", line: 1, says: 6, reachable: true }, { name: "start.part", line: 5, says: 1, reachable: true }, { name: "talk", line: 9, says: 3, reachable: true }] },
+            { file: "b.rpy", says: 4, labels: [{ name: "splashscreen", line: 1, says: 0, reachable: true }, { name: "end", line: 3, says: 4, reachable: false }] },
+        ];
+        const one = [{ id: "ch1", title: "", sceneTitle: "", files: ["a.rpy", "b.rpy"] }];
+        const two = [{ id: "ch1", title: "上", files: ["a.rpy"] }, { id: "ch2", title: "下", files: ["b.rpy"] }];
+        const shape = (split, chapters) => outline({ split, chapters }, files).chapters.map((c) => [c.name, c.scenes.map((sc) => sc.name)]);
+        assert.deepEqual(shape({ chapters: false, scenes: false }, one), [["New Chapter", ["New Scene"]]]);
+        assert.deepEqual(shape({ chapters: true, scenes: false }, two), [["上", ["New Scene"]], ["下", ["New Scene"]]]);
+        // Local labels stay in their owner's scene, and the engine's own labels are not scenes.
+        assert.deepEqual(shape({ chapters: true, scenes: true }, two), [["上", ["start", "talk"]], ["下", ["end"]]]);
+        assert.deepEqual(shape({ chapters: false, scenes: true }, one), [["New Chapter", ["start", "talk", "end"]]]);
+        const tree = outline({ split: { chapters: false, scenes: true }, chapters: one }, files);
+        assert.equal(tree.chapters[0].scenes[0].says, 7);
+        assert.equal(tree.chapters[0].scenes[0].entry, true);
+        assert.equal(outline({ split: { chapters: true, scenes: null }, chapters: two }, files).ready, false);
+        // One chapter asked for, more drawn: said, not refused.
+        assert.ok(chapterIssues({ split: { chapters: false, scenes: false }, chapters: two }, files).some((i) => i.kind === "splitConflict"));
     });
 
     test("screenshots and their element coordinates are listed", () => {
@@ -792,7 +840,7 @@ describe("export package", () => {
         const file = path.join(work, "decisions", "chapters.json");
         const before = fs.readFileSync(file, "utf8");
         fs.writeFileSync(file, JSON.stringify(cleanChapters({
-            mode: "none",
+            split: { chapters: false, scenes: false },
             chapters: [{ id: "ch1", title: "第一章", files: ["script.rpy"] }],
             excluded: ["screens.rpy"],
         })));
@@ -809,7 +857,7 @@ describe("export package", () => {
 
     test("a file cannot be excluded and put in a chapter at once", () => {
         assert.throws(() => cleanChapters({
-            mode: "none",
+            split: { chapters: false, scenes: false },
             chapters: [{ id: "ch1", title: "第一章", files: ["script.rpy"] }],
             excluded: ["script.rpy"],
         }), /不能同时排除/);
@@ -830,7 +878,7 @@ describe("export package", () => {
         assert.ok(!doc.includes("### 3.1　主要角色"));
         assert.ok(doc.includes("迁移者留给你判断，本节没有内容"));
         // The other sections are untouched.
-        assert.ok(doc.includes("### 5.1　章节与文件"));
+        assert.ok(doc.includes("### 5.1　章节与场景"));
         const r = readiness(game, parts);
         assert.equal(r.steps.find((x) => x.id === "speakers").skipped, true);
         assert.equal(r.steps.find((x) => x.id === "flow").skipped, undefined);
@@ -865,7 +913,7 @@ describe("export package", () => {
         assert.ok(r.ready);
         assert.deepEqual(r.steps.map((s) => s.id), ["diagnose", "capture", "speakers", "flow"]);
         assert.deepEqual(r.steps.filter((s) => !s.done).map((s) => s.id), []);
-        const bare = readiness(game, { inventory: null, decisions: { speakers: {} }, chapters: { chapters: [], mode: null }, shots: [] });
+        const bare = readiness(game, { inventory: null, decisions: { speakers: {} }, chapters: { chapters: [], split: { chapters: null, scenes: null } }, shots: [] });
         assert.equal(bare.ready, false);
     });
 });
