@@ -837,6 +837,28 @@ describe("export package", () => {
         fs.rmSync(file, { force: true });
     });
 
+    test("a step's note to the agent sits under its own heading, switched off or not", () => {
+        const file = path.join(work, "decisions", "document.json");
+        let doc = mergeDocument(readDocument(work), { skip: { speakers: true } });
+        doc = mergeDocument(doc, { notes: { speakers: "a1 和 b1 可能是同一人\n\n## 5　不是标题", flow: "结局在 ending.rpy", capture: "  " } });
+        assert.deepEqual(Object.keys(doc.notes).sort(), ["flow", "speakers"]);
+        assert.equal(doc.skip.speakers, true);
+        fs.writeFileSync(file, JSON.stringify(doc));
+        const parts = collect(game);
+        const md = buildDocument(game, parts, planFiles(game, parts));
+        const speakers = md.slice(md.indexOf("## 3　说话人"), md.indexOf("## 4　"));
+        assert.ok(speakers.startsWith("## 3　说话人\n\n> **迁移者的备注**\n>\n> a1 和 b1 可能是同一人\n>\n> ## 5　不是标题\n"));
+        assert.ok(speakers.includes("迁移者没有把这一节交出来"));
+        // What the migrator typed can never start a line as a heading.
+        assert.equal(md.match(/^## 5　/gm).length, 1);
+        assert.ok(md.slice(md.indexOf("## 5　流程与章节")).startsWith("## 5　流程与章节\n\n> **迁移者的备注**\n>\n> 结局在 ending.rpy\n"));
+        assert.ok(!md.slice(md.indexOf("## 6　")).startsWith("## 6　界面截图\n\n>"));
+        doc = mergeDocument(doc, { notes: { flow: "" } });
+        assert.deepEqual(Object.keys(doc.notes), ["speakers"]);
+        assert.throws(() => mergeDocument(doc, { notes: { export: "x" } }), /未知的步骤/);
+        fs.rmSync(file, { force: true });
+    });
+
     test("readiness names what is still missing", () => {
         const parts = collect(game);
         const r = readiness(game, parts);

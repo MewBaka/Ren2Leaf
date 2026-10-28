@@ -718,3 +718,5 @@ tr[aria-expanded="true"] .an-chevron { transform: rotate(90deg); }
 }
 
 .sp-note-input:focus { border-color: rgb(var(--ui-primary)); box-shadow: 0 0 0 3px rgb(var(--ui-primary) / 0.15); outline: none; }
+.sp-note-error { font-size: var(--ui-text-xs); color: rgb(var(--ui-danger)); }
+.sp-note-error[hidden] { display: none; }

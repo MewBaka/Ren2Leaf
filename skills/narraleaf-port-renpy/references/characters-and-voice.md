@@ -81,7 +81,25 @@ Two things to check before you do:
 - A file that defines such a box may still contain the author's own demo lines, left in the source
   and never played. Lines no label can reach are not part of the port.
 
-## 4 - What needs the author
+## 4 - Speakers that stay a bare name
+
+A speaker the author chose not to make a character (the supplement's 临时角色, a one-off passer-by)
+is written as `Name: text` with a name no character answers to. That is a valid line, and **it can
+carry voice**: since Studio 1.8.0 the voice table, the recording script and the file-name rule name
+such a line by its own name, and `voice_list` / `voice_link` treat it like any other line. Link its
+takes the same way.
+
+What it does not get, because these hang off a character:
+
+- its own voice volume - its takes play on the plain voice track;
+- a voice actor entry (the casting list is per character);
+- a row in `voice_status`'s per-character coverage.
+
+So a bare name is not a reason to drop a voice take, and a take is not by itself a reason to create
+a character. Create one only when the speaker needs one of the three above, or the author asks; list
+the voiced bare names with their line counts in the hand-over.
+
+## 5 - What needs the author
 
 - **Two speakers in one row.** A display name like `A/B` on a single line has no `.story` spelling:
   one row, one speaker. List each occurrence with its text; the author decides how to split it.
@@ -89,7 +107,7 @@ Two things to check before you do:
   flashback) is one Studio character; port the change as a rename and confirm the reading.
 - Any variable you could not place in a group, and any group with no sprite tag.
 
-## 5 - Order of work
+## 6 - Order of work
 
 Resolve the cast *before* generating story rows: a merge or a split afterwards costs a
 regeneration, and after voice is linked a regeneration orphans the takes (the port `SKILL.md`,

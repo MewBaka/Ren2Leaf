@@ -2,9 +2,10 @@
 // speaker can become in NarraLeaf. Nothing is pre-selected. A speaker the migrator cannot place can
 // be handed to the agent instead, but only with a note saying what they saw and what is unclear.
 //
-// An alias is not a special case here: a voice take can only be linked to a character that exists,
-// so a variable that is somebody under another name becomes its own character too, kept in the
-// NPC / 别名 group.
+// An alias is not a special case here: a variable that is somebody under another name becomes its
+// own character too, kept in the NPC / 别名 group. Since Studio 1.8.0 a take can be linked to a
+// line under a bare name as well, but only a character gets its own voice volume, voice actor and
+// coverage count, and most games do not write their aliases cleanly enough for a `/rename`.
 //
 // Variables that share a display name are shown as one card. Ren'Py has no way to give a Character
 // a second side image, so authors clone the Character per sprite set and one person ends up as
@@ -22,7 +23,7 @@ const SAMPLE = 2;
 const ROLES = [
     { id: "main", label: "主要角色", hint: "推动剧情发展的角色，无论是否有立绘；显示于角色列表顶层" },
     { id: "npc", label: "NPC / 别名", hint: "仍创建角色条目，但归入「NPC / 别名」分组，以保持角色列表整洁" },
-    { id: "temp", label: "临时角色", hint: "不创建角色条目，名称直接写入台词；适用于无立绘、无配音的过场人物" },
+    { id: "temp", label: "临时角色", hint: "不创建角色条目，名称直接写入台词；适用于无立绘的过场人物。台词仍可绑定配音，但没有独立的配音音量、声优信息和覆盖率统计" },
     { id: "pov", label: "POV 角色", hint: "视角角色，显示于顶层，仅作标记" },
     { id: "agent", label: "需 Agent 判断", hint: "证据不足以确定归类时选择；需填写备注，说明看到了什么、哪里无法确定，Agent 阅读源码后归入以上四类之一" },
 ];
@@ -52,8 +53,12 @@ export async function mount(host, ctx) {
     const mergeInto = (variable) => answer(variable)?.mergeInto ?? null;
     const settled = (variable) => roleOf(variable) || mergeInto(variable);
 
-    /** Asks for the note 需 Agent 判断 cannot go without. Resolves null when cancelled. */
-    async function askNote(current, count = 1) {
+    /**
+     * Asks for the note 需 Agent 判断 cannot go without and hands it to `submit`, which saves it and
+     * resolves to the error, if any. A failed save keeps the box open with what was typed, so the
+     * note is not lost. Resolves to the saved note, or null when cancelled.
+     */
+    async function askNote(current, count, submit) {
         const area = h("textarea", {
             class: "sp-note-input",
             rows: "4",
@@ -62,17 +67,35 @@ export async function mount(host, ctx) {
             placeholder: "例如：与 b1 共用同一段配音编号，可能是同一角色的别名，但名称框不同",
             "aria-label": "备注",
         }, current || "");
+        const failure = h("p", { class: "sp-note-error", role: "alert", hidden: true });
         const modal = ctx.openModal({
             title: "交给 Agent 判断",
             body: h("div", { class: "sp-note-form" },
                 h("p", { class: "sp-note-lead" }, count > 1
                     ? `备注将写入已选的 ${count} 个角色。请说明看到了什么、哪里无法确定，Agent 将据此阅读源码并归类`
                     : "请说明看到了什么、哪里无法确定，Agent 将据此阅读源码并归类"),
-                area),
+                area,
+                failure),
             width: 520,
             footer: [
                 { label: "取消", variant: "secondary", value: null },
-                { id: "ok", label: "确定", variant: "primary", onClick: (close) => close(area.value.trim()) },
+                {
+                    id: "ok", label: "确定", variant: "primary",
+                    onClick: async (close) => {
+                        const note = area.value.trim();
+                        modal.buttons.ok.disabled = true;
+                        failure.hidden = true;
+                        const err = await submit(note);
+                        if (!err) return close(note);
+                        // The page is served fresh but the server keeps running: an old one does
+                        // not know this role yet.
+                        failure.textContent = err.code === "bad_role"
+                            ? `保存失败：${err.message}。后台服务可能仍是旧版本，请重启 Ren2Leaf 后再试`
+                            : `保存失败：${err.message}`;
+                        failure.hidden = false;
+                        sync();
+                    },
+                },
             ],
         });
         const sync = () => { modal.buttons.ok.disabled = !area.value.trim(); };
@@ -87,20 +110,17 @@ export async function mount(host, ctx) {
         return patch;
     }
 
-    /** Applies a picked role; 需 Agent 判断 asks for its note first and does nothing if cancelled. */
+    /** Applies a picked role; 需 Agent 判断 saves through its note box and does nothing if cancelled. */
     async function choose(next, build, { current = null, count = 1 } = {}) {
-        let note = null;
-        if (next === "agent") {
-            note = await askNote(current, count);
-            if (!note) return false;
+        if (next !== "agent") {
+            save(build(next));
+            return true;
         }
-        save(withNote(build(next), note));
-        return true;
+        return !!(await askNote(current, count, (note) => save(withNote(build(next), note))));
     }
 
-    async function editNote(variable) {
-        const note = await askNote(answer(variable)?.note);
-        if (note) save({ [variable]: { note } });
+    function editNote(variable) {
+        return askNote(answer(variable)?.note, 1, (note) => save({ [variable]: { note } }));
     }
 
     function agentNote(variable) {
@@ -110,19 +130,23 @@ export async function mount(host, ctx) {
             h("button", { type: "button", class: "sp-link", onclick: () => editNote(variable) }, "修改备注"));
     }
 
+    /** Resolves to the error when the save failed, null when it went through. */
     async function save(patch) {
         saving++;
         saveError = null;
         step?.redraw();
+        let failed = null;
         try {
             const res = await api.put(`/api/games/${game.id}/speakers/decisions`, { speakers: patch });
             decisions = res.decisions;
             ctx.setStatus("speakers", summaryText());
         } catch (err) {
             saveError = err.message;
+            failed = err;
         }
         saving--;
         step?.redraw();
+        return failed;
     }
 
     function summaryText() {
@@ -211,7 +235,7 @@ export async function mount(host, ctx) {
                     ? h("div", { class: "sp-card-flags" }, sp.flags.map((f) => h("span", {}, `· ${f.message}`)))
                     : null,
                 role === "temp" && sp.voiced
-                    ? h("div", { class: "sp-card-flags" }, h("span", {}, `· 该变量关联 ${sp.voiced} 句配音，临时角色不会纳入配音表`))
+                    ? h("div", { class: "sp-card-flags" }, h("span", {}, `· 该变量关联 ${sp.voiced} 句配音。临时角色的台词仍可绑定配音，但没有独立的配音音量、声优信息和覆盖率统计，需要这些请创建角色条目`))
                     : null,
                 agentNote(sp.variable),
                 roleButtons(role, (next) => choose(next, (r) => ({ [sp.variable]: { role: r } }), { current: answer(sp.variable)?.note }),
@@ -324,7 +348,7 @@ export async function mount(host, ctx) {
                 h("span", { class: "sp-legend-hint" }, r.hint))),
             h("div", { class: "sp-legend-row" },
                 h("span", { class: "sp-legend-name" }, "配音"),
-                h("span", { class: "sp-legend-hint" }, "配音表仅关联已创建的角色条目，有配音的变量请勿设为「临时角色」")),
+                h("span", { class: "sp-legend-hint" }, "临时角色的台词同样可以绑定配音，配音表按名称列出；独立的配音音量、声优信息和覆盖率统计只有已创建的角色条目才有")),
             h("div", { class: "sp-legend-row" },
                 h("span", { class: "sp-legend-name" }, "别名"),
                 h("span", { class: "sp-legend-hint" }, "同一角色使用不同名称框（如「？？？」）时，应分别创建角色条目并归入「NPC / 别名」分组")));
@@ -454,7 +478,9 @@ export async function mount(host, ctx) {
                 for (const e of picked) Object.assign(patch, patchFor(e, r));
                 return patch;
             }, { count: picked.length });
-            if (done) selected.clear();
+            if (!done) return;
+            selected.clear();
+            step.redraw();
         };
         return h("div", { class: "sp-bulk" },
             h("span", { class: "sp-bulk-count" }, `已选 ${picked.length} 个`),

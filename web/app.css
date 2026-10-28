@@ -308,6 +308,42 @@ button:disabled {
     overflow: auto;
 }
 
+/* The note to the agent under every step that writes part of the package. */
+.step-note {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+    padding: 10px 24px 14px;
+    border-top: 1px solid var(--ui-edge);
+    background: rgb(var(--ui-surface));
+}
+
+.step-note[hidden] { display: none; }
+.step-note-head { display: flex; align-items: baseline; gap: 12px; }
+.step-note-label { font-size: var(--ui-text-xs); font-weight: var(--ui-weight-medium); color: rgb(var(--ui-fg-muted)); }
+.step-note-status { margin-left: auto; font-size: var(--ui-text-xs); color: rgb(var(--ui-fg-subtle)); }
+.step-note-status.is-danger { color: rgb(var(--ui-danger)); }
+
+.step-note-input {
+    display: block;
+    width: 100%;
+    min-height: var(--ui-control-lg);
+    max-height: 160px;
+    padding: 8px 10px;
+    border: 1px solid var(--ui-control-border);
+    border-radius: var(--ui-radius-md);
+    background: rgb(var(--ui-control-fill));
+    color: rgb(var(--ui-fg));
+    font-size: var(--ui-text-sm);
+    line-height: 20px;
+    box-shadow: var(--ui-shadow-xs);
+    resize: none;
+    overflow-y: auto;
+}
+
+.step-note-input:focus { border-color: rgb(var(--ui-primary)); box-shadow: 0 0 0 3px rgb(var(--ui-primary) / 0.15); outline: none; }
+
 /* Generic card, used by the step pages. */
 .card {
     background: rgb(var(--ui-surface));

@@ -12,9 +12,10 @@ import { HttpError, readJson } from "./http.js";
 export const DECISIONS_VERSION = 1;
 
 /**
- * What a speaker becomes in NarraLeaf. A voice take can only be linked to a character that exists,
- * so anything voiced has to be a character — which is why an alias is its own character here (in a
- * group, to keep the character list readable) rather than a `/rename` on somebody else.
+ * What a speaker becomes in NarraLeaf. An alias is its own character here (in a group, to keep the
+ * character list readable) rather than a `/rename` on somebody else. Since Studio 1.8.0 a take can
+ * be linked to a line under a bare name too, so `temp` may be voiced, but only a character gets its
+ * own voice volume, voice actor and coverage count.
  *   main     角色栏顶层
  *   npc      角色栏的 NPC / 别名分组
  *   temp     不建角色，名字直接写在台词里
@@ -43,10 +44,12 @@ export function documentFile(workDir) {
 /**
  * Which steps put their findings in the package. A step the migrator switches off is not missing
  * data: the document says the call was left to the agent, which then reads the source itself.
+ * Each step can also carry a note from the migrator to the agent, switched off or not.
  */
 export const DOCUMENT_STEPS = ["diagnose", "capture", "speakers", "flow"];
+const STEP_NOTE_MAX = 4000;
 
-const emptyDocument = () => ({ version: 1, updatedAt: null, skip: {} });
+const emptyDocument = () => ({ version: 1, updatedAt: null, skip: {}, notes: {} });
 
 export function readDocument(workDir) {
     let data;
@@ -57,23 +60,43 @@ export function readDocument(workDir) {
     }
     if (!data || typeof data !== "object" || typeof data.skip !== "object" || !data.skip) return emptyDocument();
     const skip = {};
-    for (const step of DOCUMENT_STEPS) if (data.skip[step] === true) skip[step] = true;
-    return { version: data.version ?? 1, updatedAt: data.updatedAt ?? null, skip };
+    const notes = {};
+    for (const step of DOCUMENT_STEPS) {
+        if (data.skip[step] === true) skip[step] = true;
+        if (typeof data.notes?.[step] === "string" && data.notes[step].trim()) notes[step] = data.notes[step];
+    }
+    return { version: data.version ?? 1, updatedAt: data.updatedAt ?? null, skip, notes };
 }
 
-/** Merges a patch of `{step: boolean}`; true means "leave this to the agent". */
+/**
+ * Merges a patch of `{skip?: {step: boolean}, notes?: {step: text}}`. A true skip means "leave this
+ * to the agent"; an empty note removes it. Steps not in the patch keep what they had.
+ */
 export function mergeDocument(doc, patch) {
-    if (!patch || typeof patch !== "object" || typeof patch.skip !== "object" || !patch.skip) {
-        throw new HttpError(400, "需要 skip 对象", "bad_patch");
+    const isMap = (v) => v && typeof v === "object" && !Array.isArray(v);
+    if (!isMap(patch) || (!isMap(patch.skip) && !isMap(patch.notes))) {
+        throw new HttpError(400, "需要 skip 或 notes 对象", "bad_patch");
     }
-    const skip = { ...doc.skip };
-    for (const [step, value] of Object.entries(patch.skip)) {
+    const known = (step) => {
         if (!DOCUMENT_STEPS.includes(step)) throw new HttpError(400, `未知的步骤：${step}`, "unknown_step");
+    };
+    const skip = { ...doc.skip };
+    for (const [step, value] of Object.entries(isMap(patch.skip) ? patch.skip : {})) {
+        known(step);
         if (typeof value !== "boolean" && value !== null) throw new HttpError(400, "值必须是 true 或 false", "bad_value");
         if (value === true) skip[step] = true;
         else delete skip[step];
     }
-    return { version: 1, updatedAt: new Date().toISOString(), skip };
+    const notes = { ...doc.notes };
+    for (const [step, value] of Object.entries(isMap(patch.notes) ? patch.notes : {})) {
+        known(step);
+        if (value !== null && typeof value !== "string") throw new HttpError(400, "备注必须是文本", "bad_value");
+        // Kept as typed, line breaks and all: only a note that is nothing but blanks counts as empty.
+        if (value && value.length > STEP_NOTE_MAX) throw new HttpError(400, "备注过长", "too_long");
+        if (value?.trim()) notes[step] = value;
+        else delete notes[step];
+    }
+    return { version: 1, updatedAt: new Date().toISOString(), skip, notes };
 }
 
 export function readDecisions(workDir) {

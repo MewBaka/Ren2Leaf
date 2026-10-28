@@ -598,6 +598,7 @@ async function mountStep() {
     }
     host.replaceChildren();
     const game = currentGame();
+    mountStepNote(game, state.step, token);
     if (!game) {
         host.append(welcome());
         return;
@@ -633,6 +634,82 @@ async function mountStep() {
         if (token !== state.mountToken) return;
         host.replaceChildren(emptyState("当前步骤加载失败"));
     }
+}
+
+// ------------------------------------------------------------------ step note
+
+/** The steps that fill a section of the package, and so can carry a note to the agent for it. */
+const NOTE_STEPS = new Set(["diagnose", "capture", "speakers", "flow"]);
+const NOTE_SAVE_DELAY = 600;
+let flushStepNote = null;
+
+/**
+ * The box under every step that writes part of the package: what the migrator wants the agent to
+ * know about this part. It lives in the shell, so every step gets the same one, and it saves as it
+ * is typed into, so leaving the step never loses it.
+ */
+async function mountStepNote(game, step, token) {
+    const bar = $("step-note");
+    flushStepNote?.();
+    flushStepNote = null;
+    bar.replaceChildren();
+    bar.hidden = true;
+    if (!game || !NOTE_STEPS.has(step)) return;
+    let saved = "";
+    try {
+        saved = (await api.get(`/api/games/${game.id}/document/decisions`)).document?.notes?.[step] ?? "";
+    } catch {
+        return;
+    }
+    if (token !== state.mountToken) return;
+
+    const area = h("textarea", {
+        class: "step-note-input",
+        rows: "2",
+        maxlength: "4000",
+        placeholder: "扫描看不出、或需要 Agent 特别注意的内容，导出时写在补充包对应章节的开头",
+        "aria-label": "此部分给 Agent 的备注",
+    }, saved);
+    const status = h("span", { class: "step-note-status" });
+    const show = (text, danger = false) => {
+        status.textContent = text;
+        status.classList.toggle("is-danger", danger);
+    };
+    let timer = 0;
+    const save = async () => {
+        clearTimeout(timer);
+        timer = 0;
+        const value = area.value;
+        if (value === saved) return;
+        show("正在保存");
+        try {
+            await api.put(`/api/games/${game.id}/document/decisions`, { notes: { [step]: value } });
+            saved = value;
+            show(value.trim() ? "已保存" : "");
+        } catch (err) {
+            show(err.message, true);
+        }
+    };
+    const grow = () => {
+        area.style.height = "auto";
+        area.style.height = `${area.scrollHeight + 2}px`;
+    };
+    area.addEventListener("input", () => {
+        show("");
+        grow();
+        clearTimeout(timer);
+        timer = setTimeout(save, NOTE_SAVE_DELAY);
+    });
+    area.addEventListener("blur", () => save());
+    flushStepNote = () => { if (timer) save(); };
+
+    bar.append(
+        h("div", { class: "step-note-head" },
+            h("span", { class: "step-note-label" }, "此部分给 Agent 的备注"),
+            status),
+        area);
+    bar.hidden = false;
+    grow();
 }
 
 // ------------------------------------------------------------------ status bar

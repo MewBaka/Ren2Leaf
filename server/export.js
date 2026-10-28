@@ -81,6 +81,31 @@ function omitted(heading, what) {
     return `${heading}\n\n迁移者没有把这一节交出来：${what}由你自己读源码判断。\n`;
 }
 
+/**
+ * Where each step's note from the migrator goes: the section the step fills. The diagnosis feeds
+ * several sections, so its note sits in the overview and says which ones it covers.
+ */
+const STEP_NOTE = {
+    diagnose: { section: 2, title: "迁移者的备注（诊断步骤，涉及第 2、4、7、8 节）" },
+    speakers: { section: 3, title: "迁移者的备注" },
+    flow: { section: 5, title: "迁移者的备注" },
+    capture: { section: 6, title: "迁移者的备注" },
+};
+
+/**
+ * Puts each step's note right under its section heading, as a quote: every line starts with `>`,
+ * so nothing the migrator typed can pass for a heading when Bridge cuts the file into sections.
+ */
+function withStepNotes(md, notes = {}) {
+    for (const [step, { section, title }] of Object.entries(STEP_NOTE)) {
+        const note = notes[step]?.trim();
+        if (!note) continue;
+        const quote = [`> **${title}**`, ">", ...note.split(/\r?\n/).map((l) => (l.trim() ? `> ${l.trimEnd()}` : ">")), "", ""].join("\n");
+        md = md.replace(new RegExp(`^## ${section}　[^\\n]*\\n\\n`, "m"), (heading) => heading + quote);
+    }
+    return md;
+}
+
 /** Numbers the subsections of one section in the order they are actually written. */
 function numbering(section) {
     let n = 0;
@@ -154,6 +179,9 @@ function headerSection(game, inventory, fingerprint, skip = {}) {
         "",
         "5. 每张表都标了这一列是谁说的：**迁移者**（人确认过）、**扫描**（静态读出来的事实）、",
         "   **引擎**（截图时从运行中的游戏取的）。三者冲突时，以源码为准。",
+        "",
+        "6. 有的节开头引用了一段「迁移者的备注」，是迁移者对这一部分的交代。读那一节时先看它；",
+        "   和第 4 条一样，迁移者明确要求的照做，其余当线索。",
         "",
         "## 1　这份文件说了什么",
         "",
@@ -256,7 +284,7 @@ function speakersSection(speakers, decisions, portraits, skip) {
         ["主要角色", "主角，直接列在角色面板里", "`character_upsert` 建角色，**不带 `group`**；有立绘的配立绘（分层立绘用 `character_layered_set`）"],
         ["POV 角色", "主角，玩家视角", "同上，也不带 `group`；名字框随章节变的，按原作每段的名字写"],
         [NPC_GROUP, "次要角色，收进一个分组", `\`character_upsert\` 建角色，带 \`group: "${NPC_GROUP}"\`，名字按下表`],
-        ["临时角色", "迁移者认为不需要独立角色（无立绘无配音的过场人物）", "不建角色，台词写成一次性说话人"],
+        ["临时角色", "迁移者认为不需要独立角色（多为无立绘的过场人物）", "不建角色，台词写成一次性说话人；有配音的照常链接"],
     ]), "");
     out.push("另有一类「交给 Agent 判断」：迁移者看过证据仍定不下来，写了备注说明看到了什么、拿不准什么，由你读源码后归入上面四类之一。", "");
     out.push(`Studio 的角色面板按分组列角色，\`character_upsert\` 的 \`group\` 按名字归组，组不存在就新建；不带 \`group\` 时角色**留在原来的组**，传 \`group: null\` 才把它拿出来，直接列在面板上。迁移者定的是：**主要角色和 POV 角色都不分组**，直接列在外面；只有「${NPC_GROUP}」这一类收进同名分组。不要给主角另建「主角」之类的组；复用的骨架示例角色要是已经在某个组里，建的时候传 \`group: null\`。「${NPC_GROUP}」的角色照建，只是不必像主角那样准备立绘和差分。`, "");
@@ -301,11 +329,14 @@ function speakersSection(speakers, decisions, portraits, skip) {
     const temp = roleIs("temp");
     if (temp.length) {
         out.push(h("临时角色"), "");
-        out.push("迁移者认为这些不需要独立角色。", "");
+        out.push("迁移者认为这些不需要独立角色：台词写成 `名字: 台词` 的一次性说话人。", "");
         const { rows, note } = capped(temp.map((x) => [
-            answers[x.variable]?.name || x.displayName || x.variable, x.variable, x.lines, answers[x.variable]?.note || "",
+            answers[x.variable]?.name || x.displayName || x.variable, x.variable, x.lines, voiceCell(x), answers[x.variable]?.note || "",
         ]), MAX_ROWS, "data/speakers.json");
-        out.push(mdTable(["名字", "变量", "台词", "备注"], rows), note, "");
+        out.push(mdTable(["名字", "变量", "台词", "配音（扫描）", "备注"], rows), note, "");
+        if (temp.some((x) => x.voiced)) {
+            out.push("其中有带配音的：一次性说话人的台词照样能链接配音（Studio 1.8.0 起），配音表和录音文件名用的就是这个名字，链接方法和其他台词一样。只是它没有角色，所以没有自己的配音音量、声优信息，`voice_status` 的按角色覆盖率里也没有它；交接时把这几个名字和句数单独报给迁移者。", "");
+        }
     }
 
     const agent = roleIs("agent");
@@ -1085,7 +1116,7 @@ export function buildDocument(game, parts, files) {
     const ext = inventory?.extensions ?? {};
     // What the migrator left to the agent. The scan still ran; only the telling is skipped.
     const skip = parts.document?.skip ?? {};
-    return [
+    return withStepNotes([
         headerSection(game, inventory, fingerprint ?? null, skip),
         speakersSection(ext.speakers, decisions, portraits ?? new Map(), skip.speakers),
         pythonSection(ext.python, skip.diagnose),
@@ -1096,7 +1127,7 @@ export function buildDocument(game, parts, files) {
         reviewSection(inventory),
         filesSection(files),
         `---\n\n由 Ren2Leaf 生成于 ${new Date().toISOString()}（补充包格式 v${PACKAGE_VERSION}）\n`,
-    ].filter(Boolean).join("\n");
+    ].filter(Boolean).join("\n"), parts.document?.notes);
 }
 
 /** The file list of the package, before anything is written. */
