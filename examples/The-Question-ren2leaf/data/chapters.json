@@ -1,15 +1,93 @@
 {
-  "version": 1,
-  "updatedAt": "2026-10-19T15:00:25.220Z",
-  "mode": "choices",
+  "version": 2,
+  "updatedAt": "2026-10-28T02:03:26.880Z",
+  "split": {
+    "chapters": false,
+    "scenes": true
+  },
   "chapters": [
     {
       "id": "ch1",
       "title": "第一章",
+      "sceneTitle": "",
       "files": [
         "script.rpy"
       ]
     }
   ],
-  "excluded": []
+  "excluded": [],
+  "outline": [
+    {
+      "id": "ch1",
+      "index": 0,
+      "name": "第一章",
+      "untitled": false,
+      "files": [
+        "script.rpy"
+      ],
+      "says": 71,
+      "scenes": [
+        {
+          "name": "start",
+          "untitled": false,
+          "label": "start",
+          "file": "script.rpy",
+          "line": 10,
+          "says": 9,
+          "reachable": true,
+          "entry": true
+        },
+        {
+          "name": "rightaway",
+          "untitled": false,
+          "label": "rightaway",
+          "file": "script.rpy",
+          "line": 53,
+          "says": 16,
+          "reachable": true,
+          "entry": false
+        },
+        {
+          "name": "game",
+          "untitled": false,
+          "label": "game",
+          "file": "script.rpy",
+          "line": 108,
+          "says": 9,
+          "reachable": true,
+          "entry": false
+        },
+        {
+          "name": "book",
+          "untitled": false,
+          "label": "book",
+          "file": "script.rpy",
+          "line": 133,
+          "says": 8,
+          "reachable": true,
+          "entry": false
+        },
+        {
+          "name": "marry",
+          "untitled": false,
+          "label": "marry",
+          "file": "script.rpy",
+          "line": 159,
+          "says": 24,
+          "reachable": true,
+          "entry": false
+        },
+        {
+          "name": "later",
+          "untitled": false,
+          "label": "later",
+          "file": "script.rpy",
+          "line": 237,
+          "says": 5,
+          "reachable": true,
+          "entry": false
+        }
+      ]
+    }
+  ]
 }

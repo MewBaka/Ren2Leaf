@@ -58,7 +58,7 @@ npm start
     ├── inventory.json                 完整扫描结果
     ├── screens/<界面>.elements.json    该界面的元素坐标
     ├── speakers.json                  迁移者确认过的说话人身份
-    └── chapters.json                  迁移者指定的章节分组
+    └── chapters.json                  迁移者指定的章节与场景拆分
 ```
 
 补充包不直接交给 Agent，而是导入 Studio 的 Ren2Leaf Bridge（见下节），Agent 通过插件的工具按需读取。`README.md` 是写给 Agent 读的，开篇即要求其先更新 Skills，并声明「本文件是路牌，不是方案」：文档只陈述原作事实与迁移者决定，具体如何落地由 Agent 判断。文档中被截断的长表，全量在 `data/inventory.json` 中，Agent 通过 Bridge 的 `pack_query` 按类别查询。
@@ -83,8 +83,8 @@ npm start
 | --- | --- |
 | 说话人 `s` | 主要角色 Sylvie，全篇唯一有立绘的角色 |
 | 说话人 `m` | POV 角色 Me，玩家视角的叙述者，原作未给专名 |
-| 章节 | 单章「第一章」，收 `script.rpy` |
-| 拆分方式 | 按选项拆分：选项引出的支线各自成为独立场景 |
+| 章节 | 不拆分：单章「第一章」，收 `script.rpy` |
+| 场景 | 按 label 拆分：六个 label 各成一个场景（start、rightaway、game、book、marry、later） |
 
 截图一步取了 10 张画面（主界面、设置、关于、帮助、读取游戏、保存、历史、游戏界面、选项、对话框），共 528 处元素坐标，覆盖源码中 22 个界面里的 12 个；未截到的 10 个界面在第 6 节逐个列出，并附各自的 action，以便判断是遗漏还是无需迁移。
 
