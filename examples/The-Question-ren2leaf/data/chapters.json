@@ -3,7 +3,8 @@
   "updatedAt": "2026-10-28T02:03:26.880Z",
   "split": {
     "chapters": false,
-    "scenes": true
+    "scenes": true,
+    "agent": false
   },
   "chapters": [
     {

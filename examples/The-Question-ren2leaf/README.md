@@ -187,6 +187,20 @@ Studio 的层级是**故事 → 章节 → 场景**，整部游戏是**一个**�
 - 文件顺序与执行顺序从第 4 个 label 起产生分歧（按文件为 book，按执行为 marry）
 - 章节划分由迁移者决定：扫描仅提供每个文件的台词数、label 及疑似分界信号（黑场、停止音乐、过场视频、成就点）
 
+#### 剧本逻辑
+
+Ren2Leaf 给迁移者画的逻辑图，这里写成表：从入口走得到的每个剧情 label 一行，按游玩顺序排；局部 label 并进所属的 label。「去向」是它走出去的路：`jump`、`call`（跑完回到调用处）、顺序进入下一个 label，菜单的每个选项去哪，以及在这里结束的路线。
+
+| label | 位置 | 台词 | 去向 |
+| --- | --- | --- | --- |
+| start | script.rpy:10 | 9 | 选项「To ask her right away.」 → rightaway；选项「To ask her later.」 → later |
+| rightaway | script.rpy:53 | 16 | 选项「It's a videogame.」 → game；选项「It's an interactive book.」 → book |
+| game | script.rpy:108 | 9 | jump → marry |
+| marry | script.rpy:159 | 24 | 结局 |
+| book | script.rpy:133 | 8 | jump → marry |
+| later | script.rpy:237 | 5 | 结局 |
+
+
 #### 菜单与选项
 
 「选项里写了什么」是选中之后、走出这个选项之前的赋值：路线常常就是这样分开的，所以没有跳转的选项不等于什么都没做。
@@ -770,4 +784,4 @@ Ren'Py 找文件的办法是：先按脚本里写的路径找，找不到再在 
 
 ---
 
-由 Ren2Leaf 生成于 2026-10-28T02:03:47.482Z（补充包格式 v1）
+由 Ren2Leaf 生成于 2026-10-28T02:17:46.293Z（补充包格式 v1）
