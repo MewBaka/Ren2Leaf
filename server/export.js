@@ -258,6 +258,7 @@ function speakersSection(speakers, decisions, portraits, skip) {
         [NPC_GROUP, "次要角色，收进一个分组", `\`character_upsert\` 建角色，带 \`group: "${NPC_GROUP}"\`，名字按下表`],
         ["临时角色", "迁移者认为不需要独立角色（无立绘无配音的过场人物）", "不建角色，台词写成一次性说话人"],
     ]), "");
+    out.push("另有一类「交给 Agent 判断」：迁移者看过证据仍定不下来，写了备注说明看到了什么、拿不准什么，由你读源码后归入上面四类之一。", "");
     out.push(`Studio 的角色面板按分组列角色，\`character_upsert\` 的 \`group\` 按名字归组，组不存在就新建；不带 \`group\` 时角色**留在原来的组**，传 \`group: null\` 才把它拿出来，直接列在面板上。迁移者定的是：**主要角色和 POV 角色都不分组**，直接列在外面；只有「${NPC_GROUP}」这一类收进同名分组。不要给主角另建「主角」之类的组；复用的骨架示例角色要是已经在某个组里，建的时候传 \`group: null\`。「${NPC_GROUP}」的角色照建，只是不必像主角那样准备立绘和差分。`, "");
 
     const main = roleIs("main");
@@ -307,6 +308,22 @@ function speakersSection(speakers, decisions, portraits, skip) {
         out.push(mdTable(["名字", "变量", "台词", "备注"], rows), note, "");
     }
 
+    const agent = roleIs("agent");
+    if (agent.length) {
+        out.push(h("交给你判断的"), "");
+        out.push("迁移者看过下面的证据仍定不下来，把分类交给了你。先读迁移者的备注，再到源码里看这些变量在哪说话、和谁共用配音取号，归入上面四类之一，照那一类的做法落地。每个的结论和理由写进 Bridge 的日志，迁移者回头要核对。", "");
+        out.push(mdTable(["变量", "原名字框（扫描）", "台词", "配音（扫描）", "立绘 tag（扫描）", "立绘", "扫描看到的", "迁移者的备注"],
+            agent.map((x) => [
+                x.variable, x.displayName === "" ? "（空字符串）" : x.displayName ?? x.nameExpression ?? "（无）",
+                mergedInto(x.variable).length ? `${totalLines(x)}（本体 ${x.lines}）` : x.lines,
+                voiceCell(x), x.spriteTags.slice(0, 3).map((t) => t.tag).join("，") || "—", picture(x), flagText(x) || "—",
+                answers[x.variable]?.note || "",
+            ])), "");
+        if (agent.some((x) => mergedInto(x.variable).length)) {
+            out.push(`有同名变量并进来的（见「台词」一列），迁移者已确认它们是同一个人，合并进来的变量：${agent.filter((x) => mergedInto(x.variable).length).map((x) => `${x.variable} ← ${mergedCell(x)}`).join("；")}。`, "");
+        }
+    }
+
     const undecided = speakers.speakers.filter((x) => x.lines && !answers[x.variable]?.role && !answers[x.variable]?.mergeInto);
     const removed = roleIs("removed");
     if (undecided.length) {
@@ -337,7 +354,7 @@ function speakersSection(speakers, decisions, portraits, skip) {
         out.push(mdTable(["变量", "台词", "配音（扫描）", "迁移者的分类", "出现在"],
             narratorStyle.slice(0, MAX_ROWS).map((x) => [
                 x.variable, x.lines, voiceCell(x),
-                { main: "主要角色", pov: "POV 角色", npc: NPC_GROUP, temp: "临时角色", removed: "拿掉了" }[answers[x.variable]?.role] ?? "没分类",
+                { main: "主要角色", pov: "POV 角色", npc: NPC_GROUP, temp: "临时角色", agent: "交给 Agent 判断", removed: "拿掉了" }[answers[x.variable]?.role] ?? "没分类",
                 x.files.slice(0, 3).map((f) => `${f.file}×${f.lines}`).join("，"),
             ])), "");
     }
@@ -989,7 +1006,7 @@ export function collect(game) {
     const document = readDocument(workDir);
     // Only the characters the migrator kept get their picture in the package.
     const speakers = inventory?.extensions?.speakers?.speakers ?? [];
-    const wanted = speakers.filter((sp) => ["main", "pov", "npc"].includes(decisions.speakers?.[sp.variable]?.role));
+    const wanted = speakers.filter((sp) => ["main", "pov", "npc", "agent"].includes(decisions.speakers?.[sp.variable]?.role));
     let portraits = new Map();
     try {
         portraits = wanted.length ? resolvePortraits(game, wanted) : new Map();
@@ -1043,7 +1060,7 @@ export function readiness(game, parts) {
         {
             id: "speakers", label: "说话人", done: main > 0,
             detail: main
-                ? `主要 ${main}，NPC/别名 ${roles.filter((r) => r.role === "npc").length}，临时 ${roles.filter((r) => r.role === "temp").length}，合并 ${roles.filter((r) => r.mergeInto).length}`
+                ? `主要 ${main}，NPC/别名 ${roles.filter((r) => r.role === "npc").length}，临时 ${roles.filter((r) => r.role === "temp").length}，交给 Agent ${roles.filter((r) => r.role === "agent").length}，合并 ${roles.filter((r) => r.mergeInto).length}`
                 : "还没分类，所有变量都会被当成独立角色",
             required: false,
         },

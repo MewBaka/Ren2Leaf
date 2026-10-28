@@ -683,3 +683,38 @@ tr[aria-expanded="true"] .an-chevron { transform: rotate(90deg); }
 }
 
 .src-more { padding: 8px 12px; border-top: 1px solid var(--ui-edge); }
+
+/* ---- 需 Agent 判断 ---- */
+.sp-agent-note {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: var(--ui-radius-md);
+    background: var(--ui-fill-subtle);
+    font-size: var(--ui-text-xs);
+    line-height: 19px;
+    color: rgb(var(--ui-fg-muted));
+}
+
+.sp-agent-note > span { flex: 1; min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.sp-agent-note .sp-link { flex: none; }
+
+.sp-note-form { display: flex; flex-direction: column; gap: 10px; }
+.sp-note-lead { font-size: var(--ui-text-sm); color: rgb(var(--ui-fg-muted)); }
+
+.sp-note-input {
+    display: block;
+    width: 100%;
+    min-height: 96px;
+    padding: 8px 10px;
+    border: 1px solid var(--ui-control-border);
+    border-radius: var(--ui-radius-md);
+    background: rgb(var(--ui-control-fill));
+    color: rgb(var(--ui-fg));
+    font-size: var(--ui-text-sm);
+    box-shadow: var(--ui-shadow-xs);
+    resize: vertical;
+}
+
+.sp-note-input:focus { border-color: rgb(var(--ui-primary)); box-shadow: 0 0 0 3px rgb(var(--ui-primary) / 0.15); outline: none; }

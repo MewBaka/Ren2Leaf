@@ -19,9 +19,10 @@ export const DECISIONS_VERSION = 1;
  *   npc      角色栏的 NPC / 别名分组
  *   temp     不建角色，名字直接写在台词里
  *   pov      视角角色，顶层，只是标出来
+ *   agent    迁移者定不了，交给 Agent 判断；必须带 note，写明迁移者看到了什么、拿不准什么
  *   removed  迁移者把它从名单里拿掉了（调试用的、根本不出场的），报告里不再提
  */
-const ROLES = new Set(["main", "npc", "temp", "pov", "removed"]);
+const ROLES = new Set(["main", "npc", "temp", "pov", "agent", "removed"]);
 const VARIABLE = /^[A-Za-z_]\w{0,63}$/;
 const TEXT_MAX = 400;
 
@@ -141,6 +142,10 @@ export function mergeDecisions(doc, patch) {
         }
         for (const key of Object.keys(entry)) {
             if (entry[key] === null || (Array.isArray(entry[key]) && !entry[key].length)) delete entry[key];
+        }
+        // The agent gets the call only with the migrator's reasons: without them it is just unsorted.
+        if (entry.role === "agent" && !entry.note) {
+            throw new HttpError(400, `${variable} 交给 Agent 判断时需要填写备注`, "note_required");
         }
         if (!Object.keys(entry).length) delete next.speakers[variable];
         else next.speakers[variable] = { ...entry, updatedAt: new Date().toISOString() };

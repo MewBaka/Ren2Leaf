@@ -1,5 +1,6 @@
 // Step ③ speakers: every speaker the scan found, with its picture, sorted into the four things a
-// speaker can become in NarraLeaf. Nothing is pre-selected.
+// speaker can become in NarraLeaf. Nothing is pre-selected. A speaker the migrator cannot place can
+// be handed to the agent instead, but only with a note saying what they saw and what is unclear.
 //
 // An alias is not a special case here: a voice take can only be linked to a character that exists,
 // so a variable that is somebody under another name becomes its own character too, kept in the
@@ -23,6 +24,7 @@ const ROLES = [
     { id: "npc", label: "NPC / 别名", hint: "仍创建角色条目，但归入「NPC / 别名」分组，以保持角色列表整洁" },
     { id: "temp", label: "临时角色", hint: "不创建角色条目，名称直接写入台词；适用于无立绘、无配音的过场人物" },
     { id: "pov", label: "POV 角色", hint: "视角角色，显示于顶层，仅作标记" },
+    { id: "agent", label: "需 Agent 判断", hint: "证据不足以确定归类时选择；需填写备注，说明看到了什么、哪里无法确定，Agent 阅读源码后归入以上四类之一" },
 ];
 
 const ROLE_LABEL = Object.fromEntries(ROLES.map((r) => [r.id, r.label]));
@@ -49,6 +51,64 @@ export async function mount(host, ctx) {
     const roleOf = (variable) => answer(variable)?.role ?? null;
     const mergeInto = (variable) => answer(variable)?.mergeInto ?? null;
     const settled = (variable) => roleOf(variable) || mergeInto(variable);
+
+    /** Asks for the note 需 Agent 判断 cannot go without. Resolves null when cancelled. */
+    async function askNote(current, count = 1) {
+        const area = h("textarea", {
+            class: "sp-note-input",
+            rows: "4",
+            maxlength: "400",
+            autofocus: true,
+            placeholder: "例如：与 b1 共用同一段配音编号，可能是同一角色的别名，但名称框不同",
+            "aria-label": "备注",
+        }, current || "");
+        const modal = ctx.openModal({
+            title: "交给 Agent 判断",
+            body: h("div", { class: "sp-note-form" },
+                h("p", { class: "sp-note-lead" }, count > 1
+                    ? `备注将写入已选的 ${count} 个角色。请说明看到了什么、哪里无法确定，Agent 将据此阅读源码并归类`
+                    : "请说明看到了什么、哪里无法确定，Agent 将据此阅读源码并归类"),
+                area),
+            width: 520,
+            footer: [
+                { label: "取消", variant: "secondary", value: null },
+                { id: "ok", label: "确定", variant: "primary", onClick: (close) => close(area.value.trim()) },
+            ],
+        });
+        const sync = () => { modal.buttons.ok.disabled = !area.value.trim(); };
+        area.addEventListener("input", sync);
+        sync();
+        return (await modal.closed) || null;
+    }
+
+    /** Puts the note on what is handed to the agent. Other answers keep whatever note they had. */
+    function withNote(patch, note) {
+        for (const entry of Object.values(patch)) if (entry.role === "agent") entry.note = note;
+        return patch;
+    }
+
+    /** Applies a picked role; 需 Agent 判断 asks for its note first and does nothing if cancelled. */
+    async function choose(next, build, { current = null, count = 1 } = {}) {
+        let note = null;
+        if (next === "agent") {
+            note = await askNote(current, count);
+            if (!note) return false;
+        }
+        save(withNote(build(next), note));
+        return true;
+    }
+
+    async function editNote(variable) {
+        const note = await askNote(answer(variable)?.note);
+        if (note) save({ [variable]: { note } });
+    }
+
+    function agentNote(variable) {
+        if (roleOf(variable) !== "agent") return null;
+        return h("div", { class: "sp-agent-note" },
+            h("span", {}, answer(variable)?.note || ""),
+            h("button", { type: "button", class: "sp-link", onclick: () => editNote(variable) }, "修改备注"));
+    }
 
     async function save(patch) {
         saving++;
@@ -153,7 +213,8 @@ export async function mount(host, ctx) {
                 role === "temp" && sp.voiced
                     ? h("div", { class: "sp-card-flags" }, h("span", {}, `· 该变量关联 ${sp.voiced} 句配音，临时角色不会纳入配音表`))
                     : null,
-                roleButtons(role, (next) => save({ [sp.variable]: { role: next } }),
+                agentNote(sp.variable),
+                roleButtons(role, (next) => choose(next, (r) => ({ [sp.variable]: { role: r } }), { current: answer(sp.variable)?.note }),
                     merged ? `已并入 ${merged}` : null)));
     }
 
@@ -172,7 +233,7 @@ export async function mount(host, ctx) {
                 `${m.variable}（${m.lines} 句）`)));
         // Same name, several sprite sets: one character, so one variable takes the role and the
         // others merge into it, whichever role was picked.
-        const applyTo = (keeperVariable, nextRole) => {
+        const patchTo = (keeperVariable, nextRole) => {
             const patch = {};
             if (nextRole === null || nextRole === REMOVED) {
                 for (const m of group.members) patch[m.variable] = { role: nextRole, mergeInto: null };
@@ -182,14 +243,18 @@ export async function mount(host, ctx) {
                     if (m.variable !== keeperVariable) patch[m.variable] = { role: null, mergeInto: keeperVariable };
                 }
             }
-            save(patch);
+            return patch;
         };
-        const apply = (nextRole) => applyTo(keeper.variable, nextRole);
+        const apply = (nextRole) => choose(nextRole, (r) => patchTo(keeper.variable, r), { current: answer(keeper.variable)?.note });
 
         pick.addEventListener("change", () => {
             keeperByName.set(group.name, pick.value);
-            // The role is already applied: move it, and the merges, onto the newly picked variable.
-            if (role) applyTo(pick.value, role);
+            // The role is already applied: move it, the merges and the note onto the newly picked variable.
+            if (role === "agent") {
+                const patch = withNote(patchTo(pick.value, role), answer(keeper.variable)?.note);
+                patch[keeper.variable].note = null;
+                save(patch);
+            } else if (role) save(patchTo(pick.value, role));
             else step.redraw();
         });
 
@@ -219,6 +284,7 @@ export async function mount(host, ctx) {
                     h("span", {}, "合并到"), pick,
                     h("span", { class: "sp-merge-hint" }, "左侧显示该角色的立绘，可切换预览，请选择主立绘"),
                     mergedCount ? h("span", { class: "sp-merge-done" }, `已合并 ${mergedCount} 个`) : null),
+                agentNote(keeper.variable),
                 roleButtons(role === null || mergedCount !== others.length ? null : role, apply, null)));
     }
 
@@ -382,11 +448,13 @@ export async function mount(host, ctx) {
     function bulkBar(entries) {
         const picked = entries.filter((e) => selected.has(e.key));
         if (!picked.length) return null;
-        const apply = (role) => {
-            const patch = {};
-            for (const e of picked) Object.assign(patch, patchFor(e, role));
-            selected.clear();
-            save(patch);
+        const apply = async (role) => {
+            const done = await choose(role, (r) => {
+                const patch = {};
+                for (const e of picked) Object.assign(patch, patchFor(e, r));
+                return patch;
+            }, { count: picked.length });
+            if (done) selected.clear();
         };
         return h("div", { class: "sp-bulk" },
             h("span", { class: "sp-bulk-count" }, `已选 ${picked.length} 个`),
@@ -470,6 +538,7 @@ export async function mount(host, ctx) {
                 fact("主要角色", main + count("pov"), main ? "success" : "warning", count("pov") ? `含 POV ${count("pov")}` : null),
                 fact("NPC / 别名", count("npc"), null, "归入分组"),
                 fact("临时角色", count("temp"), null, "不创建角色"),
+                fact("交给 Agent", count("agent"), null, "附备注"),
                 fact("已合并的变量", merged, null, "同名角色的另一套立绘"),
                 fact("未指定", todo, todo ? "warning" : "success"),
             ])];

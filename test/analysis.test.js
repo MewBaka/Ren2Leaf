@@ -583,6 +583,15 @@ describe("speaker decisions", () => {
         assert.throws(() => mergeDecisions(empty, { speakers: { e: { aliasOf: "x" } } }), /未知字段/);
         assert.throws(() => mergeDecisions(empty, {}), /speakers/);
     });
+
+    test("a speaker handed to the agent needs the migrator's note, and keeps needing it", () => {
+        assert.throws(() => mergeDecisions(empty, { speakers: { e: { role: "agent" } } }), /需要填写备注/);
+        const doc = mergeDecisions(empty, { speakers: { e: { role: "agent", note: "可能是 a1 的别名" } } }).doc;
+        assert.equal(doc.speakers.e.note, "可能是 a1 的别名");
+        assert.throws(() => mergeDecisions(doc, { speakers: { e: { note: "" } } }), /需要填写备注/);
+        const placed = mergeDecisions(doc, { speakers: { e: { role: "npc", note: null } } }).doc;
+        assert.deepEqual(Object.keys(placed.speakers.e).sort(), ["role", "updatedAt"]);
+    });
 });
 
 describe("the_question", sdkOpts, () => {
