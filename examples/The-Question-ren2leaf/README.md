@@ -76,7 +76,7 @@ Ren'Py 游戏源码另外交给 Agent。它记录原作里有什么、迁移者�
 
 另有一类「交给 Agent 判断」：迁移者看过证据仍定不下来，写了备注说明看到了什么、拿不准什么，由你读源码后归入上面四类之一。
 
-Studio 的角色面板按分组列角色，`character_upsert` 的 `group` 按名字归组，组不存在就新建；不带 `group` 时角色**留在原来的组**，传 `group: null` 才把它拿出来，直接列在面板上。迁移者定的是：**主要角色和 POV 角色都不分组**，直接列在外面；只有「NPC / 别名」这一类收进同名分组。不要给主角另建「主角」之类的组；复用的骨架示例角色要是已经在某个组里，建的时候传 `group: null`。「NPC / 别名」的角色照建，只是不必像主角那样准备立绘和差分。
+Studio 的角色面板按分组列角色，`character_upsert` 的 `group` 按名字归组，组不存在就新建；不带 `group` 时角色**留在原来的组**，传 `group: null` 才把它拿出来，直接列在面板上。迁移者定的是：**主要角色和 POV 角色都不分组**，直接列在外面；只有「NPC / 别名」这一类收进同名分组。不要给主角另建「主角」之类的组。「NPC / 别名」的角色照建，只是不必像主角那样准备立绘和差分。
 
 ### 3.1　主要角色
 
@@ -148,7 +148,7 @@ Studio 的层级是**故事 → 章节 → 场景**，整部游戏是**一个**�
 
 - 章节名：「章节名」一列。故事里已有的那一章做第一章（`chapter_rename` 改成这里的名字）；后面的章节用 `scene_create` 的 `chapter` 和 `after`（上一章最后一个场景）新建。没填的用 Studio 新建章节的默认名 `New Chapter`。`scene_create` 按名字认章节，同名的会被认成已有那一章，所以几章都叫 `New Chapter` 时，先用临时名建出来，再按 id `chapter_rename` 成 `New Chapter`。
 - 每个场景的表头（`story_apply` 的 `#background` 和 `#description`，写法看 NarraLeaf Studio 的 Skill）：
-  - `#background` **每个场景都要写**：原作这一段开场时屏幕上的背景，一般是第一句 `scene` 的图；开场是黑屏或纯色就写 `#background none`。不写的话，复用骨架的示例场景会闪出示例图。
+  - `#background` **每个场景都要写**：原作这一段开场时屏幕上的背景，一般是第一句 `scene` 的图；开场是黑屏或纯色就写 `#background none`。
   - `#description` 不写：按 label 拆的场景迁移者没有写描述。
 
 带 ★ 的是入口场景（含 `start` 的那个），用 `scene_set_entry` 设好。

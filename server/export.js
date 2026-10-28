@@ -289,7 +289,7 @@ function speakersSection(speakers, decisions, portraits, skip) {
         ["临时角色", "迁移者认为不需要独立角色（多为无立绘的过场人物）", "不建角色，台词写成一次性说话人；有配音的照常链接"],
     ]), "");
     out.push("另有一类「交给 Agent 判断」：迁移者看过证据仍定不下来，写了备注说明看到了什么、拿不准什么，由你读源码后归入上面四类之一。", "");
-    out.push(`Studio 的角色面板按分组列角色，\`character_upsert\` 的 \`group\` 按名字归组，组不存在就新建；不带 \`group\` 时角色**留在原来的组**，传 \`group: null\` 才把它拿出来，直接列在面板上。迁移者定的是：**主要角色和 POV 角色都不分组**，直接列在外面；只有「${NPC_GROUP}」这一类收进同名分组。不要给主角另建「主角」之类的组；复用的骨架示例角色要是已经在某个组里，建的时候传 \`group: null\`。「${NPC_GROUP}」的角色照建，只是不必像主角那样准备立绘和差分。`, "");
+    out.push(`Studio 的角色面板按分组列角色，\`character_upsert\` 的 \`group\` 按名字归组，组不存在就新建；不带 \`group\` 时角色**留在原来的组**，传 \`group: null\` 才把它拿出来，直接列在面板上。迁移者定的是：**主要角色和 POV 角色都不分组**，直接列在外面；只有「${NPC_GROUP}」这一类收进同名分组。不要给主角另建「主角」之类的组。「${NPC_GROUP}」的角色照建，只是不必像主角那样准备立绘和差分。`, "");
 
     const main = roleIs("main");
     const pov = roleIs("pov");
@@ -569,7 +569,7 @@ function delegated() {
         "   - 改了什么：结构上做了什么调整、为什么（和哪些 label 合并、从哪里拆开、去掉了哪个中转 label）。原样搬过来没动的，写「结构未调整」。",
         "",
         "   比如 `#description \"来源：a.rpy 的 day1（12–240）、day1_after（241–260）\\n结构：day1_after 只是 day1 结尾的中转，合进同一场景\"`。",
-        "5. `#background` **每个场景都要写**：原作这一段开场时屏幕上的背景，一般是第一句 `scene` 的图；开场是黑屏或纯色就写 `#background none`。不写的话，复用骨架的示例场景会闪出示例图。",
+        "5. `#background` **每个场景都要写**：原作这一段开场时屏幕上的背景，一般是第一句 `scene` 的图；开场是黑屏或纯色就写 `#background none`。",
         "6. 含 `start` 的那段剧情所在的场景是入口，用 `scene_set_entry` 设好。故事里已有的那一章做第一章（`chapter_rename` 改名），后面的章节用 `scene_create` 的 `chapter` 和 `after` 新建。",
         "7. 定下结构后、动手写场景前，先把推断出的分支结构和打算做的调整讲给迁移者听；交付时再说一次实际改了什么。",
         "",
@@ -598,7 +598,7 @@ function chaptersSection(flow, plan, skip) {
             out.push("- 场景名：「场景名」一列。没填的用 Studio 默认的 `New Scene`；有几个都叫 `New Scene` 时，之后按 `scene_create` 返回的 id 指认场景，不靠名字。");
         }
         out.push("- 每个场景的表头（`story_apply` 的 `#background` 和 `#description`，写法看 NarraLeaf Studio 的 Skill）：");
-        out.push("  - `#background` **每个场景都要写**：原作这一段开场时屏幕上的背景，一般是第一句 `scene` 的图；开场是黑屏或纯色就写 `#background none`。不写的话，复用骨架的示例场景会闪出示例图。");
+        out.push("  - `#background` **每个场景都要写**：原作这一段开场时屏幕上的背景，一般是第一句 `scene` 的图；开场是黑屏或纯色就写 `#background none`。");
         out.push(split.scenes === true
             ? "  - `#description` 不写：按 label 拆的场景迁移者没有写描述。"
             : "  - `#description` **只写迁移者填的「场景描述」**，原样照抄。没填就不写这一行，不要自己总结剧情补上。", "");
